@@ -1,0 +1,15 @@
+[package]
+name = "proj4rs"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.66"
+description = "Rust adaptation of Proj4js"
+readme = "./README.md"
+keywords = ["gis", "proj", "projection", "geography", "geospatial"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+
+[dev.dependencies]
