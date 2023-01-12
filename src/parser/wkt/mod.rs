@@ -1,3 +1,0 @@
-//!
-//! WKT Proj Parser
-//!

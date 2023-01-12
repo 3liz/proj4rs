@@ -10,5 +10,8 @@
 
 mod datums;
 mod ellipsoids;
-mod parser;
 mod prime_meridians;
+mod projstring;
+mod units;
+
+pub mod errors;

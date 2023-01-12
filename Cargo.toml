@@ -7,9 +7,7 @@ description = "Rust adaptation of Proj4js"
 readme = "./README.md"
 keywords = ["gis", "proj", "projection", "geography", "geospatial"]
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+thiserror = "1.0"
 
-
-[dev.dependencies]
+[dev-dependencies]
