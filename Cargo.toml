@@ -11,3 +11,9 @@ keywords = ["gis", "proj", "projection", "geography", "geospatial"]
 thiserror = "1.0"
 
 [dev-dependencies]
+
+[lib]
+crate_type = ["cdylib", "rlib"]
+
+[target.wasm32-unknown-unknown.dependencies]
+wasm-bindgen = "0.2"

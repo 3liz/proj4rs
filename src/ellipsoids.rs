@@ -1,30 +1,31 @@
 //!
 //! Proj4 Ellipsoids definitions
 //!
+use crate::constants::EPSLN;
 
 /// Ellipsoid flattening may be defined either by
 /// the knoweldge of its minor axis or by its reverse flattening
-pub(crate) enum FlatteningParam {
+pub enum FlatteningParam {
     MinorAxis(f64),
     InvFlat(f64),
 }
 
-pub(crate) struct EllipsoidParams {
-    id: &'static str,
-    a: f64,
-    rf_or_b: FlatteningParam,
-    comment: &'static str,
-}
-
 use FlatteningParam::*;
 
+pub struct EllipsoidDefn {
+    pub id: &'static str,
+    pub a: f64,
+    pub rf_or_b: FlatteningParam,
+    pub comment: &'static str,
+}
+
 #[rustfmt::skip]
-pub(crate) mod constants {
+pub mod constants {
     use super::*;
 
     macro_rules! ellps {
         ($name:ident, $id:expr, $a:expr, $f:expr, $c:expr) => {
-            pub(crate) const $name: EllipsoidParams = EllipsoidParams {
+            pub(crate) const $name: EllipsoidDefn = EllipsoidDefn {
                 id: $id,
                 a: $a,
                 rf_or_b: $f,
@@ -84,7 +85,7 @@ pub(crate) mod constants {
 /// Static ellipsoids table
 ///
 /// Format: (id, major axis (a), FlatteningParam (b or rf), comment)
-pub (crate) const ELLIPSOIDS: [&EllipsoidParams;46] = [
+pub (super) const ELLIPSOIDS: [&EllipsoidDefn;46] = [
 &MERIT,  
 &SGS85,  
 &GRS80,  
@@ -133,4 +134,12 @@ pub (crate) const ELLIPSOIDS: [&EllipsoidParams;46] = [
 &SPHERE,
 ];
 
+}
+
+/// Return the ellipse definition
+pub fn ellps_defn(name: &str) -> Option<&EllipsoidDefn> {
+    constants::ELLIPSOIDS
+        .iter()
+        .find(|e| e.id.eq_ignore_ascii_case(name))
+        .copied()
 }

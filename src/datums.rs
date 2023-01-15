@@ -1,20 +1,21 @@
 //!
 //! Proj4 datum definitions
 //!
-use crate::ellipsoids::{constants::*, EllipsoidParams};
+use crate::ellipsoids::{constants::*, EllipsoidDefn};
 
-/// Helmert parameters
-pub(crate) enum ProjParams {
+/// Shift method is either
+/// defined by Helmert transforms or nadgrids
+pub enum ShiftMethod {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),
     ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),
     NadGrids(&'static str),
 }
 
-use ProjParams::*;
+use ShiftMethod::*;
 
 /// Static datums table
-pub(crate) const DATUMS: [(&str, ProjParams, &EllipsoidParams, &str); 17] = [
+const DATUMS: [(&str, ShiftMethod, &EllipsoidDefn, &str); 17] = [
     ("WGS84", ToWGS84_0, &WGS84, ""),
     (
         "GGRS87",
@@ -110,3 +111,11 @@ pub(crate) const DATUMS: [(&str, ProjParams, &EllipsoidParams, &str); 17] = [
         "Reseau National Belge 1972",
     ),
 ];
+
+/// Return the datum definition
+pub fn datum_defn(name: &str) -> Option<(&ShiftMethod, &EllipsoidDefn)> {
+    DATUMS
+        .iter()
+        .find(|d| d.0.eq_ignore_ascii_case(name))
+        .map(|d| (&d.1, d.2))
+}

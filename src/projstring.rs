@@ -60,16 +60,28 @@
 //! One must refer to the projection definition.
 //!
 use crate::errors::{Error, Result};
-use std::ops::ControlFlow;
+use crate::parameters::{ParamList, Parameter};
 
-struct Parser {}
+pub fn parse<'a>(s: &'a str) -> Result<ParamList<'a>> {
+    Ok(ParamList::new(
+        tokenizer::tokens(s)
+            .map(|r| match r {
+                Ok((name, value, _)) => Ok(Parameter { name, value }),
+                Err(err) => Err(err),
+            })
+            .collect::<Result<Vec<Parameter<'a>>>>()?,
+    ))
+}
 
-impl Parser {
+mod tokenizer {
+    use super::*;
+    use std::ops::ControlFlow;
+
     /// Parse parameter name as valid identifier
     ///
     /// Return error if the string is not a valid
     /// identifier: i.e not [0-9a-zA-Z_]+
-    fn parse_identifier(s: &str) -> Result<(&str, &str)> {
+    pub(super) fn parse_identifier(s: &str) -> Result<(&str, &str)> {
         // Get the identifiant
         let rv = s.chars().try_fold(Ok(0usize), |len, c| {
             if c.is_whitespace() || c == '=' {
@@ -89,7 +101,7 @@ impl Parser {
     }
 
     /// Get the next quoted or unquoted token from the input string
-    fn unquote_next(s: &str) -> Result<(&str, &str)> {
+    pub(super) fn unquote_next(s: &str) -> Result<(&str, &str)> {
         let s = s.trim_start();
         if s.starts_with('\"') {
             // Check if string part is terminated by a quote,
@@ -109,7 +121,7 @@ impl Parser {
                     }
                 }) {
                 ControlFlow::Break(len) => Ok((&s[..len], &s[(len + 1)..])),
-                ControlFlow::Continue(len) => {
+                ControlFlow::Continue(_) => {
                     Err(Error::InputStringError("Unterminated quoted string"))
                 }
             }
@@ -119,20 +131,20 @@ impl Parser {
     }
 
     /// Returns the first token from the input str
-    fn token(s: &str) -> Result<(&str, Option<&str>, &str)> {
+    pub(super) fn token(s: &str) -> Result<(&str, Option<&str>, &str)> {
         let s = s.trim_start();
         if s.is_empty() {
             Ok(("", None, ""))
         } else if s.starts_with('+') {
             let (_, rest) = s.split_once('+').unwrap(); // Swallow '+'
 
-            let (name, rest) = Self::parse_identifier(rest)?;
+            let (name, rest) = parse_identifier(rest)?;
             if name.is_empty() {
                 Err(Error::InputStringError("Empty parameter name"))
             } else {
                 let rest = rest.trim_start();
                 if rest.starts_with('=') {
-                    let (value, rest) = Self::unquote_next(rest.split_once('=').unwrap().1)?;
+                    let (value, rest) = unquote_next(rest.split_once('=').unwrap().1)?;
                     if value.is_empty() {
                         Err(Error::InputStringError("Missing parameter value"))
                     } else {
@@ -145,13 +157,25 @@ impl Parser {
             }
         } else {
             // Swallow non parameters parts
-            Self::unquote_next(s).map(|(_, rest)| ("", None, rest))
+            unquote_next(s).map(|(_, rest)| ("", None, rest))
         }
     }
 
-    pub(crate) fn parse(s: &str) -> Result<()> {
-        Ok(()) 
-    
+    /// Generate an iterator from parsing results
+    pub(super) fn tokens(s: &str) -> impl Iterator<Item = Result<(&str, Option<&str>, &str)>> {
+        std::iter::successors(
+            Some(token(s)),
+            |prev: &Result<(&str, Option<&str>, &str)>| match prev {
+                Err(_) => None,
+                Ok((_, _, s)) => {
+                    if s.is_empty() {
+                        None
+                    } else {
+                        Some(tokenizer::token(s))
+                    }
+                }
+            },
+        )
     }
 }
 
@@ -159,38 +183,54 @@ impl Parser {
 mod tests {
     use super::*;
 
+    // Test tokenizer
+
     #[test]
     fn projstring_unquote() {
-        let (s, r) = Parser::unquote_next("foo").unwrap();
+        let (s, r) = tokenizer::unquote_next("foo").unwrap();
         assert_eq!((s, r), ("foo", ""));
 
         let s = r#"foo " foobar" foo""bar  "foo ""bar" "baz "#;
-        let (s, r) = Parser::unquote_next(s).unwrap();
+        let (s, r) = tokenizer::unquote_next(s).unwrap();
         assert_eq!((s, r), ("foo", r#"" foobar" foo""bar  "foo ""bar" "baz "#));
-        let (s, r) = Parser::unquote_next(r).unwrap();
+        let (s, r) = tokenizer::unquote_next(r).unwrap();
         assert_eq!((s, r), (" foobar", r#" foo""bar  "foo ""bar" "baz "#));
-        let (s, r) = Parser::unquote_next(r).unwrap();
+        let (s, r) = tokenizer::unquote_next(r).unwrap();
         assert_eq!((s, r), (r#"foo""bar"#, r#" "foo ""bar" "baz "#));
-        let (s, r) = Parser::unquote_next(r).unwrap();
+        let (s, r) = tokenizer::unquote_next(r).unwrap();
         assert_eq!((s, r), (r#"foo ""bar"#, r#" "baz "#));
 
-        assert!(Parser::unquote_next(r).is_err());
+        assert!(tokenizer::unquote_next(r).is_err());
     }
 
     #[test]
     fn projstring_invalid_parameter_name() {
         let s = "+pro@j=geocent";
-        assert!(Parser::token(s).is_err());
+        assert!(tokenizer::token(s).is_err());
     }
 
     #[test]
     fn projstring_token() {
         let s = "+proj=geocent +datum=WGS84 +no_defs";
-        let r = Parser::token(s).unwrap();
+        let r = tokenizer::token(s).unwrap();
         assert_eq!(r, ("proj", Some("geocent"), "+datum=WGS84 +no_defs"));
-        let r = Parser::token(r.2).unwrap();
+        let r = tokenizer::token(r.2).unwrap();
         assert_eq!(r, ("datum", Some("WGS84"), "+no_defs"));
-        let r = Parser::token(r.2).unwrap();
+        let r = tokenizer::token(r.2).unwrap();
         assert_eq!(r, ("no_defs", None, ""));
+    }
+
+    #[test]
+    fn projstring_collect_tokens() {
+        // Check valid projstring
+        let s = "+proj=geocent +datum=WGS84 +no_defs";
+        let tokens: Result<Vec<_>> = tokenizer::tokens(s).collect();
+        assert!(tokens.is_ok());
+        assert_eq!(tokens.unwrap().len(), 3);
+
+        // Check invalid parameters
+        let s = "+pro@j=geocent";
+        let tokens: Result<Vec<_>> = tokenizer::tokens(s).collect();
+        assert!(tokens.is_err())
     }
 }

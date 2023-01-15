@@ -1,6 +1,6 @@
 /// Static units table
 #[rustfmt::skip]
-pub (crate) const UNITS: [(&str, &str, &str, f64);21] = [
+pub const UNITS: [(&str, &str, &str, f64);21] = [
     ("km",      "1000",                 "Kilometer",                    1000.0),
     ("m",       "1",                    "Meter",                        1.0),
     ("dm",      "1/10",                 "Decimeter",                    0.1),
@@ -24,11 +24,11 @@ pub (crate) const UNITS: [(&str, &str, &str, f64);21] = [
     ("ind-ch",  "20.11669506",          "Indian Chain",                 20.11669506),
 ];
 
-pub(crate) const DEG_TO_RAD: f64 = 0.017453292519943296;
-pub(crate) const GRAD_TO_RAD: f64 = 0.015707963267948967;
+pub const DEG_TO_RAD: f64 = 0.017453292519943296;
+pub const GRAD_TO_RAD: f64 = 0.015707963267948967;
 
 #[rustfmt::skip]
-pub (crate) const ANGLE_UNITS: [(&str, &str, &str, f64);3] = [
+pub const ANGLE_UNITS: [(&str, &str, &str, f64);3] = [
     ("rad",   "1.0",                   "Radian", 1.0),
     ("deg",   "0.017453292519943296",  "Degree", DEG_TO_RAD),
     ("grad",  "0.015707963267948967",  "Grad",   GRAD_TO_RAD),
