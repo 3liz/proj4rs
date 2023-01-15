@@ -15,27 +15,6 @@
 //! <word> ::= [^\s]+
 //! ```
 //!
-//! Possible parameters of a projection may be
-//!
-//! ## Cartograpic projection parameters:
-//!
-//! see <https://proj.org/usage/projections.html#cartographic-projection>
-//!
-//! +a      : semi major axis
-//! +axis   : Axis orientation
-//! +b      : semi minor axis
-//! +ellps  : ellipsoid name
-//! +k      : Scaling factor (deprecated)
-//! +k_0    : Scaling factor
-//! +lat_0  : Latitude of origin
-//! +long_0 : Central meridian
-//! +pm     : Alternate prime meridian
-//! +proj   : Projection name
-//! +units  : meters, US survey feet, etc.
-//! +x_0    : False easting
-//! +y_0    : False northing
-//!
-//!
 //! ## Geodetic transformations parameters
 //!
 //! see <https://proj.org/usage/transformation.html#geodetic-transformation>
@@ -43,16 +22,6 @@
 //! +to_meter : Multiplier to convert map units to 1.0m
 //! +towgs84  : 3 or 7 term datum transform parameters
 //! +nadgrids : Filename of NTv2 grid file to use for datum transforms
-//!
-//!
-//! ## Ellipsoid parameters
-//!
-//! see <https://proj.org/usage/ellipsoids.html>
-//!
-//! +rf    : reverse flattening
-//! +a      : semi major axis
-//! +b      : semi minor axis
-//!
 //!
 //! ## Per projections parameters  
 //!

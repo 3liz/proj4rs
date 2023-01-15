@@ -4,13 +4,13 @@
 //! Precomputed for optimization
 //!
 
-use crate::ellps::PJConsts;
+use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
 use crate::{datums, ellipsoids, projstring};
 
 pub struct Projection {
-    pj_consts: PJConsts,
+    pj_ellps: Ellipsoid,
 }
 
 impl Projection {
@@ -20,8 +20,8 @@ impl Projection {
         let projname = params.get("proj").ok_or(Error::MissingProjectionError);
 
         // R takes precedence (from proj, not in proj4js)
-        let pj_consts = if let Some(radius) = params.get("R") {
-            PJConsts::sphere(radius.try_into()?)
+        let pj_ellps = if let Some(radius) = params.get("R") {
+            Ellipsoid::sphere(radius.try_into()?)
         } else {
             // Retrieve datum
             let (method, ellps) = match params.get("datum") {
@@ -33,7 +33,7 @@ impl Projection {
                 None => (None, None),
             };
 
-            // Override Ellipse
+            // Override Ellipsoid ?
             let ellps = match params.get("ellps") {
                 Some(ellps) => {
                     ellipsoids::ellps_defn(ellps.try_into()?).ok_or(Error::InvalidEllipsoidError)?
@@ -41,10 +41,10 @@ impl Projection {
                 None => ellps.unwrap_or(&ellipsoids::constants::WGS84),
             };
 
-            PJConsts::default()
-        };
+            Ellipsoid::from_ellipsoid_with_params(ellps, &params)
+        }?;
 
-        Ok(Self { pj_consts })
+        Ok(Self { pj_ellps })
     }
 
     /// Create projection from string

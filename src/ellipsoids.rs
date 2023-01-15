@@ -1,7 +1,6 @@
 //!
 //! Proj4 Ellipsoids definitions
 //!
-use crate::constants::EPSLN;
 
 /// Ellipsoid flattening may be defined either by
 /// the knoweldge of its minor axis or by its reverse flattening
@@ -43,7 +42,7 @@ pub mod constants {
     ellps!(NWL9D,     "NWL9D",     6_378_145.,     InvFlat(298.25),            "Naval Weapons Lab., 1965");
     ellps!(MOD_AIRY,  "mod_airy",  6_377_340.189,  MinorAxis(6_356_034.446),   "Modified Airy");
     ellps!(ANDRAE,    "andrae",    6_377_104.43,   InvFlat(300.0),             "Andrae 1876 (Den., Iclnd.)");
-    ellps!(DANISH,    "danish",    6_377_019.2563, InvFlat(300.0),             "Andrae 1876 (Denmark, Iceland)");
+    ellps!(DANISH,    "danish",    6_377_019.256_3, InvFlat(300.0),             "Andrae 1876 (Denmark, Iceland)");
     ellps!(AUST_SA,   "aust_SA",   6_378_160.,     InvFlat(298.25),            "Australian Natl & S. Amer. 1969");
     ellps!(GRS67,     "GRS67",     6_378_160.,     InvFlat(298.2471674270),    "GRS 67(IUGG 1967)");
     ellps!(GSK2011,   "GSK2011",   6_378_136.5,    InvFlat(298.2564151),       "GSK-2011");
@@ -72,13 +71,13 @@ pub mod constants {
     ellps!(MPRTS,     "mprts",     6_397_300.,     InvFlat(191.),              "Maupertius 1738");
     ellps!(NEW_INTL,  "new_intl",  6_378_157.5,    MinorAxis(6_356_772.2),     "New International 1967");
     ellps!(PLESSIS,   "plessis",   6_376_523.,     MinorAxis(6_355_863.),      "Plessis 1817 (France)");
-    ellps!(PZ90,      "PZ90",      6_378_136.,     InvFlat(298.25784),         "PZ-90");
-    ellps!(SEASIA,    "SEasia",    6_378_155.,     MinorAxis(6_356_773.3205),  "Southeast Asia");
-    ellps!(WALBECK,   "walbeck",   6_376_896.,     MinorAxis(6_355_834.8467),  "Walbeck");
+    ellps!(PZ90,      "PZ90",      6_378_136.,     InvFlat(298.25784),          "PZ-90");
+    ellps!(SEASIA,    "SEasia",    6_378_155.,     MinorAxis(6_356_773.320_5),  "Southeast Asia");
+    ellps!(WALBECK,   "walbeck",   6_376_896.,     MinorAxis(6_355_834.846_7),  "Walbeck");
     ellps!(WGS60,     "WGS60",     6_378_165.,     InvFlat(298.3),             "WGS 60");
     ellps!(WGS66,     "WGS66",     6_378_145.,     InvFlat(298.25),            "WGS 66");
     ellps!(WGS72,     "WGS72",     6_378_135.,     InvFlat(298.26),            "WGS 72");
-    ellps!(WGS84,     "WGS84",     6_378_137.,     InvFlat(298.257223563),     "WGS 84");
+    ellps!(WGS84,     "WGS84",     6_378_137.,     InvFlat(298.257_223_563),   "WGS 84");
     ellps!(SPHERE,    "sphere",    6_370_997.,     MinorAxis(6_370_997.),      "Normal Sphere (r=6370997)");
 
 ///
