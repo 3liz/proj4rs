@@ -8,9 +8,11 @@
 //! * <https://proj.org/development/reference/cpp/cpp_general.html>
 //!
 pub(crate) mod constants;
+pub(crate) mod datum_transform;
 pub(crate) mod datums;
 pub(crate) mod ellipsoids;
 pub(crate) mod ellps;
+pub(crate) mod nadgrids;
 pub(crate) mod parameters;
 pub(crate) mod prime_meridians;
 pub(crate) mod projstring;

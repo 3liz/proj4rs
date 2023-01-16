@@ -18,6 +18,10 @@ pub enum Error {
     InvalidEllipsoidError,
     #[error("{0}")]
     InvalidParameterValue(&'static str),
+    #[error("Latitude out of range")]
+    LatitudeOutOfRange,
+    #[error("NAD grid not available")]
+    NoNADGridAvailable,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

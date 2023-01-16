@@ -18,3 +18,11 @@ pub(crate) const PRIME_MERIDIANS: [(&str, &str, f64); 14] = [
     ("oslo",       "10d43'22.5\"E",    10.722916666667),
     ("copenhagen", "12d34'40.35\"E",   12.57788),
 ];
+
+/// Return the datum definition
+pub fn find_prime_meridian(name: &str) -> Option<f64> {
+    PRIME_MERIDIANS
+        .iter()
+        .find(|d| d.0.eq_ignore_ascii_case(name))
+        .map(|d| d.2)
+}

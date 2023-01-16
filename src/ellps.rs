@@ -49,7 +49,7 @@ const RV4: f64 = 5. / 72.;
 const RV6: f64 = 55. / 1296.;
 
 #[derive(Default, Clone, Debug)]
-pub(crate) struct Ellipsoid {
+pub struct Ellipsoid {
     // The linear parameters
     pub a: f64,  // semimajor axis (radius if eccentricity==0)
     pub b: f64,  // semiminor axis
@@ -168,18 +168,16 @@ impl Ellipsoid {
         // Shape parameters tokens in order of precedence
         const SHAPE_TOKENS: &[&str] = &[TOK_rf, TOK_f, TOK_es, TOK_e, TOK_b];
         SHAPE_TOKENS.iter().find_map(|tok| {
-            if let Some(p) = params.get(tok) {
-                Some(p.try_convert::<f64>().map(|v| match *tok {
+            params.get(tok).map(|p| {
+                p.try_convert::<f64>().map(|v| match *tok {
                     TOK_rf => SP_rf(v),
                     TOK_f => SP_f(v),
                     TOK_es => SP_es(v),
                     TOK_e => SP_e(v),
                     TOK_b => SP_b(v),
                     _ => unreachable!(),
-                }))
-            } else {
-                None
-            }
+                })
+            })
         })
     }
 

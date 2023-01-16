@@ -80,63 +80,63 @@ pub mod constants {
     ellps!(WGS84,     "WGS84",     6_378_137.,     InvFlat(298.257_223_563),   "WGS 84");
     ellps!(SPHERE,    "sphere",    6_370_997.,     MinorAxis(6_370_997.),      "Normal Sphere (r=6370997)");
 
-///
-/// Static ellipsoids table
-///
-/// Format: (id, major axis (a), FlatteningParam (b or rf), comment)
-pub (super) const ELLIPSOIDS: [&EllipsoidDefn;46] = [
-&MERIT,  
-&SGS85,  
-&GRS80,  
-&IAU76,  
-&AIRY,   
-&APL4_9, 
-&NWL9D,  
-&MOD_AIRY,
-&ANDRAE,   
-&DANISH,   
-&AUST_SA,  
-&GRS67,    
-&GSK2011,  
-&BESSEL,   
-&BESS_NAM, 
-&CLRK66,   
-&CLRK80,   
-&CLRK80IGN,
-&CPM,      
-&DELMBR,   
-&ENGELIS,  
-&EVRST30,  
-&EVRST48,  
-&EVRST56,  
-&EVRST69,  
-&EVRSTSS,  
-&FSCHR60,  
-&FSCHR60M, 
-&FSCHR68,  
-&HELMERT,  
-&HOUGH,    
-&INTL,     
-&KRASS,    
-&KAULA,    
-&LERCH,    
-&MPRTS,    
-&NEW_INTL, 
-&PLESSIS,  
-&PZ90,     
-&SEASIA,   
-&WALBECK,  
-&WGS60,    
-&WGS66,
-&WGS72,    
-&WGS84,    
-&SPHERE,
-];
+    ///
+    /// Static ellipsoids table
+    ///
+    /// Format: (id, major axis (a), FlatteningParam (b or rf), comment)
+    pub (super) const ELLIPSOIDS: [&EllipsoidDefn;46] = [
+        &MERIT,  
+        &SGS85,  
+        &GRS80,  
+        &IAU76,  
+        &AIRY,   
+        &APL4_9, 
+        &NWL9D,  
+        &MOD_AIRY,
+        &ANDRAE,   
+        &DANISH,   
+        &AUST_SA,  
+        &GRS67,    
+        &GSK2011,  
+        &BESSEL,   
+        &BESS_NAM, 
+        &CLRK66,   
+        &CLRK80,   
+        &CLRK80IGN,
+        &CPM,      
+        &DELMBR,   
+        &ENGELIS,  
+        &EVRST30,  
+        &EVRST48,  
+        &EVRST56,  
+        &EVRST69,  
+        &EVRSTSS,  
+        &FSCHR60,  
+        &FSCHR60M, 
+        &FSCHR68,  
+        &HELMERT,  
+        &HOUGH,    
+        &INTL,     
+        &KRASS,    
+        &KAULA,    
+        &LERCH,    
+        &MPRTS,    
+        &NEW_INTL, 
+        &PLESSIS,  
+        &PZ90,     
+        &SEASIA,   
+        &WALBECK,  
+        &WGS60,    
+        &WGS66,
+        &WGS72,    
+        &WGS84,    
+        &SPHERE,
+    ];
 
 }
 
 /// Return the ellipse definition
-pub fn ellps_defn(name: &str) -> Option<&EllipsoidDefn> {
+pub fn find_ellipsoid(name: &str) -> Option<&EllipsoidDefn> {
     constants::ELLIPSOIDS
         .iter()
         .find(|e| e.id.eq_ignore_ascii_case(name))
