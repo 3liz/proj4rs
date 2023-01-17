@@ -73,17 +73,16 @@ pub struct Ellipsoid {
     //pub n: f64,   // third  flattening
     pub rf: f64, // 1/f
 
-    /*
-        pub rf2: f64, // 1/f2
-        pub rn: f64,  // 1/n
+                 /*
+                     pub rf2: f64, // 1/f2
+                     pub rn: f64,  // 1/n
 
-        // This one's for GRS80
-        pub jform: f64, // Dynamic form factor
+                     // This one's for GRS80
+                     pub jform: f64, // Dynamic form factor
 
-        pub es_orig: f64, // es and a before any +proj related adjustment
-        pub a_orig: f64,
-    */
-    pub ep2: f64,
+                     pub es_orig: f64, // es and a before any +proj related adjustment
+                     pub a_orig: f64,
+                 */
 }
 
 const TOK_rf: &str = "rf";
@@ -129,7 +128,7 @@ impl Ellipsoid {
 
     /// Create ellipsoid from definition
     #[inline]
-    pub fn from_ellipsoid(defn: &EllipsoidDefn) -> Result<Self> {
+    pub fn try_from_ellipsoid(defn: &EllipsoidDefn) -> Result<Self> {
         Self::default()._from_ellipsoid(defn)
     }
 
@@ -144,7 +143,10 @@ impl Ellipsoid {
 
     /// Create ellipsoid from definition and parameters
     #[inline]
-    pub fn from_ellipsoid_with_params(defn: &EllipsoidDefn, params: &ParamList) -> Result<Self> {
+    pub fn try_from_ellipsoid_with_params(
+        defn: &EllipsoidDefn,
+        params: &ParamList,
+    ) -> Result<Self> {
         Self::default()._ellipsoid_with_params(defn, params)
     }
 
@@ -260,10 +262,6 @@ impl Ellipsoid {
             self.e = 0.;
             self.f = 0.;
             self.rf = f64::INFINITY;
-            self.ep2 = 0.;
-        } else {
-            let b2 = b * b;
-            self.ep2 = ((a * a) - b2) / b2;
         }
 
         self.ra = 1. / a;
@@ -311,7 +309,7 @@ mod tests {
 
     #[test]
     fn ellps_from_defn() {
-        let ellps = Ellipsoid::from_ellipsoid(&WGS84).unwrap();
+        let ellps = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
 
         assert_eq!(ellps.a, 6_378_137.);
         assert_eq!(ellps.rf, 298.257_223_563);
@@ -319,7 +317,7 @@ mod tests {
 
     #[test]
     fn ellps_from_defn_and_params() {
-        let ellps = Ellipsoid::from_ellipsoid_with_params(
+        let ellps = Ellipsoid::try_from_ellipsoid_with_params(
             &WGS84,
             &projstring::parse("+a=6370997.").unwrap(),
         )
@@ -347,9 +345,11 @@ mod tests {
 
     #[test]
     fn ellps_from_defn_and_es_zero() {
-        let ellps =
-            Ellipsoid::from_ellipsoid_with_params(&WGS84, &projstring::parse("+es=0.").unwrap())
-                .unwrap();
+        let ellps = Ellipsoid::try_from_ellipsoid_with_params(
+            &WGS84,
+            &projstring::parse("+es=0.").unwrap(),
+        )
+        .unwrap();
 
         assert_sphere(ellps);
     }
@@ -357,7 +357,7 @@ mod tests {
     #[test]
     fn ellps_spherification() {
         let ellps =
-            Ellipsoid::from_ellipsoid_with_params(&WGS84, &projstring::parse("+R_A").unwrap())
+            Ellipsoid::try_from_ellipsoid_with_params(&WGS84, &projstring::parse("+R_A").unwrap())
                 .unwrap();
 
         assert_sphere(ellps);
@@ -366,7 +366,7 @@ mod tests {
     #[test]
     fn ellps_invalid_params() {
         fn from_projstring(s: &str) -> Result<Ellipsoid> {
-            Ellipsoid::from_ellipsoid_with_params(&WGS84, &projstring::parse(s).unwrap())
+            Ellipsoid::try_from_ellipsoid_with_params(&WGS84, &projstring::parse(s).unwrap())
         }
 
         assert!(from_projstring("+a=-0.").is_err());

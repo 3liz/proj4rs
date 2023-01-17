@@ -13,15 +13,17 @@ pub enum Error {
     #[error("Missing projection name")]
     MissingProjectionError,
     #[error("Unrecognized datum")]
-    InvalidDatumError,
+    InvalidDatum,
     #[error("Unrecognized ellipsoid")]
-    InvalidEllipsoidError,
+    InvalidEllipsoid,
     #[error("{0}")]
     InvalidParameterValue(&'static str),
     #[error("Latitude out of range")]
     LatitudeOutOfRange,
     #[error("NAD grid not available")]
     NoNADGridAvailable,
+    #[error("Invalid 'towgs84' string")]
+    InvalidToWGS84String,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

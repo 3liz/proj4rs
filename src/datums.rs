@@ -5,7 +5,7 @@ use crate::ellipsoids::{constants as ellps, EllipsoidDefn};
 
 /// Shift method is either
 /// defined by Helmert transforms or nadgrids
-pub enum ShiftDefn {
+pub enum DatumParamDefn {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),
     ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),
@@ -14,7 +14,7 @@ pub enum ShiftDefn {
 
 pub struct DatumDefn {
     pub id: &'static str,
-    pub shift: ShiftDefn,
+    pub params: DatumParamDefn,
     pub ellps: &'static EllipsoidDefn,
     pub comment: &'static str,
 }
@@ -25,27 +25,27 @@ pub mod constants {
 
     macro_rules! nadgrids {
         ($grids:expr) => {
-            ShiftDefn::NadGrids($grids)
+            DatumParamDefn::NadGrids($grids)
         };
     }
 
     macro_rules! towgs84 {
         ($x:expr, $y:expr, $z:expr) => {
-            ShiftDefn::ToWGS84_3($x, $y, $z)
+            DatumParamDefn::ToWGS84_3($x, $y, $z)
         };
         ($x:expr, $y:expr, $z:expr, $rx:expr, $ry:expr, $rz:expr, $s:expr) => {
-            ShiftDefn::ToWGS84_7($x, $y, $z, $rx, $ry, $rz, $s)
+            DatumParamDefn::ToWGS84_7($x, $y, $z, $rx, $ry, $rz, $s)
         };
         () => {
-            ShiftDefn::ToWGS84_0
+            DatumParamDefn::ToWGS84_0
         };
     }
 
     macro_rules! datum {
-        ($name:ident, $id:expr, $shift:expr, $ellps:ident, $c:expr $(,)?) => {
+        ($name:ident, $id:expr, $params:expr, $ellps:ident, $c:expr $(,)?) => {
             pub(crate) const $name: DatumDefn = DatumDefn {
                 id: $id,
-                shift: $shift,
+                params: $params,
                 ellps: &ellps::$ellps,
                 comment: $c,
             };

@@ -1,20 +1,30 @@
 //!
 //! Datum transformation
 //!
+//! As with proj4/5 the datum transformation use WGS84 as hub for
+//! converting data from one crs to another
 //!
+//! Datum shifts are carried out with the following steps:
+//!  
+//!    1. Convert (latitude, longitude, ellipsoidal height) to
+//!       3D geocentric cartesian coordinates (X, Y, Z)
+//!    2. Transform the (X, Y, Z) coordinates to the new datum, using a
+//!       7 parameter Helmert transformation.
+//!    3. Convert (X, Y, Z) back to (latitude, longitude, ellipsoidal height)
+//!
+//! Actually, the step 2 use WGS84 as conversion *hub* wich leads to apply
+//! 2 Helmert transformations.
+//!
+//! With natgrids the steps are sligtly differents:
+//!    1. Apply nadgrid transformation with source datum
+//!    2. Convert to geocentric with source ellipsoid parameters
+//!    3. Convert to geodetic with dest ellipsoid.
+//!    4. Apply inverse nadgrids transformation vith destination datum
+//!
+use crate::datum_params::DatumParams;
 use crate::ellps::Ellipsoid;
-use crate::errors::{Error, Result};
-use crate::nadgrids::{NadgridProvider, NadgridShift, NullGridProvider};
-
-/// Datum parameters
-#[derive(Clone, Debug, PartialEq)]
-pub enum DatumParams<G: NadgridShift> {
-    ToWGS84_0,
-    ToWGS84_3(f64, f64, f64),
-    ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),
-    NadGrids(G),
-    NoDatum,
-}
+use crate::errors::Result;
+use crate::nadgrids::NadgridShift;
 
 pub mod utils {
     //!
@@ -77,7 +87,35 @@ pub mod utils {
 
     /// Convert geocentric coordinates to geodetic coordinates
     ///
-    ///  This function compute the inverse of [`geodetic_to_geocentric`]
+    ///  ### Reference...
+    ///
+    /// Wenzel, H.-G.(1985): Hochauflösende Kugelfunktionsmodelle für
+    /// das Gravitationspotential der Erde. Wiss. Arb. Univ. Hannover
+    /// Nr. 137, p. 130-131.
+    ///
+    /// Programmed by GGA- Leibniz-Institute of Applied Geophysics
+    ///               Stilleweg 2
+    ///               D-30655 Hannover
+    ///              Federal Republic of Germany
+    ///              Internet: www.gga-hannover.de
+    ///
+    /// Hannover, March 1999, April 2004.
+    /// see also: comments in statements
+    ///
+    /// remarks:
+    /// Mathematically exact and because of symmetry of rotation-ellipsoid,
+    /// each point (X,Y,Z) has at least two solutions (Latitude1,Longitude1,Height1) and
+    /// (Latitude2,Longitude2,Height2). Is point=(0.,0.,Z) (P=0.), so you get even
+    /// four solutions,»  every two symmetrical to the semi-minor axis.
+    /// Here Height1 and Height2 have at least a difference in order of
+    /// radius of curvature (e.g. (0,0,b)=> (90.,0.,0.) or (-90.,0.,-2b);
+    /// (a+100.)*(sqrt(2.)/2.,sqrt(2.)/2.,0.) => (0.,45.,100.) or
+    /// (0.,225.,-(2a+100.))).
+    /// The algorithm always computes (Latitude,Longitude) with smallest |Height|.
+    /// For normal computations, that means |Height|<10000.m, algorithm normally
+    /// converges after to 2-3 steps!!!
+    /// But if |Height| has the amount of length of ellipsoid's axis
+    /// (e.g. -6300000.m),»   algorithm needs about 15 steps.
     pub fn geocentric_to_geodetic(
         x: f64,
         y: f64,
@@ -118,17 +156,23 @@ pub mod utils {
         let mut cphi0 = st * (1.0 - es) * rx;
         let mut sphi0 = ct * rx;
         let (mut rk, mut rn, mut cphi, mut sphi, mut sdphi, mut height);
+
         // loop to find sin(Latitude) resp. Latitude
         // until |sin(Latitude(iter)-Latitude(iter-1))| < genau
 
-        // This lead to compiler error about unitialized variables
-        // for _ in 0..MAXITER {
+        // Note: using `for _ in 0..MAXITER { ... }` lead to compiler error
+        // about unitialized variables
         let mut iter = 0;
         loop {
             iter += 1;
             rn = a / (1.0 - es * sphi0 * sphi0).sqrt();
             // ellipsoidal (geodetic) height
             height = p * cphi0 + z * sphi0 - rn * (1.0 - es * sphi0 * sphi0);
+
+            //  avoid zero division
+            if (rn + height) == 0. {
+                return Ok((lon, 0., height));
+            }
 
             rk = es * rn / (rn + height);
             rx = 1.0 / (1.0 - rk * (2.0 - rk) * st * st).sqrt();
@@ -148,7 +192,7 @@ pub mod utils {
         }
 
         // ellipsoidal (geodetic) latitude
-        Ok((lon, (sphi / cphi.abs()).atan(), height))
+        Ok((lon, sphi.atan2(cphi.abs()), height))
     }
 }
 
@@ -156,17 +200,26 @@ use utils::*;
 use DatumParams::*;
 
 /// Hold datum Informations
-pub struct Datum<G: NadgridShift> {
-    params: DatumParams<G>,
+#[derive(Default, Debug)]
+pub struct Datum<GS: NadgridShift> {
+    params: DatumParams<GS>,
     a: f64,
     b: f64,
     es: f64,
 }
 
-impl<G: NadgridShift> Datum<G> {
-    pub fn new(ellps: &Ellipsoid, params: DatumParams<G>) -> Self {
+impl<GS: NadgridShift> Datum<GS> {
+    pub fn new(ellps: &Ellipsoid, params: DatumParams<GS>) -> Self {
         Self {
-            params,
+            // check for WGS84/GRS80
+            params: if params == ToWGS84_3(0., 0., 0.)
+                && ellps.a == 6378137.0
+                && (ellps.es - 0.006694379990).abs() < 0.000000000050
+            {
+                ToWGS84_0
+            } else {
+                params
+            },
             a: ellps.a,
             b: ellps.b,
             es: ellps.es,
@@ -227,6 +280,10 @@ impl<G: NadgridShift> Datum<G> {
         matches!(self.params, NoDatum)
     }
 
+    pub fn has_wgs84_params(&self) -> bool {
+        matches!(self.params, ToWGS84_0 | ToWGS84_3(..) | ToWGS84_7(..))
+    }
+
     pub fn is_identical_to(&self, other: &Self) -> bool {
         // the tolerance for es is to ensure that GRS80 and WGS84
         // are considered identical
@@ -266,7 +323,10 @@ impl<G: NadgridShift> DatumTransform<G> {
         let identity = src.params == NoDatum
             || dst.params == NoDatum
             || src.is_identical_to(&dst)
-            || src.a == dst.a && src.es == dst.es && src.use_nadgrids() && dst.use_nadgrids();
+            || src.a == dst.a
+                && src.es == dst.es
+                && !src.has_wgs84_params()
+                && !dst.has_wgs84_params();
 
         Self { src, dst, identity }
     }
