@@ -227,7 +227,8 @@ impl<GS: NadgridShift> Datum<GS> {
     }
 
     /// Convert from geodetic coordinates to wgs84/geocentric
-    pub fn towgs84(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+    #[inline(always)]
+    fn towgs84(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         match &self.params {
             ToWGS84_0 => geodetic_to_geocentric(x, y, z, self.a, self.es),
             ToWGS84_3(dx, dy, dz) => geodetic_to_geocentric(x, y, z, self.a, self.es)
@@ -249,7 +250,8 @@ impl<GS: NadgridShift> Datum<GS> {
     }
 
     /// Convert from geocentric/wgs84 to geodetic coordinates
-    pub fn fromwgs84(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+    #[inline(always)]
+    fn fromwgs84(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         match &self.params {
             ToWGS84_0 => geocentric_to_geodetic(x, y, z, self.a, self.es, self.b),
             ToWGS84_3(dx, dy, dz) => {
@@ -299,9 +301,9 @@ const SRS_WGS84_ES: f64 = 0.0066943799901413165;
 
 /// Datum transform
 pub struct DatumTransform<G: NadgridShift> {
-    src: Datum<G>,
-    dst: Datum<G>,
-    identity: bool,
+    pub src: Datum<G>,
+    pub dst: Datum<G>,
+    pub identity: bool,
 }
 
 impl<G: NadgridShift> DatumTransform<G> {
@@ -331,6 +333,7 @@ impl<G: NadgridShift> DatumTransform<G> {
         Self { src, dst, identity }
     }
 
+    #[inline(always)]
     pub fn transform(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         if self.identity {
             Ok((x, y, z))

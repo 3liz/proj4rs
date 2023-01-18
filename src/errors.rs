@@ -24,6 +24,8 @@ pub enum Error {
     NoNADGridAvailable,
     #[error("Invalid 'towgs84' string")]
     InvalidToWGS84String,
+    #[error("Invalid axis")]
+    InvalidAxis,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

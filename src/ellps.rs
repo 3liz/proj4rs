@@ -48,7 +48,30 @@ const RA6: f64 = 67. / 3024.;
 const RV4: f64 = 5. / 72.;
 const RV6: f64 = 55. / 1296.;
 
-#[derive(Default, Clone, Debug)]
+
+const TOK_rf: &str = "rf";
+const TOK_f: &str = "f";
+const TOK_es: &str = "es";
+const TOK_e: &str = "e";
+const TOK_b: &str = "b";
+
+const TOK_R_A: &str = "R_A";
+const TOK_R_V: &str = "R_V";
+const TOK_R_a: &str = "R_a";
+const TOK_R_g: &str = "R_g";
+const TOK_R_h: &str = "R_h";
+
+/// A shape parameter
+#[allow(non_camel_case_types)]
+enum Shape {
+    SP_rf(f64),
+    SP_f(f64),
+    SP_es(f64),
+    SP_e(f64),
+    SP_b(f64),
+}
+
+#[derive(Clone, Debug)]
 pub struct Ellipsoid {
     // The linear parameters
     pub a: f64,  // semimajor axis (radius if eccentricity==0)
@@ -85,85 +108,53 @@ pub struct Ellipsoid {
                  */
 }
 
-const TOK_rf: &str = "rf";
-const TOK_f: &str = "f";
-const TOK_es: &str = "es";
-const TOK_e: &str = "e";
-const TOK_b: &str = "b";
-
-const TOK_R_A: &str = "R_A";
-const TOK_R_V: &str = "R_V";
-const TOK_R_a: &str = "R_a";
-const TOK_R_g: &str = "R_g";
-const TOK_R_h: &str = "R_h";
-
-/// A shape parameter
-#[allow(non_camel_case_types)]
-enum Shape {
-    SP_rf(f64),
-    SP_f(f64),
-    SP_es(f64),
-    SP_e(f64),
-    SP_b(f64),
-}
-
 use Shape::*;
 
 impl Ellipsoid {
-    /// Create sphere parameters
-    #[inline]
+    /// Create sphere
     pub fn sphere(radius: f64) -> Result<Self> {
-        Self::default()._sphere(radius)
-    }
-
-    fn _sphere(mut self, radius: f64) -> Result<Self> {
         if !(radius.is_normal() && radius > 0.) {
             return Err(Error::InvalidParameterValue("Invalid radius"));
         }
-        self.a = radius;
-        self.b = self.a;
-        self.rf = f64::INFINITY;
-        Ok(self)
+        Ok(Self {
+            a: radius,
+            b: radius,
+            ra: 1. / radius,
+            rb: 1. / radius,
+            e: 0.,
+            es: 0.,
+            f: 0.,
+            rf: f64::INFINITY,
+        })
     }
 
-    /// Create ellipsoid from definition
-    #[inline]
     pub fn try_from_ellipsoid(defn: &EllipsoidDefn) -> Result<Self> {
-        Self::default()._from_ellipsoid(defn)
-    }
-
-    fn _from_ellipsoid(mut self, defn: &EllipsoidDefn) -> Result<Self> {
-        self.a = defn.a;
-        self.calc_ellipsoid_params(match defn.rf_or_b {
-            FlatteningParam::MinorAxis(b) => SP_b(b),
-            FlatteningParam::InvFlat(rf) => SP_rf(rf),
-        })?;
-        Ok(self)
+        Self::calc_ellipsoid_params(
+            defn.a,
+            match defn.rf_or_b {
+                FlatteningParam::MinorAxis(b) => SP_b(b),
+                FlatteningParam::InvFlat(rf) => SP_rf(rf),
+            },
+        )
     }
 
     /// Create ellipsoid from definition and parameters
-    #[inline]
     pub fn try_from_ellipsoid_with_params(
         defn: &EllipsoidDefn,
         params: &ParamList,
     ) -> Result<Self> {
-        Self::default()._ellipsoid_with_params(defn, params)
-    }
-
-    fn _ellipsoid_with_params(mut self, defn: &EllipsoidDefn, params: &ParamList) -> Result<Self> {
-        self.a = defn.a;
-        // Override "a"
-        if let Some(p) = params.get("a") {
-            self.a = p.try_into()?;
-        }
+        // Override "a" ?
+        let a = if let Some(p) = params.get("a") {
+            p.try_into()?
+        } else {
+            defn.a
+        };
         // Get the shape parameter
         let sp = Self::find_shape_parameter(params).unwrap_or(Ok(match defn.rf_or_b {
             FlatteningParam::MinorAxis(b) => SP_b(b),
             FlatteningParam::InvFlat(rf) => SP_rf(rf),
         }))?;
-        self.calc_ellipsoid_params(sp)?;
-        self._spherification(params)?;
-        Ok(self)
+        Self::calc_ellipsoid_params(a, sp).and_then(|ellps| ellps.spherification(params))
     }
 
     fn find_shape_parameter(params: &ParamList) -> Option<Result<Shape>> {
@@ -183,100 +174,103 @@ impl Ellipsoid {
         })
     }
 
-    /// Calculate parameters
-    fn calc_ellipsoid_params(&mut self, sp: Shape) -> Result<()> {
-        if self.a <= 0. {
+    /// Calculate parameters and return a new ellipsoid
+    /// This is the true constructor
+    fn calc_ellipsoid_params(a: f64, sp: Shape) -> Result<Self> {
+        if a <= 0. {
             return Err(Error::InvalidParameterValue("Invalid major axis"));
         }
 
-        let a = self.a;
-
+        let (mut f, mut rf, mut es, mut e, mut b);
+        // We could have return directly a tuple from the match expression
+        // but that makes the code less readable and the compiler will check
+        // uninitialized variables anyway.
         match sp {
-            SP_rf(rf) => {
-                if rf <= 1. {
-                    return Err(Error::InvalidParameterValue("Invalid inverse flattening"));
+            SP_rf(p_rf) => {
+                if p_rf <= 1. {
+                    return Err(Error::InvalidParameterValue(
+                        "Inverse flattening lower than 1.",
+                    ));
                 }
-                let f = 1. / rf;
-                self.f = f;
-                self.rf = rf;
-                self.es = 2. * f - f * f;
-                self.e = self.es.sqrt();
-                self.b = (1.0 - f) * a;
+                rf = p_rf;
+                f = 1. / rf;
+                es = 2. * f - f * f;
+                e = es.sqrt();
+                b = (1.0 - f) * a;
             }
-            SP_f(f) => {
-                if !(0. ..1.).contains(&f) {
-                    return Err(Error::InvalidParameterValue("Invalid flattening"));
+            SP_f(p_f) => {
+                if !(0. ..1.).contains(&p_f) {
+                    return Err(Error::InvalidParameterValue("Flattening not in [0..1]"));
                 }
-                self.f = f;
-                self.es = 2. * f - f * f;
-                self.e = self.es.sqrt();
-                self.b = (1.0 - f) * a;
-                if f > 0. {
-                    self.rf = 1. / f;
-                }
+                f = p_f;
+                es = 2. * f - f * f;
+                e = es.sqrt();
+                b = (1.0 - f) * a;
+                rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
-            SP_es(es) => {
-                if !(0. ..1.).contains(&es) {
-                    return Err(Error::InvalidParameterValue("Invalid eccentricity"));
+            SP_es(p_es) => {
+                if !(0. ..1.).contains(&p_es) {
+                    return Err(Error::InvalidParameterValue(
+                        "Square eccentricity not in [0..1]",
+                    ));
                 }
-                self.es = es;
-                self.e = es.sqrt();
-                self.f = 1. - self.e.asin().cos();
-                self.b = (1.0 - self.f) * a;
-                if self.f > 0. {
-                    self.rf = 1. / self.f;
-                }
+                es = p_es;
+                e = es.sqrt();
+                f = 1. - e.asin().cos();
+                b = (1.0 - f) * a;
+                rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
-            SP_e(e) => {
-                if !(0. ..1.).contains(&e) {
-                    return Err(Error::InvalidParameterValue("Invalid eccentricity"));
+            SP_e(p_e) => {
+                if !(0. ..1.).contains(&p_e) {
+                    return Err(Error::InvalidParameterValue("Eccentricity not in [0..1]"));
                 }
-                self.es = e * e;
-                self.e = e;
-                self.f = 1. - self.e.asin().cos();
-                self.b = (1.0 - self.f) * a;
-                if self.f > 0. {
-                    self.rf = 1. / self.f;
-                }
+                e = p_e;
+                es = e * e;
+                f = 1. - e.asin().cos();
+                b = (1.0 - f) * a;
+                rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
-            SP_b(b) => {
-                if !(b >= 0. && b < a) {
+            SP_b(p_b) => {
+                if !(p_b >= 0. && p_b <= a) {
                     return Err(Error::InvalidParameterValue("Invalid minor axis"));
                 }
+                b = p_b;
                 let a2 = a * a;
                 let b2 = b * b;
-                self.b = b;
-                self.es = (a2 - b2) / a2;
-                self.e = self.es.sqrt();
-                self.f = (a - b) / b;
-                if self.f > 0. {
-                    self.rf = 1. / self.f;
-                }
+                es = (a2 - b2) / a2;
+                e = es.sqrt();
+                f = (a - b) / b;
+                rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
         }
 
-        let b = self.b;
         if (a - b).abs() < EPSLN {
-            self.b = a;
-            self.es = 0.;
-            self.e = 0.;
-            self.f = 0.;
-            self.rf = f64::INFINITY;
+            b = a;
+            es = 0.;
+            e = 0.;
+            f = 0.;
+            rf = f64::INFINITY;
         }
 
-        self.ra = 1. / a;
-        self.rb = 1. / b;
-
-        Ok(())
+        Ok(Self {
+            a,
+            b,
+            ra: 1. / a,
+            rb: 1. / b,
+            e,
+            es,
+            f,
+            rf,
+        })
     }
 
-    fn _spherification(&mut self, params: &ParamList) -> Result<()> {
+    fn spherification(self, params: &ParamList) -> Result<Self> {
         // Spherification parameter
         const SPHERE_TOKENS: &[&str] = &[TOK_R_A, TOK_R_V, TOK_R_a, TOK_R_g, TOK_R_h];
         match SPHERE_TOKENS.iter().try_for_each(|tok| {
             if params.get(tok).is_some() {
                 let es = self.es;
-                self.a = match *tok {
+                let a = match *tok {
                     // a sphere with same area as ellipsoid
                     TOK_R_A => 1. - es * (SIXTH + es * (RA4 + es * RA6)),
                     // a sphere with same volume as ellipsoid
@@ -290,13 +284,13 @@ impl Ellipsoid {
                     _ => unreachable!(),
                 };
                 // Update ellipsoid parameters
-                ControlFlow::Break(self.calc_ellipsoid_params(SP_es(0.)))
+                ControlFlow::Break(Self::calc_ellipsoid_params(a, SP_es(0.)))
             } else {
                 ControlFlow::Continue(())
             }
         }) {
             ControlFlow::Break(rv) => rv,
-            _ => Ok(()),
+            _ => Ok(self),
         }
     }
 }

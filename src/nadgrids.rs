@@ -15,7 +15,7 @@ pub trait NadgridShift: PartialEq + Sized {
 //
 use std::ops::ControlFlow;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct NullGridShift {}
 
 impl NadgridShift for NullGridShift {

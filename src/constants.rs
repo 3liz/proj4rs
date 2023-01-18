@@ -12,4 +12,6 @@ pub use std::f64::consts::{FRAC_PI_2, PI, TAU};
 // Was defined in proj4js for preventing divergence
 // of Mollweied algorithm
 pub const EPSLN: f64 = 1.0e-10;
-pub const SEC_TO_RAD: f64 = 4.84813681109535993589914102357e-6;
+// XXX float has excessive precision
+//pub const SEC_TO_RAD: f64 = 4.84813681109535993589914102357e-6;
+pub const SEC_TO_RAD: f64 = 4.848_136_811_095_36e-6;

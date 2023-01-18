@@ -21,3 +21,7 @@ pub(crate) mod units;
 
 pub mod errors;
 pub mod proj;
+
+// Include wasm entry point for wasm32-unknown-unknown
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+mod wasm;
