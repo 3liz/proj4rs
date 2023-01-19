@@ -47,10 +47,7 @@ impl<'a> Parameter<'a> {
     {
         match self.value.map(F::from_str) {
             None => Err(Error::NoValueParameter(self.name.into())),
-            Some(result) => result.map_err(|err| Error::ParameterValueError {
-                name: self.name.into(),
-                reason: format!("{:?}", err),
-            }),
+            Some(result) => result.map_err(|err| Error::ParameterValueError(self.name.into())),
         }
     }
 }

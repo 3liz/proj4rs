@@ -8,8 +8,8 @@ pub enum Error {
     InputStringError(&'static str),
     #[error("No value for parameter '{0}'")]
     NoValueParameter(String),
-    #[error("Cannot retrieve value for parameter '{name}': {reason}")]
-    ParameterValueError { name: String, reason: String },
+    #[error("Cannot retrieve value for parameter '{0}'")]
+    ParameterValueError(String),
     #[error("Missing projection name")]
     MissingProjectionError,
     #[error("Unrecognized datum")]

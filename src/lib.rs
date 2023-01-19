@@ -13,10 +13,12 @@ pub(crate) mod datum_transform;
 pub(crate) mod datums;
 pub(crate) mod ellipsoids;
 pub(crate) mod ellps;
+pub(crate) mod geocent;
 pub(crate) mod nadgrids;
 pub(crate) mod parameters;
 pub(crate) mod prime_meridians;
 pub(crate) mod projstring;
+pub(crate) mod transform;
 pub(crate) mod units;
 
 pub mod errors;

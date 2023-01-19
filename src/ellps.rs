@@ -48,7 +48,6 @@ const RA6: f64 = 67. / 3024.;
 const RV4: f64 = 5. / 72.;
 const RV6: f64 = 55. / 1296.;
 
-
 const TOK_rf: &str = "rf";
 const TOK_f: &str = "f";
 const TOK_es: &str = "es";

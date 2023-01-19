@@ -16,18 +16,22 @@ use crate::{ellipsoids, prime_meridians, projstring, units};
 //
 //============================
 
+pub type Axis = [u8; 3];
+
+const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
+
 #[derive(Debug)]
-pub struct Projection<GS: NadgridShift = NullGridShift> {
-    pm: f64,
-    ellps: Ellipsoid,
-    datum: Datum<GS>,
-    axis: [u8; 3],
-    to_meter: f64,
-    is_geocent: bool,
-    is_latlong: bool,
+pub struct Projection<N: NadgridShift = NullGridShift> {
+    pub(crate) pm: f64,
+    pub(crate) ellps: Ellipsoid,
+    pub(crate) datum: Datum<N>,
+    pub(crate) axis: Axis,
+    pub(crate) to_meter: f64,
+    pub(crate) is_geocent: bool,
+    pub(crate) is_latlong: bool,
 }
 
-impl<GS: NadgridShift> Projection<GS> {
+impl<N: NadgridShift> Projection<N> {
     // ----------------
     // Datum definition
     // ----------------
@@ -60,7 +64,7 @@ impl<GS: NadgridShift> Projection<GS> {
     // -----------------
     // Datum parameters
     // ----------------
-    fn datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams<GS>> {
+    fn datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams<N>> {
         // Precedence order is 'nadgrids', 'towgs84', 'datum'
         if let Some(p) = params.get("nadgrids") {
             // Nadgrids
@@ -100,7 +104,7 @@ impl<GS: NadgridShift> Projection<GS> {
     // -----------------
     // Axis
     // ----------------
-    fn axis(params: &ParamList) -> Result<[u8; 3]> {
+    fn axis(params: &ParamList) -> Result<Axis> {
         if let Some(p) = params.get("axis") {
             let axis_arg: &str = p.try_into()?;
             if axis_arg.len() != 3 {
@@ -108,6 +112,8 @@ impl<GS: NadgridShift> Projection<GS> {
             } else {
                 let mut axis = [0u8, 0u8, 0u8];
                 // Find Easting/Westing
+                // This ensure that no token is repeated unless
+                // one of the `find` will fail.
                 let ew = axis_arg.find(['e', 'w']).ok_or(Error::InvalidAxis)?;
                 let ns = axis_arg.find(['n', 's']).ok_or(Error::InvalidAxis)?;
                 let ud = axis_arg.find(['u', 'd']).ok_or(Error::InvalidAxis)?;
@@ -117,8 +123,13 @@ impl<GS: NadgridShift> Projection<GS> {
                 Ok(axis)
             }
         } else {
-            Ok([b'e', b'n', b'u'])
+            Ok(NORMALIZED_AXIS)
         }
+    }
+
+    /// Return true if the axis are normalized
+    pub fn normalized_axis(&self) -> bool {
+        return self.axis == NORMALIZED_AXIS;
     }
 
     // -----------------
