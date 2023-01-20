@@ -12,6 +12,9 @@ thiserror = "1.0"
 
 [dev-dependencies]
 
+[profile.release]
+lto = true
+
 [lib]
 crate_type = ["cdylib", "rlib"]
 

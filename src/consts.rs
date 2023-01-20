@@ -7,7 +7,7 @@
 
 // Note that TAU is 2*PI
 // see https://doc.rust-lang.org/std/f64/consts/constant.TAU.html
-pub(crate) use std::f64::consts::{FRAC_PI_2, PI, TAU};
+pub(crate) use std::f64::consts::{FRAC_PI_2, FRAC_PI_4, PI, TAU};
 
 // Was defined in proj4js for preventing divergence
 // of Mollweied algorithm

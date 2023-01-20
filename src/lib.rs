@@ -14,18 +14,22 @@ mod datums;
 mod ellipsoids;
 mod ellps;
 mod geocent;
+mod math;
 mod nadgrids;
 mod parameters;
 mod prime_meridians;
 mod projections;
 mod projstring;
 mod units;
-mod utils;
 
 pub mod adaptors;
 pub mod errors;
 pub mod proj;
 pub mod transform;
+
+// Reexport
+pub use proj::Proj; 
+pub use parameters::{Parameter, ParamList};
 
 // Include wasm entry point for wasm32-unknown-unknown
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]

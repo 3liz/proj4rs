@@ -30,7 +30,7 @@ impl DatumParams {
 
         #[inline]
         fn parse(v: Option<&str>) -> Result<f64> {
-            v.unwrap()
+            v.unwrap_or("")
                 .trim()
                 .parse::<f64>()
                 .map(|v| v * SEC_TO_RAD)
@@ -57,7 +57,7 @@ impl DatumParams {
     }
 
     pub fn from_nagrid_str(nadgrids: &str) -> Result<Self> {
-        NadGrids::new_grid_transform(nadgrids).map(|g| Self::NadGrids(g))
+        NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
     }
 
     pub fn use_nadgrids(&self) -> bool {

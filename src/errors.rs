@@ -34,10 +34,14 @@ pub enum Error {
     NanCoordinateValue,
     #[error("Coordinate out of range")]
     CoordinateOutOfRange,
+    #[error("Projection not found")]
+    ProjectionNotFound,
     #[error("No forward projection defined for dest projection")]
-    NoDstForwardProjectionDefined,
+    NoForwardProjectionDefined,
     #[error("No inverse projection defined for src projection")]
-    NoSrcInverseProjectionDefined,
+    NoInverseProjectionDefined,
+    #[error("ProjErrConicLatEqual")]
+    ProjErrConicLatEqual,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

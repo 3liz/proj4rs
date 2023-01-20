@@ -15,19 +15,6 @@
 //! <word> ::= [^\s]+
 //! ```
 //!
-//! ## Geodetic transformations parameters
-//!
-//! see <https://proj.org/usage/transformation.html#geodetic-transformation>
-//! +datum    : Datum name
-//! +to_meter : Multiplier to convert map units to 1.0m
-//! +towgs84  : 3 or 7 term datum transform parameters
-//! +nadgrids : Filename of NTv2 grid file to use for datum transforms
-//!
-//! ## Per projections parameters  
-//!
-//! These parameters depends on the projection used.
-//! One must refer to the projection definition.
-//!
 use crate::errors::{Error, Result};
 use crate::parameters::{ParamList, Parameter};
 
@@ -77,7 +64,7 @@ mod tokenizer {
             // if not, continue with the next part.
             // Inner quotes not separated by a whitespace is left
             // as part of the token.
-            let s = s.split_once('\"').unwrap().1;
+            let s = unsafe { s.split_once('\"').unwrap_unchecked().1 };
             match s
                 .split_inclusive(|c: char| c.is_whitespace())
                 .try_fold(0usize, |len, s| {
@@ -105,7 +92,7 @@ mod tokenizer {
         if s.is_empty() {
             Ok(("", None, ""))
         } else if s.starts_with('+') {
-            let (_, rest) = s.split_once('+').unwrap(); // Swallow '+'
+            let (_, rest) = unsafe { s.split_once('+').unwrap_unchecked() }; // Swallow '+'
 
             let (name, rest) = parse_identifier(rest)?;
             if name.is_empty() {

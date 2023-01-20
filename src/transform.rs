@@ -7,8 +7,8 @@ use crate::consts::{EPS_12, FRAC_PI_2};
 use crate::datum_transform::Datum;
 use crate::errors::{Error, Result};
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
+use crate::math::adjlon;
 use crate::proj::{Axis, Proj};
-use crate::utils::adjlon;
 ///
 /// Transform trait
 ///
@@ -72,12 +72,12 @@ pub fn transform<P>(src: &Proj, dst: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    if src.inverse.is_none() {
-        return Err(Error::NoSrcInverseProjectionDefined);
+    if !src.has_inverse() {
+        return Err(Error::NoInverseProjectionDefined);
     }
 
-    if dst.forward.is_none() {
-        return Err(Error::NoDstForwardProjectionDefined);
+    if !dst.has_forward() {
+        return Err(Error::NoForwardProjectionDefined);
     }
 
     adjust_axes(src, Inverse, points)?;
@@ -133,10 +133,10 @@ where
         return Ok(());
     }
 
-    let (lam0, x0, y0, ra, to_meter, one_es) =
-        (p.lam0, p.x0, p.y0, p.ellps.ra, p.ellps.one_es, p.to_meter);
+    let (lam0, x0, y0) = (p.lam0(), p.x0(), p.y0());
+    let (ra, one_es, to_meter) = (p.ellps.ra, p.ellps.one_es, p.to_meter);
 
-    let pj_inv = p.inverse.unwrap();
+    let pj_inv = p.inverse().ok_or(Error::NoInverseProjectionDefined)?;
 
     // Input points are cartesians
     // proj4 source: pj_inv.c
@@ -178,10 +178,10 @@ where
         return Ok(());
     }
 
-    let (lam0, x0, y0, a, to_meter, rone_es) =
-        (p.lam0, p.x0, p.y0, p.ellps.a, p.ellps.rone_es, p.to_meter);
+    let (lam0, x0, y0) = (p.lam0(), p.x0(), p.y0());
+    let (a, rone_es, to_meter) = (p.ellps.a, p.ellps.rone_es, p.to_meter);
 
-    let pj_fwd = p.forward.unwrap();
+    let pj_fwd = p.forward().ok_or(Error::NoForwardProjectionDefined)?;
     let fr_meter = 1. / p.to_meter;
 
     // Input points are geographic
@@ -273,7 +273,7 @@ fn prime_meridian<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    let mut pm = p.pm;
+    let mut pm = p.from_greenwich;
     if pm == 0. || p.is_geocent || p.is_latlong {
         Ok(())
     } else {

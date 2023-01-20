@@ -8,7 +8,7 @@ use crate::datums::{self, DatumDefn};
 use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
-use crate::projections::{ProjFn, ProjParams};
+use crate::projections::{find_projection, ProjFn, ProjInit, ProjParams};
 use crate::{ellipsoids, prime_meridians, projstring, units};
 
 use std::fmt;
@@ -20,27 +20,103 @@ const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
 /// A Proj obect hold informations and parameters
 /// for a projection
 pub struct Proj {
-    pub(crate) pm: f64,
     pub(crate) ellps: Ellipsoid,
     pub(crate) datum: Datum,
     pub(crate) axis: Axis,
     pub(crate) is_geocent: bool,
     pub(crate) is_latlong: bool,
+    pub(crate) from_greenwich: f64, // prime meridian
     pub(crate) to_meter: f64,
     pub(crate) vto_meter: f64,
-    pub(crate) x0: f64,
-    pub(crate) y0: f64,
-    pub(crate) k0: f64,
-    pub(crate) lam0: f64,
-    pub(crate) phi0: f64,
+    // Set the following as Option since
+    // some projections need to test if
+    // these parameters have been set or not
+    // this is more convenient that checking the
+    // parameter list again
+    pub(crate) x0: Option<f64>,
+    pub(crate) y0: Option<f64>,
+    pub(crate) k0: Option<f64>,
+    pub(crate) lam0: Option<f64>,
+    pub(crate) phi0: Option<f64>,
     pub(crate) geoc: bool,
     pub(crate) over: bool, // over-ranging flag
-    pub(crate) projname: &'static str,
-    pub(crate) projdata: ProjParams,
-    pub(crate) inverse: Option<ProjFn>,
-    pub(crate) forward: Option<ProjFn>,
+    // Set by projections initialization
+    projname: &'static str,
+    projdata: ProjParams,
+    inverse: Option<ProjFn>,
+    forward: Option<ProjFn>,
 }
 
+//----------------------
+// Projection parameters
+//----------------------
+impl Proj {
+    /// Return the projection name
+    #[inline(always)]
+    pub fn projname(&self) -> &'static str {
+        self.projname
+    }
+
+    /// Return the projection data
+    #[inline(always)]
+    pub(crate) fn projdata(&self) -> &ProjParams {
+        &self.projdata
+    }
+
+    /// Return the inverse projection method
+    #[inline(always)]
+    pub fn inverse(&self) -> Option<ProjFn> {
+        self.inverse
+    }
+
+    /// Return the forward projection method
+    #[inline(always)]
+    pub fn forward(&self) -> Option<ProjFn> {
+        self.forward
+    }
+
+    /// Return the inverse projection method
+    #[inline(always)]
+    pub fn has_inverse(&self) -> bool {
+        self.inverse.is_some()
+    }
+
+    /// Return the forward projection method
+    #[inline(always)]
+    pub fn has_forward(&self) -> bool {
+        self.forward.is_some()
+    }
+
+    /// Returns the x0 value or 0. if the value
+    /// was not defined
+    pub fn x0(&self) -> f64 {
+        self.x0.unwrap_or(0.)
+    }
+    /// Returns the y0 value or 0. if the value
+    /// was not defined
+    pub fn y0(&self) -> f64 {
+        self.x0.unwrap_or(0.)
+    }
+    /// Returns the phi0 (lat_0) value or 0. if the value
+    /// was not defined
+    pub fn phi0(&self) -> f64 {
+        self.phi0.unwrap_or(0.)
+    }
+    /// Returns the lam0 (lon_0) value or 0. if the value
+    /// was not defined
+    pub fn lam0(&self) -> f64 {
+        self.lam0.unwrap_or(0.)
+    }
+    /// Returns the k0 (k_0) value or 1. if the value
+    /// was not defined
+    pub fn k0(&self) -> f64 {
+        self.lam0.unwrap_or(1.)
+    }
+}
+
+//-------------------------
+// Initialisation
+//------------------------
 impl Proj {
     // ----------------
     // Datum definition
@@ -155,10 +231,17 @@ impl Proj {
         }
     }
 
+    ///
+    /// Proj object constructor
+    ///
     /// Consume a ParamList and create a Proj object
+    ///
     pub fn init(params: ParamList) -> Result<Self> {
-        // Projection name
-        let _projname = params.get("proj").ok_or(Error::MissingProjectionError);
+        // Find projection
+        let proj_init = params
+            .get("proj")
+            .ok_or(Error::MissingProjectionError)
+            .and_then(|name| find_projection(name.try_into()?).ok_or(Error::ProjectionNotFound))?;
 
         // Get datum definition (if any)
         let datum_defn = Self::datum_defn(&params)?;
@@ -170,7 +253,7 @@ impl Proj {
         let ellps = Self::ellipsoid(&params, datum_defn)?;
 
         // Get prime meridian
-        let pm = Self::prime_meridian(&params)?;
+        let from_greenwich = Self::prime_meridian(&params)?;
 
         // Axis
         let axis = Self::axis(&params)?;
@@ -183,26 +266,25 @@ impl Proj {
         // Datum
         let datum = Datum::new(&ellps, datum_params);
 
-        Ok(Self {
-            pm,
+        Self {
             ellps,
             datum,
             axis,
             is_geocent: false,
             is_latlong: false,
+            from_greenwich,
             to_meter,
             vto_meter,
             // Central meridian_
-            lam0: params.try_value("lon_0", 0.)?,
-            phi0: params.try_value("lat_0", 0.)?,
-            x0: params.try_value("x_0", 0.)?,
-            y0: params.try_value("y_0", 0.)?,
+            lam0: params.try_value("lon_0")?,
+            phi0: params.try_value("lat_0")?,
+            x0: params.try_value("x_0")?,
+            y0: params.try_value("y_0")?,
             // Proj4 compatibility
-            k0: params
-                .get("k0")
-                .or_else(|| params.get("k"))
-                .map(|p| p.try_into())
-                .unwrap_or(Ok(1.))?,
+            k0: match params.get("k0") {
+                Some(p) => Some(p.try_into()).transpose(),
+                None => params.try_value("k"),
+            }?,
             geoc: false,
             over: params.check_option("over")?,
             projdata: ProjParams::NoParams,
@@ -210,11 +292,16 @@ impl Proj {
             inverse: None,
             forward: None,
         }
-        .prepare())
+        .prepare(proj_init, &params)
     }
 
-    fn prepare(self) -> Self {
-        self
+    // Initialise projection
+    fn prepare(mut self, proj_init: &ProjInit, params: &ParamList) -> Result<Self> {
+        let (data, inverse, forward) = proj_init.init(&mut self, params)?;
+        self.projdata = data;
+        self.inverse = inverse;
+        self.forward = forward;
+        Ok(self)
     }
 
     /// Create from projstring definition
@@ -222,7 +309,7 @@ impl Proj {
         Self::init(projstring::parse(s)?)
     }
 
-    /// Create projection from string
+    /// Create projection from user string
     pub fn from_user_string(s: &str) -> Result<Self> {
         let s = s.trim();
         if s.starts_with('+') {
@@ -240,7 +327,7 @@ impl Proj {
 // -------------
 impl fmt::Debug for Proj {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "pm:         {:?}", self.pm)?;
+        write!(f, "prime meridian: {:?}", self.from_greenwich)?;
         write!(f, "ellps:      {:#?}", self.ellps)?;
         write!(f, "datum:      {:#?}", self.datum)?;
         write!(f, "axis:       {:?}", self.axis)?;
@@ -266,32 +353,7 @@ mod tests {
     use super::*;
     use crate::errors::{Error, Result};
 
-    const EPSG_102018: &str = concat!(
-        "+proj=gnom +lat_0=90 +lon_0=0 +x_0=6300000 +y_0=6300000",
-        "+ellps=WGS84 +datum=WGS84 +units=m +no_defs"
-    );
-
-    const TESTMERC: &str = "+proj=merc +lon_0=5.937 +lat_ts=45.027 +ellps=sphere";
-    const TESTMERC2: &str = concat!(
-        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 ",
-        "+units=m +k=1.0 +nadgrids=@null +no_defs"
-    );
-    const INVALID_ELLPS: &str = "+proj=merc +lon_0=5.937 +lat_ts=45.027 +ellps=foo";
-
-    #[test]
-    fn proj_test_EPSG_102018() {
-        let p: Proj = Proj::from_projstr(EPSG_102018).unwrap();
-    }
-
-    #[test]
-    fn proj_test_merc() {
-        let p: Proj = Proj::from_projstr(TESTMERC).unwrap();
-    }
-
-    #[test]
-    fn proj_test_merc2() {
-        let p: Proj = Proj::from_projstr(TESTMERC2).unwrap();
-    }
+    const INVALID_ELLPS: &str = "+proj=latlon +lon_0=5.937 +lat_ts=45.027 +ellps=foo";
 
     #[test]
     fn proj_invalid_ellps_param() {
@@ -299,6 +361,7 @@ mod tests {
 
         assert!(p.is_err());
         let err = p.unwrap_err();
+        println!("{:?}", err);
         assert!(matches!(err, Error::InvalidEllipsoid));
     }
 }

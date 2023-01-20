@@ -9,21 +9,24 @@ use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::Proj;
 
-use super::ProjParams;
+use super::{ProjParams, ProjSetup};
 
-pub(super) const NAME: &str = "latlong";
+pub(super) const NAME: &str = "latlon";
 
 #[derive(Debug, Default)]
 pub(crate) struct Projection {}
 
 impl Projection {
-    pub fn init(p: &mut Proj, params: &ParamList) -> Result<ProjParams> {
+    pub fn init(p: &mut Proj, params: &ParamList) -> Result<ProjSetup> {
         p.is_latlong = true;
-        p.x0 = 0.;
-        p.y0 = 0.;
-        p.inverse = Some(Self::inverse);
-        p.forward = Some(Self::forward);
-        Ok(ProjParams::latlong(Self {}))
+        p.x0 = Some(0.);
+        p.y0 = Some(0.);
+        //
+        Ok((
+            ProjParams::latlong(Self {}),
+            Some(Self::inverse),
+            Some(Self::forward),
+        ))
     }
 
     pub fn forward(p: &Proj, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {

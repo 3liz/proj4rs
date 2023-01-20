@@ -8,7 +8,6 @@ use std::str::FromStr;
 // XXX Parsing code take about 1kb in wasm, try to use JS parsing functions
 // parseInt(), parseFloat() with wasm-bingen
 
-
 /// Struct holding a pair key/value
 pub struct Parameter<'a> {
     pub name: &'a str,
@@ -83,13 +82,11 @@ impl<'a> ParamList<'a> {
             .unwrap_or(Ok(false))
     }
 
-    pub fn try_value<T>(&self, name: &str, default: T) -> Result<T>
+    pub fn try_value<T>(&self, name: &str) -> Result<Option<T>>
     where
         T: FromStr,
     {
-        self.get(name)
-            .map(|p| p.try_value::<T>())
-            .unwrap_or(Ok(default))
+        self.get(name).map(|p| p.try_value::<T>()).transpose()
     }
 }
 
@@ -123,7 +120,7 @@ mod tests {
     fn param_try_value() {
         let params = parse("+foo=1234").unwrap();
 
-        assert_eq!(params.try_value::<f64>("foo", 0.).unwrap(), 1234.);
-        assert_eq!(params.try_value::<f64>("bar", 0.).unwrap(), 0.);
+        assert_eq!(params.try_value::<f64>("foo").unwrap().unwrap_or(0.), 1234.);
+        assert_eq!(params.try_value::<f64>("bar").unwrap().unwrap_or(0.), 0.);
     }
 }
