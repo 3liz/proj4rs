@@ -3,12 +3,12 @@
 //! including reprojection and datum shifting
 //!
 
+use crate::consts::{EPS_12, FRAC_PI_2};
 use crate::datum_transform::Datum;
-use crate::errors::Result;
+use crate::errors::{Error, Result};
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
-use crate::nadgrids::NadgridShift;
-use crate::proj::{Axis, Projection};
-
+use crate::proj::{Axis, Proj};
+use crate::utils::adjlon;
 ///
 /// Transform trait
 ///
@@ -21,12 +21,11 @@ use crate::proj::{Axis, Projection};
 /// is left to the `ApplyTransform` implementation.
 ///
 ///
-/// Example:
+/// Single point transform example:
 ///
 /// ```rust
-///
-/// use proj4js::transform::{transform, , Transform};
-/// use crate::errors::Result;
+/// use proj4rs::transform::{transform, Transform};
+/// use proj4rs::errors::Result;
 ///
 /// pub struct Point {
 ///     x: f64,
@@ -36,24 +35,28 @@ use crate::proj::{Axis, Projection};
 ///
 /// impl Transform for Point {
 ///     fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
-///        where
-///            F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-///        {
-///            f(self.x, self.y, self.z).map(|(x, y, z)| {
-///                self.x = x;
-///                self.y = y;
-///                self.z = z;
-///            })
-///        }
-///    }
+///     where
+///         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
+///     {
+///         f(self.x, self.y, self.z).map(|(x, y, z)| {
+///             self.x = x;
+///             self.y = y;
+///             self.z = z;
+///         })
+///     }
 /// }
 /// ```
 ///
+
 pub trait Transform {
     fn transform_coordinates<F>(&mut self, f: F) -> Result<()>
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>;
 }
+
+// ------------------
+// Transformation
+// ------------------
 
 /// Select transformation direction
 #[derive(PartialEq)]
@@ -64,28 +67,33 @@ pub enum Direction {
 
 use Direction::*;
 
-// ------------------
-// Projection
-// ------------------
-pub fn transform<N, P>(src: &Projection<N>, dst: &Projection<N>, points: &mut P) -> Result<()>
+/// The transformation function
+pub fn transform<P>(src: &Proj, dst: &Proj, points: &mut P) -> Result<()>
 where
-    N: NadgridShift,
-    P: Transform,
+    P: Transform + ?Sized,
 {
+    if src.inverse.is_none() {
+        return Err(Error::NoSrcInverseProjectionDefined);
+    }
+
+    if dst.forward.is_none() {
+        return Err(Error::NoDstForwardProjectionDefined);
+    }
+
     adjust_axes(src, Inverse, points)?;
     geographic_to_cartesian(src, Inverse, points)?;
-    //projected_to_geographic(src, points)?;
+    projected_to_geographic(src, points)?;
     prime_meridian(src, Inverse, points)?;
-    //height_unit(src, Inverse, points)?;
+    height_unit(src, Inverse, points)?;
     //geometric_to_orthometric(src, Inverse, points)?;
 
     datum_transform(src, dst, points)?;
 
     //geometric_to_orthometric(dst, Forward, points)?;
-    //height_unit(dst, Forward, points)?;
+    height_unit(dst, Forward, points)?;
     prime_meridian(dst, Forward, points)?;
     geographic_to_cartesian(dst, Forward, points)?;
-    //geographic_to_projected(dst, Forward, points)?;
+    geographic_to_projected(dst, points)?;
     //long_wrap(dst)?;
     adjust_axes(dst, Forward, points)?;
 
@@ -94,10 +102,9 @@ where
 // ---------------------------------
 // Datum transformation
 // ---------------------------------
-fn datum_transform<N, P>(src: &Projection<N>, dst: &Projection<N>, points: &mut P) -> Result<()>
+fn datum_transform<P>(src: &Proj, dst: &Proj, points: &mut P) -> Result<()>
 where
-    N: NadgridShift,
-    P: Transform,
+    P: Transform + ?Sized,
 {
     let src_datum = &src.datum;
     let dst_datum = &dst.datum;
@@ -113,13 +120,123 @@ where
     points.transform_coordinates(|x, y, z| Datum::transform(src_datum, dst_datum, x, y, z))
 }
 // ---------------------------------
+// Projected to geographic
+// ---------------------------------
+fn projected_to_geographic<P>(p: &Proj, points: &mut P) -> Result<()>
+where
+    P: Transform + ?Sized,
+{
+    // Nothing to do ?
+    if p.is_latlong && !p.geoc
+    /* && p.vto_meter == 1. */
+    {
+        return Ok(());
+    }
+
+    let (lam0, x0, y0, ra, to_meter, one_es) =
+        (p.lam0, p.x0, p.y0, p.ellps.ra, p.ellps.one_es, p.to_meter);
+
+    let pj_inv = p.inverse.unwrap();
+
+    // Input points are cartesians
+    // proj4 source: pj_inv.c
+    points.transform_coordinates(|x, y, z| {
+        if x.is_nan() || y.is_nan() {
+            Err(Error::NanCoordinateValue)
+        } else {
+            // Inverse project
+            let (mut lam, mut phi, z) = pj_inv(
+                p,
+                // descale and de-offset
+                // z is not scaled since that
+                // is handled by vto_meter before we get here
+                (x * to_meter - x0) * ra,
+                (y * to_meter - y0) * ra,
+                z,
+            )?;
+            lam += lam0;
+            if !p.over {
+                lam = adjlon(lam);
+            }
+            if p.geoc && (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
+                phi = (one_es * phi.tan()).atan();
+            }
+            Ok((lam, phi, z))
+        }
+    })
+}
+// ---------------------------------
+// Geographic to projected
+// ---------------------------------
+fn geographic_to_projected<P>(p: &Proj, points: &mut P) -> Result<()>
+where
+    P: Transform + ?Sized,
+{
+    // Nothing to do ?
+    //if (p.is_latlong && !p.geoc && p.vto_meter == 1.) || p.is_geocent {
+    if (p.is_latlong && !p.geoc) || p.is_geocent {
+        return Ok(());
+    }
+
+    let (lam0, x0, y0, a, to_meter, rone_es) =
+        (p.lam0, p.x0, p.y0, p.ellps.a, p.ellps.rone_es, p.to_meter);
+
+    let pj_fwd = p.forward.unwrap();
+    let fr_meter = 1. / p.to_meter;
+
+    // Input points are geographic
+    // proj4 source: pj_fwd.c
+    points.transform_coordinates(|lam, phi, z| {
+        if lam.is_nan() || phi.is_nan() {
+            Err(Error::NanCoordinateValue)
+        } else {
+            // Overrange check
+            let t = phi.abs() - FRAC_PI_2;
+            if t > EPS_12 || lam.abs() > 10. {
+                Err(Error::CoordinateOutOfRange)
+            } else {
+                let (x, y, z) = pj_fwd(
+                    p,
+                    // ----
+                    // lam
+                    // ----
+                    if !p.over {
+                        adjlon(lam - lam0)
+                    } else {
+                        lam - lam0
+                    },
+                    // ---
+                    // phi
+                    // ---
+                    if t.abs() <= EPS_12 {
+                        if phi < 0. {
+                            -FRAC_PI_2
+                        } else {
+                            FRAC_PI_2
+                        }
+                    } else if p.geoc {
+                        (rone_es * phi.tan()).atan()
+                    } else {
+                        phi
+                    },
+                    // ---
+                    // z
+                    // ---
+                    z,
+                )?;
+                // Rescale and offset
+                Ok((fr_meter * (a * x + x0), fr_meter * (a * y + y0), z))
+            }
+        }
+    })
+}
+// ---------------------------------
 // Transform cartesian ("geocentric")
 // source coordinates to lat/long,
 // ---------------------------------
-fn geographic_to_cartesian<N, P>(p: &Projection<N>, dir: Direction, points: &mut P) -> Result<()>
+fn geographic_to_cartesian<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
-    N: NadgridShift,
-    P: Transform,
+    P: Transform + ?Sized,
 {
     // Nothing to do
     if !p.is_geocent {
@@ -152,29 +269,26 @@ where
 // --------------------------
 // Prime meridian adjustement
 // -------------------------
-fn prime_meridian<N, P>(p: &Projection<N>, dir: Direction, points: &mut P) -> Result<()>
+fn prime_meridian<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
-    N: NadgridShift,
-    P: Transform,
+    P: Transform + ?Sized,
 {
     let mut pm = p.pm;
-    if pm == 0.  || p.is_geocent || p.is_latlong {
-        return Ok(());
-    } 
-
-    if dir == Forward {
-        pm = -pm;
+    if pm == 0. || p.is_geocent || p.is_latlong {
+        Ok(())
+    } else {
+        if dir == Forward {
+            pm = -pm;
+        }
+        points.transform_coordinates(|x, y, z| Ok((x + pm, y, z)))
     }
-
-    points.transform_coordinates(|x, y, z| Ok((x + pm, y, z))) 
 }
 // ---------------------
 // Axis
 // --------------------
-fn adjust_axes<N, P>(p: &Projection<N>, dir: Direction, points: &mut P) -> Result<()>
+fn adjust_axes<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
-    N: NadgridShift,
-    P: Transform,
+    P: Transform + ?Sized,
 {
     if !p.normalized_axis() {
         match dir {
@@ -187,7 +301,7 @@ where
 }
 
 // Normalize axis
-fn normalize_axis<P: Transform>(axis: &Axis, points: &mut P) -> Result<()> {
+fn normalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<()> {
     points.transform_coordinates(|x, y, z| {
         let (mut x_out, mut y_out, mut z_out) = (x, y, z);
         axis.iter().enumerate().for_each(|(i, axe)| {
@@ -213,7 +327,7 @@ fn normalize_axis<P: Transform>(axis: &Axis, points: &mut P) -> Result<()> {
 }
 
 // Denormalize axis
-fn denormalize_axis<P: Transform>(axis: &Axis, points: &mut P) -> Result<()> {
+fn denormalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<()> {
     points.transform_coordinates(|x, y, z| {
         let (mut x_out, mut y_out, mut z_out) = (x, y, z);
         axis.iter().enumerate().for_each(|(i, axe)| {
@@ -235,4 +349,28 @@ fn denormalize_axis<P: Transform>(axis: &Axis, points: &mut P) -> Result<()> {
         });
         Ok((x_out, y_out, z_out))
     })
+}
+// ---------------------
+// Adjust for vertical
+// scale factor if needed
+// --------------------
+fn height_unit<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
+where
+    P: Transform + ?Sized,
+{
+    //if p.is_latlong {
+    //    return Ok(());
+    //}
+
+    let fac = if dir == Forward {
+        1. / p.vto_meter
+    } else {
+        p.vto_meter
+    };
+
+    if fac != 1.0 {
+        points.transform_coordinates(|x, y, z| Ok((x, y, z * fac)))
+    } else {
+        Ok(())
+    }
 }

@@ -26,6 +26,18 @@ pub enum Error {
     InvalidToWGS84String,
     #[error("Invalid axis")]
     InvalidAxis,
+    #[error("Unrecognized format")]
+    UnrecognizedFormat,
+    #[error("Latitude or longitude over range")]
+    LatOrLongExceedLimit,
+    #[error("Nan value for coordinate")]
+    NanCoordinateValue,
+    #[error("Coordinate out of range")]
+    CoordinateOutOfRange,
+    #[error("No forward projection defined for dest projection")]
+    NoDstForwardProjectionDefined,
+    #[error("No inverse projection defined for src projection")]
+    NoSrcInverseProjectionDefined,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

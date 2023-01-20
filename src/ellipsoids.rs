@@ -15,7 +15,7 @@ pub struct EllipsoidDefn {
     pub id: &'static str,
     pub a: f64,
     pub rf_or_b: FlatteningParam,
-    pub comment: &'static str,
+    //pub comment: &'static str,
 }
 
 #[rustfmt::skip]
@@ -28,7 +28,7 @@ pub mod constants {
                 id: $id,
                 a: $a,
                 rf_or_b: $f,
-                comment: $c,
+                //comment: $c,
             };
         };
     }

@@ -34,7 +34,7 @@
 //!
 #![allow(non_upper_case_globals)]
 
-use crate::constants::EPSLN;
+use crate::consts::EPS_10;
 use crate::ellipsoids::{EllipsoidDefn, FlatteningParam};
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
@@ -82,12 +82,12 @@ pub struct Ellipsoid {
     //pub alpha: f64,   // angular eccentricity
     pub e: f64,  // first  eccentricity
     pub es: f64, // first  eccentricity squared
-    //pub e2: f64,      // second eccentricity
-    //pub e2s: f64,     // second eccentricity squared
-    //pub e3: f64,      // third  eccentricity
-    //pub e3s: f64,     // third  eccentricity squared
-    //pub one_es: f64,  // 1 - e^2
-    //pub rone_es: f64, // 1/one_es
+    //pub e2: f64,    // second eccentricity
+    //pub e2s: f64,   // second eccentricity squared
+    //pub e3: f64,    // third  eccentricity
+    //pub e3s: f64,   // third  eccentricity squared
+    pub one_es: f64,  // 1 - e^2
+    pub rone_es: f64, // 1/one_es
 
     // The flattenings
     pub f: f64, // first  flattening
@@ -124,9 +124,12 @@ impl Ellipsoid {
             es: 0.,
             f: 0.,
             rf: f64::INFINITY,
+            one_es: 1.,
+            rone_es: 1.,
         })
     }
 
+    #[cfg(test)]
     pub fn try_from_ellipsoid(defn: &EllipsoidDefn) -> Result<Self> {
         Self::calc_ellipsoid_params(
             defn.a,
@@ -161,7 +164,7 @@ impl Ellipsoid {
         const SHAPE_TOKENS: &[&str] = &[TOK_rf, TOK_f, TOK_es, TOK_e, TOK_b];
         SHAPE_TOKENS.iter().find_map(|tok| {
             params.get(tok).map(|p| {
-                p.try_convert::<f64>().map(|v| match *tok {
+                p.try_into().map(|v| match *tok {
                     TOK_rf => SP_rf(v),
                     TOK_f => SP_f(v),
                     TOK_es => SP_es(v),
@@ -199,7 +202,7 @@ impl Ellipsoid {
             }
             SP_f(p_f) => {
                 if !(0. ..1.).contains(&p_f) {
-                    return Err(Error::InvalidParameterValue("Flattening not in [0..1]"));
+                    return Err(Error::InvalidParameterValue("Flattening not in [0..1["));
                 }
                 f = p_f;
                 es = 2. * f - f * f;
@@ -210,7 +213,7 @@ impl Ellipsoid {
             SP_es(p_es) => {
                 if !(0. ..1.).contains(&p_es) {
                     return Err(Error::InvalidParameterValue(
-                        "Square eccentricity not in [0..1]",
+                        "Square eccentricity not in [0..1[",
                     ));
                 }
                 es = p_es;
@@ -221,7 +224,7 @@ impl Ellipsoid {
             }
             SP_e(p_e) => {
                 if !(0. ..1.).contains(&p_e) {
-                    return Err(Error::InvalidParameterValue("Eccentricity not in [0..1]"));
+                    return Err(Error::InvalidParameterValue("Eccentricity not in [0..1["));
                 }
                 e = p_e;
                 es = e * e;
@@ -230,7 +233,7 @@ impl Ellipsoid {
                 rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
             SP_b(p_b) => {
-                if !(p_b >= 0. && p_b <= a) {
+                if !(p_b > 0. && p_b <= a) {
                     return Err(Error::InvalidParameterValue("Invalid minor axis"));
                 }
                 b = p_b;
@@ -243,13 +246,16 @@ impl Ellipsoid {
             }
         }
 
-        if (a - b).abs() < EPSLN {
+        if (a - b).abs() < EPS_10 {
             b = a;
             es = 0.;
             e = 0.;
             f = 0.;
             rf = f64::INFINITY;
+        } else if !(0. ..1.).contains(&es) {
         }
+
+        let one_es = 1. - es;
 
         Ok(Self {
             a,
@@ -260,6 +266,8 @@ impl Ellipsoid {
             es,
             f,
             rf,
+            one_es,
+            rone_es: 1. / one_es,
         })
     }
 

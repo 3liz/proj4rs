@@ -7,31 +7,41 @@ use crate::datum_transform::Datum;
 use crate::datums::{self, DatumDefn};
 use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
-use crate::nadgrids::{NadgridShift, NullGridShift};
 use crate::parameters::ParamList;
+use crate::projections::{ProjFn, ProjParams};
 use crate::{ellipsoids, prime_meridians, projstring, units};
-//============================
-//
-// Projection
-//
-//============================
+
+use std::fmt;
 
 pub type Axis = [u8; 3];
 
 const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
 
-#[derive(Debug)]
-pub struct Projection<N: NadgridShift = NullGridShift> {
+/// A Proj obect hold informations and parameters
+/// for a projection
+pub struct Proj {
     pub(crate) pm: f64,
     pub(crate) ellps: Ellipsoid,
-    pub(crate) datum: Datum<N>,
+    pub(crate) datum: Datum,
     pub(crate) axis: Axis,
-    pub(crate) to_meter: f64,
     pub(crate) is_geocent: bool,
     pub(crate) is_latlong: bool,
+    pub(crate) to_meter: f64,
+    pub(crate) vto_meter: f64,
+    pub(crate) x0: f64,
+    pub(crate) y0: f64,
+    pub(crate) k0: f64,
+    pub(crate) lam0: f64,
+    pub(crate) phi0: f64,
+    pub(crate) geoc: bool,
+    pub(crate) over: bool, // over-ranging flag
+    pub(crate) projname: &'static str,
+    pub(crate) projdata: ProjParams,
+    pub(crate) inverse: Option<ProjFn>,
+    pub(crate) forward: Option<ProjFn>,
 }
 
-impl<N: NadgridShift> Projection<N> {
+impl Proj {
     // ----------------
     // Datum definition
     // ----------------
@@ -55,7 +65,7 @@ impl<N: NadgridShift> Projection<N> {
             .map(
                 |p| match prime_meridians::find_prime_meridian(p.try_into()?) {
                     Some(v) => Ok(v),
-                    None => p.try_convert::<f64>(),
+                    None => p.try_into(),
                 },
             )
             .unwrap_or(Ok(0.))
@@ -64,7 +74,7 @@ impl<N: NadgridShift> Projection<N> {
     // -----------------
     // Datum parameters
     // ----------------
-    fn datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams<N>> {
+    fn datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams> {
         // Precedence order is 'nadgrids', 'towgs84', 'datum'
         if let Some(p) = params.get("nadgrids") {
             // Nadgrids
@@ -129,28 +139,23 @@ impl<N: NadgridShift> Projection<N> {
 
     /// Return true if the axis are normalized
     pub fn normalized_axis(&self) -> bool {
-        return self.axis == NORMALIZED_AXIS;
+        self.axis == NORMALIZED_AXIS
     }
 
     // -----------------
     // Units
     // ----------------
-    fn units(params: &ParamList) -> Result<f64> {
-        if let Some(p) = params.get("to_meter") {
+    fn units(params: &ParamList, name: &str, default: f64) -> Result<f64> {
+        if let Some(p) = params.get(name) {
             units::find_unit_to_meter(p.try_into()?)
                 .map(Ok)
-                .unwrap_or_else(|| p.try_convert::<f64>())
+                .unwrap_or_else(|| p.try_into())
         } else {
-            Ok(1.)
+            Ok(default)
         }
     }
 
-    /// Prepare the projection
-    fn prepare(self) -> Self {
-        self
-    }
-
-    /// Consume a ParamList and create a Projection object
+    /// Consume a ParamList and create a Proj object
     pub fn init(params: ParamList) -> Result<Self> {
         // Projection name
         let _projname = params.get("proj").ok_or(Error::MissingProjectionError);
@@ -171,7 +176,9 @@ impl<N: NadgridShift> Projection<N> {
         let axis = Self::axis(&params)?;
 
         // units
-        let to_meter = Self::units(&params)?;
+        let to_meter = Self::units(&params, "to_meter", 1.)?;
+        // XXX in proj4 vto_meter accept fractional expression: '/'
+        let vto_meter = Self::units(&params, "vto_meter", to_meter)?;
 
         // Datum
         let datum = Datum::new(&ellps, datum_params);
@@ -181,16 +188,74 @@ impl<N: NadgridShift> Projection<N> {
             ellps,
             datum,
             axis,
-            to_meter,
             is_geocent: false,
             is_latlong: false,
+            to_meter,
+            vto_meter,
+            // Central meridian_
+            lam0: params.try_value("lon_0", 0.)?,
+            phi0: params.try_value("lat_0", 0.)?,
+            x0: params.try_value("x_0", 0.)?,
+            y0: params.try_value("y_0", 0.)?,
+            // Proj4 compatibility
+            k0: params
+                .get("k0")
+                .or_else(|| params.get("k"))
+                .map(|p| p.try_into())
+                .unwrap_or(Ok(1.))?,
+            geoc: false,
+            over: params.check_option("over")?,
+            projdata: ProjParams::NoParams,
+            projname: "",
+            inverse: None,
+            forward: None,
         }
         .prepare())
     }
 
-    /// Create projection from string
+    fn prepare(self) -> Self {
+        self
+    }
+
+    /// Create from projstring definition
     pub fn from_projstr(s: &str) -> Result<Self> {
         Self::init(projstring::parse(s)?)
+    }
+
+    /// Create projection from string
+    pub fn from_user_string(s: &str) -> Result<Self> {
+        let s = s.trim();
+        if s.starts_with('+') {
+            Self::from_projstr(s)
+        } else if s.eq_ignore_ascii_case("WGS84") {
+            Self::from_projstr("+proj=longlat +ellps=WGS84")
+        } else {
+            Err(Error::UnrecognizedFormat)
+        }
+    }
+}
+
+// -------------
+// Display
+// -------------
+impl fmt::Debug for Proj {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "pm:         {:?}", self.pm)?;
+        write!(f, "ellps:      {:#?}", self.ellps)?;
+        write!(f, "datum:      {:#?}", self.datum)?;
+        write!(f, "axis:       {:?}", self.axis)?;
+        write!(f, "is_geocent: {:?}", self.is_geocent)?;
+        write!(f, "is_latlong: {:?}", self.is_latlong)?;
+        write!(f, "to_meter:   {:?}", self.to_meter)?;
+        write!(f, "vto_meter:  {:?}", self.vto_meter)?;
+        write!(f, "x0:         {:?}", self.x0)?;
+        write!(f, "y0:         {:?}", self.y0)?;
+        write!(f, "lam0        {:?}", self.lam0)?;
+        write!(f, "phi0:       {:?}", self.phi0)?;
+        write!(f, "geoc:       {:?}", self.geoc)?;
+        write!(f, "over:       {:?}", self.over)?;
+        write!(f, "projname:   {:?}", self.projname)?;
+        write!(f, "projdata:   {:#?}", self.projdata)
     }
 }
 
@@ -208,31 +273,32 @@ mod tests {
 
     const TESTMERC: &str = "+proj=merc +lon_0=5.937 +lat_ts=45.027 +ellps=sphere";
     const TESTMERC2: &str = concat!(
-        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0",
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0.0 +lon_0=0.0 +x_0=0.0 +y_0=0 ",
         "+units=m +k=1.0 +nadgrids=@null +no_defs"
     );
     const INVALID_ELLPS: &str = "+proj=merc +lon_0=5.937 +lat_ts=45.027 +ellps=foo";
 
     #[test]
     fn proj_test_EPSG_102018() {
-        let p: Projection = Projection::from_projstr(EPSG_102018).unwrap();
+        let p: Proj = Proj::from_projstr(EPSG_102018).unwrap();
     }
 
     #[test]
     fn proj_test_merc() {
-        let p: Projection = Projection::from_projstr(TESTMERC).unwrap();
+        let p: Proj = Proj::from_projstr(TESTMERC).unwrap();
     }
 
     #[test]
     fn proj_test_merc2() {
-        let p: Projection = Projection::from_projstr(TESTMERC2).unwrap();
+        let p: Proj = Proj::from_projstr(TESTMERC2).unwrap();
     }
 
     #[test]
     fn proj_invalid_ellps_param() {
-        let p: Result<Projection> = Projection::from_projstr(INVALID_ELLPS);
+        let p: Result<Proj> = Proj::from_projstr(INVALID_ELLPS);
 
         assert!(p.is_err());
-        assert!(matches!(p.unwrap_err(), Error::InvalidEllipsoid));
+        let err = p.unwrap_err();
+        assert!(matches!(err, Error::InvalidEllipsoid));
     }
 }

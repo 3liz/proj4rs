@@ -25,7 +25,6 @@ use crate::datum_params::DatumParams;
 use crate::ellps::Ellipsoid;
 use crate::errors::Result;
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
-use crate::nadgrids::NadgridShift;
 
 use DatumParams::*;
 
@@ -34,16 +33,16 @@ const SRS_WGS84_SEMIMINOR: f64 = 6356752.314;
 const SRS_WGS84_ES: f64 = 0.0066943799901413165;
 
 /// Hold datum Informations
-#[derive(Default, Debug)]
-pub struct Datum<N: NadgridShift> {
-    params: DatumParams<N>,
-    pub(crate) a: f64,
-    pub(crate) b: f64,
-    pub(crate) es: f64,
+#[derive(Debug)]
+pub(crate) struct Datum {
+    params: DatumParams,
+    pub a: f64,
+    pub b: f64,
+    pub es: f64,
 }
 
-impl<N: NadgridShift> Datum<N> {
-    pub fn new(ellps: &Ellipsoid, params: DatumParams<N>) -> Self {
+impl Datum {
+    pub fn new(ellps: &Ellipsoid, params: DatumParams) -> Self {
         // Change ellipse parameters to wgs84
         // when using nadgrids
         let (a, b, es) = if params.use_nadgrids() {

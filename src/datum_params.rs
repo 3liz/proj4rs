@@ -1,28 +1,28 @@
 //!
 //! Handle datum parameters
 //!
-use crate::constants::SEC_TO_RAD;
+use crate::consts::SEC_TO_RAD;
 use crate::datums::DatumParamDefn;
 use crate::errors::{Error, Result};
-use crate::nadgrids::NadgridShift;
+use crate::nadgrids::NadGrids;
 
 /// Datum parameters
-#[derive(Clone, Debug, PartialEq)]
-pub enum DatumParams<N: NadgridShift> {
+#[derive(Debug, PartialEq)]
+pub enum DatumParams {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),
     ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),
-    NadGrids(N),
+    NadGrids(NadGrids),
     NoDatum,
 }
 
-impl<N: NadgridShift> Default for DatumParams<N> {
+impl Default for DatumParams {
     fn default() -> Self {
         DatumParams::NoDatum
     }
 }
 
-impl<N: NadgridShift> DatumParams<N> {
+impl DatumParams {
     /// Create parameters from a 'towgs84 like string'
     /// Values are expected to be in second of arcs
     pub fn from_towgs84_str(towgs84: &str) -> Result<Self> {
@@ -57,7 +57,7 @@ impl<N: NadgridShift> DatumParams<N> {
     }
 
     pub fn from_nagrid_str(nadgrids: &str) -> Result<Self> {
-        N::new_grid_transform(nadgrids).map(|g| Self::NadGrids(g))
+        NadGrids::new_grid_transform(nadgrids).map(|g| Self::NadGrids(g))
     }
 
     pub fn use_nadgrids(&self) -> bool {
@@ -77,7 +77,7 @@ impl<N: NadgridShift> DatumParams<N> {
 }
 
 // Convert from datum parameters definition
-impl<N: NadgridShift> TryFrom<&DatumParamDefn> for DatumParams<N> {
+impl TryFrom<&DatumParamDefn> for DatumParams {
     type Error = Error;
 
     fn try_from(defn: &DatumParamDefn) -> Result<Self> {

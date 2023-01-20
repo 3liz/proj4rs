@@ -16,7 +16,7 @@ pub struct DatumDefn {
     pub id: &'static str,
     pub params: DatumParamDefn,
     pub ellps: &'static EllipsoidDefn,
-    pub comment: &'static str,
+    //pub comment: &'static str,
 }
 
 //#[rustfmt::skip]
@@ -47,7 +47,7 @@ pub mod constants {
                 id: $id,
                 params: $params,
                 ellps: &ellps::$ellps,
-                comment: $c,
+                //comment: $c,
             };
         };
     }

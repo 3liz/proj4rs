@@ -1,11 +1,11 @@
 # Proj4rs
 
-Proj4 port in Rust. 
+This a Proj4 port in Rust. 
 
-Based on Proj 5.2.0 
+This port implemente the Proj4 Api - i.e no 3D/4D/orthometric transformation.
+
+It as targeted to be WASM compatible for the `wasm32-unknown-unknown` target.
 
 ## Size of the .wasm
-
-The the size of the wasm is about 90Kb.
 
 That has to be compared to the 67Kb to the 'compressed' [proj4js bundle size](https://demo.mapbender.org/bundles/mapbendercore/proj4js/)

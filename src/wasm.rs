@@ -9,7 +9,7 @@ use wasm_bindgen::prelude::*;
 /// ---------------------------
 #[wasm_bindgen]
 pub struct Projection {
-    inner: proj::Projection,
+    inner: proj::Proj,
 }
 
 #[wasm_bindgen]
@@ -17,7 +17,7 @@ impl Projection {
     #[wasm_bindgen(constructor)]
     pub fn new(defn: &str) -> Result<Projection, JsError> {
         Ok(Self {
-            inner: proj::Projection::from_projstr(defn)?,
+            inner: proj::Proj::from_projstr(defn)?,
         })
     }
 }
@@ -55,5 +55,6 @@ impl transform::Transform for Point {
 
 #[wasm_bindgen]
 pub fn transform(src: &Projection, dst: &Projection, point: &mut Point) -> Result<(), JsError> {
-    transform(src, dst, point)
+    transform::transform(&src.inner, &dst.inner, point)?;
+    Ok(())
 }
