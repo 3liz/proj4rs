@@ -15,20 +15,44 @@
 //! stere et sterea pour for polar regions.
 //!
 
-mod latlong;
-mod lcc;
-
 use crate::errors::Result;
 use crate::parameters::ParamList;
-use crate::proj::Proj;
+use crate::proj::ProjData;
+
+use std::fmt;
 
 pub(crate) type ProjFn = fn(&ProjParams, f64, f64, f64) -> Result<(f64, f64, f64)>;
 
 /// Setup: returned by the init() function
 /// Order of members: (params, inverse, forward)
-pub(crate) type ProjSetup = (ProjParams, Option<ProjFn>, Option<ProjFn>);
+pub(crate) struct ProjDelegate(ProjParams, ProjFn, ProjFn, bool, bool);
 
-pub(crate) type InitFn = fn(&mut Proj, &ParamList) -> Result<ProjSetup>;
+impl ProjDelegate {
+    #[inline(always)]
+    pub fn inverse(&self, u: f64, v: f64, w: f64) -> Result<(f64, f64, f64)> {
+        self.1(&self.0, u, v, w)
+    }
+    #[inline(always)]
+    pub fn forward(&self, u: f64, v: f64, w: f64) -> Result<(f64, f64, f64)> {
+        self.2(&self.0, u, v, w)
+    }
+
+    pub fn has_inverse(&self) -> bool {
+        self.3
+    }
+
+    pub fn has_forward(&self) -> bool {
+        self.4
+    }
+}
+
+impl fmt::Debug for ProjDelegate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:#?}", self.0)
+    }
+}
+
+pub(crate) type InitFn = fn(&mut ProjData, &ParamList) -> Result<ProjDelegate>;
 
 /// Returned by projection looku
 pub(crate) struct ProjInit(&'static str, InitFn);
@@ -41,14 +65,14 @@ impl ProjInit {
 
     /// Return a tuple (params, inverse, forward)
     #[inline(always)]
-    pub fn init(&self, proj: &mut Proj, params: &ParamList) -> Result<ProjSetup> {
+    pub fn init(&self, proj: &mut ProjData, params: &ParamList) -> Result<ProjDelegate> {
         self.1(proj, params)
     }
 }
 
 // Macro for retrieval of parameters from the proj object
 // not that makes us writing a match to a unique element.
-// XXX Use Into trait instead
+// XXX Use Into trait instead ?
 macro_rules! downcast {
     ($name:ident, $p:expr) => {
         match $p {
@@ -58,19 +82,25 @@ macro_rules! downcast {
     };
 }
 
-// Define this in projection definition module
+//
+// Use the following declaration in projection modules
+//
+// `super::projection!(projection_name);`
+//
 macro_rules! projection {
     ($name:ident) => {
         pub(crate) mod stub {
             use $crate::errors::Result;
             use $crate::parameters::ParamList;
-            use $crate::proj::Proj;
-            use $crate::projections::{$name, ProjParams, ProjSetup};
-            pub(crate) fn init_(p: &mut Proj, params: &ParamList) -> Result<ProjSetup> {
-                Ok((
+            use $crate::proj::ProjData;
+            use $crate::projections::{$name, ProjDelegate, ProjParams};
+            pub(crate) fn init_(p: &mut ProjData, params: &ParamList) -> Result<ProjDelegate> {
+                Ok(ProjDelegate(
                     ProjParams::$name($name::Projection::init(p, params)?),
-                    Some(inverse_),
-                    Some(forward_),
+                    inverse_,
+                    forward_,
+                    $name::Projection::has_inverse(),
+                    $name::Projection::has_forward(),
                 ))
             }
             pub(crate) fn inverse_(
@@ -93,11 +123,14 @@ macro_rules! projection {
     };
 }
 
-pub(crate) use downcast;
-pub(crate) use projection;
+use downcast;
+use projection;
 
 macro_rules! declare_projections {
     ($($name:ident),+) => {
+        $(
+            mod $name;
+        )+
         const PROJECTIONS: [ProjInit; 2] = [
         $(
             ProjInit($name::NAME, $name::stub::init_),
@@ -106,7 +139,6 @@ macro_rules! declare_projections {
         #[allow(non_camel_case_types)]
         #[derive(Debug)]
         pub(crate) enum ProjParams {
-            NoParams,
             $(
                 $name($name::Projection),
             )+

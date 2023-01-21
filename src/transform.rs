@@ -106,8 +106,8 @@ fn datum_transform<P>(src: &Proj, dst: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    let src_datum = &src.datum;
-    let dst_datum = &dst.datum;
+    let src_datum = src.datum();
+    let dst_datum = dst.datum();
 
     // Return true if the datums are identical is respect
     // to datum transformation.
@@ -127,16 +127,20 @@ where
     P: Transform + ?Sized,
 {
     // Nothing to do ?
-    if p.is_latlong && !p.geoc
+    if p.is_latlong() && !p.geoc()
     /* && p.vto_meter == 1. */
     {
         return Ok(());
     }
 
-    let (lam0, x0, y0) = (p.lam0(), p.x0(), p.y0());
-    let (ra, one_es, to_meter) = (p.ellps.ra, p.ellps.one_es, p.to_meter);
+    let d = p.data();
+    let (lam0, x0, y0) = (d.lam0(), d.x0(), d.y0());
+    let (ra, one_es, to_meter) = (d.ellps.ra, d.ellps.one_es, d.to_meter);
 
-    let pj_inv = p.inverse().ok_or(Error::NoInverseProjectionDefined)?;
+    let geoc = p.geoc();
+    let over = p.over();
+
+    let proj = p.projection();
 
     // Input points are cartesians
     // proj4 source: pj_inv.c
@@ -145,8 +149,7 @@ where
             Err(Error::NanCoordinateValue)
         } else {
             // Inverse project
-            let (mut lam, mut phi, z) = pj_inv(
-                &p.projection,
+            let (mut lam, mut phi, z) = proj.inverse(
                 // descale and de-offset
                 // z is not scaled since that
                 // is handled by vto_meter before we get here
@@ -155,10 +158,10 @@ where
                 z,
             )?;
             lam += lam0;
-            if !p.over {
+            if !over {
                 lam = adjlon(lam);
             }
-            if p.geoc && (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
+            if geoc && (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
                 phi = (one_es * phi.tan()).atan();
             }
             Ok((lam, phi, z))
@@ -173,16 +176,21 @@ where
     P: Transform + ?Sized,
 {
     // Nothing to do ?
-    //if (p.is_latlong && !p.geoc && p.vto_meter == 1.) || p.is_geocent {
-    if (p.is_latlong && !p.geoc) || p.is_geocent {
+    //if (p.is_latlong() && !p.geoc() && p.vto_meter() == 1.) || p.is_geocent() {
+    if (p.is_latlong() && !p.geoc()) || p.is_geocent() {
         return Ok(());
     }
 
-    let (lam0, x0, y0) = (p.lam0(), p.x0(), p.y0());
-    let (a, rone_es, to_meter) = (p.ellps.a, p.ellps.rone_es, p.to_meter);
+    let d = p.data();
 
-    let pj_fwd = p.forward().ok_or(Error::NoForwardProjectionDefined)?;
-    let fr_meter = 1. / p.to_meter;
+    let (lam0, x0, y0) = (d.lam0(), d.x0(), d.y0());
+    let (a, rone_es, to_meter) = (d.ellps.a, d.ellps.rone_es, d.to_meter);
+
+    let proj = p.projection();
+    let geoc = p.geoc();
+    let over = p.over();
+
+    let fr_meter = 1. / p.to_meter();
 
     // Input points are geographic
     // proj4 source: pj_fwd.c
@@ -195,12 +203,11 @@ where
             if t > EPS_12 || lam.abs() > 10. {
                 Err(Error::CoordinateOutOfRange)
             } else {
-                let (x, y, z) = pj_fwd(
-                    &p.projection,
+                let (x, y, z) = proj.forward(
                     // ----
                     // lam
                     // ----
-                    if !p.over {
+                    if !over {
                         adjlon(lam - lam0)
                     } else {
                         lam - lam0
@@ -214,7 +221,7 @@ where
                         } else {
                             FRAC_PI_2
                         }
-                    } else if p.geoc {
+                    } else if geoc {
                         (rone_es * phi.tan()).atan()
                     } else {
                         phi
@@ -239,12 +246,14 @@ where
     P: Transform + ?Sized,
 {
     // Nothing to do
-    if !p.is_geocent {
+    if !p.is_geocent() {
         return Ok(());
     }
 
-    let (a, b, es) = (p.datum.a, p.datum.b, p.datum.es);
-    let fac = p.to_meter;
+    let datum = p.datum();
+    let (a, b, es) = (datum.a, datum.b, datum.es);
+
+    let fac = p.to_meter();
 
     if fac != 1.0 {
         match dir {
@@ -273,8 +282,8 @@ fn prime_meridian<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    let mut pm = p.from_greenwich;
-    if pm == 0. || p.is_geocent || p.is_latlong {
+    let mut pm = p.from_greenwich();
+    if pm == 0. || p.is_geocent() || p.is_latlong() {
         Ok(())
     } else {
         if dir == Forward {
@@ -292,8 +301,8 @@ where
 {
     if !p.normalized_axis() {
         match dir {
-            Forward => denormalize_axis(&p.axis, points),
-            Inverse => normalize_axis(&p.axis, points),
+            Forward => denormalize_axis(p.axis(), points),
+            Inverse => normalize_axis(p.axis(), points),
         }
     } else {
         Ok(())
@@ -363,9 +372,9 @@ where
     //}
 
     let fac = if dir == Forward {
-        1. / p.vto_meter
+        1. / p.vto_meter()
     } else {
-        p.vto_meter
+        p.vto_meter()
     };
 
     if fac != 1.0 {

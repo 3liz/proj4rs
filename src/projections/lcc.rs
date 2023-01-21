@@ -17,14 +17,14 @@ use crate::consts::{EPS_10, FRAC_PI_2, FRAC_PI_4};
 use crate::errors::{Error, Result};
 use crate::math::{msfn, phi2, tsfn};
 use crate::parameters::ParamList;
-use crate::proj::Proj;
+use crate::proj::ProjData;
 
 // Projection stub
 super::projection!(lcc);
 
 pub(super) const NAME: &str = "lcc";
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(crate) struct Projection {
     phi1: f64,
     phi2: f64,
@@ -37,7 +37,7 @@ pub(crate) struct Projection {
 }
 
 impl Projection {
-    pub fn init(p: &mut Proj, params: &ParamList) -> Result<Self> {
+    pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let phi1 = params.try_angular_value("lat_1")?.unwrap_or(0.);
         let phi2 = params.try_angular_value("lat_2")?.unwrap_or_else(|| {
             p.phi0 = p.phi0.or(Some(phi1));
@@ -161,6 +161,14 @@ impl Projection {
         }
         Ok((lam, phi, z))
     }
+
+    pub const fn has_inverse() -> bool {
+        true
+    }
+
+    pub const fn has_forward() -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
@@ -171,8 +179,8 @@ mod tests {
     use crate::proj::Proj;
     use approx::assert_abs_diff_eq;
 
-    fn scale(p: &Proj, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
-        (xyz.0 * p.ellps.a, xyz.1 * p.ellps.a, xyz.2)
+    fn scale(a: f64, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
+        (xyz.0 * a, xyz.1 * a, xyz.2)
     }
 
     fn to_deg(lpz: (f64, f64, f64)) -> (f64, f64, f64) {
@@ -187,14 +195,14 @@ mod tests {
     fn proj_lcc_forward() {
         let p = Proj::from_proj_string("+proj=lcc   +ellps=GRS80  +lat_1=0.5 +lat_2=2").unwrap();
 
-        let d = crate::projections::downcast!(lcc, &p.projection);
-
-        //println!("{:#?}", d);
+        println!("{:#?}", p.projection());
 
         let (lam, phi, _) = to_rad((2., 1., 0.));
-        let forward = p.forward().unwrap();
 
-        let out = scale(&p, forward(&p.projection, lam, phi, 0.).unwrap());
+        let out = scale(
+            p.ellipsoid().a,
+            p.projection().forward(lam, phi, 0.).unwrap(),
+        );
         assert_eq!(out, (222588.439735968423, 110660.533870799671, 0.));
     }
 
@@ -202,16 +210,13 @@ mod tests {
     fn proj_lcc_inverse() {
         let p = Proj::from_proj_string("+proj=lcc   +ellps=GRS80  +lat_1=0.5 +lat_2=2").unwrap();
 
-        let d = crate::projections::downcast!(lcc, &p.projection);
+        println!("{:#?}", p.projection());
 
-        //println!("{:#?}", d);
-
-        let ra = p.ellps.ra;
+        let ra = p.ellipsoid().ra;
         // Descale
         let (x, y) = (222588.439735968423 * ra, 110660.533870799671 * ra);
-        let inverse = p.inverse().unwrap();
 
-        let out = to_deg(inverse(&p.projection, x, y, 0.).unwrap());
+        let out = to_deg(p.projection().inverse(x, y, 0.).unwrap());
         assert_abs_diff_eq!(out.0, 2., epsilon = EPS_10);
         assert_abs_diff_eq!(out.1, 1., epsilon = EPS_10);
     }

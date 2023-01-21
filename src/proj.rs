@@ -11,7 +11,7 @@ use crate::datums::{self, DatumDefn};
 use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
-use crate::projections::{find_projection, ProjFn, ProjInit, ProjParams};
+use crate::projections::{find_projection, ProjDelegate};
 use crate::{ellipsoids, prime_meridians, projstring, units};
 
 use std::fmt;
@@ -20,19 +20,17 @@ pub type Axis = [u8; 3];
 
 const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
 
-/// A Proj obect hold informations and parameters
+/// A Proj object hold informations and parameters
 /// for a projection
-pub struct Proj {
+#[derive(Debug)]
+pub struct ProjData {
     pub(crate) ellps: Ellipsoid,
-    pub(crate) datum: Datum,
     pub(crate) axis: Axis,
     pub(crate) is_geocent: bool,
     pub(crate) is_latlong: bool,
     pub(crate) from_greenwich: f64, // prime meridian
     pub(crate) to_meter: f64,
     pub(crate) vto_meter: f64,
-    pub(crate) geoc: bool,
-    pub(crate) over: bool, // over-ranging flag
     // Set the following as Option since
     // some projections need to test if
     // these parameters have been set or not
@@ -43,47 +41,9 @@ pub struct Proj {
     pub(crate) k0: Option<f64>,
     pub(crate) lam0: Option<f64>,
     pub(crate) phi0: Option<f64>,
-    // Set by projections initialization
-    pub(crate) projname: &'static str,
-    pub(crate) projection: ProjParams,
-    inverse: Option<ProjFn>,
-    forward: Option<ProjFn>,
 }
 
-//----------------------
-// Projection parameters
-//----------------------
-impl Proj {
-    /// Return the projection name
-    #[inline(always)]
-    pub fn projname(&self) -> &'static str {
-        self.projname
-    }
-
-    /// Return the inverse projection method
-    #[inline(always)]
-    pub(crate) fn inverse(&self) -> Option<ProjFn> {
-        self.inverse
-    }
-
-    /// Return the forward projection method
-    #[inline(always)]
-    pub(crate) fn forward(&self) -> Option<ProjFn> {
-        self.forward
-    }
-
-    /// Return the inverse projection method
-    #[inline(always)]
-    pub fn has_inverse(&self) -> bool {
-        self.inverse.is_some()
-    }
-
-    /// Return the forward projection method
-    #[inline(always)]
-    pub fn has_forward(&self) -> bool {
-        self.forward.is_some()
-    }
-
+impl ProjData {
     /// Returns the x0 value or 0. if the value
     /// was not defined
     pub fn x0(&self) -> f64 {
@@ -111,6 +71,95 @@ impl Proj {
     }
 }
 
+pub struct Proj {
+    datum: Datum,
+    geoc: bool,
+    over: bool, // over-ranging flag
+    // Set by projections initialization
+    projdata: ProjData,
+    projname: &'static str,
+    projection: ProjDelegate,
+}
+
+//----------------------
+// Projection parameters
+//----------------------
+impl Proj {
+    /// Return the projection name
+    #[inline]
+    pub fn projname(&self) -> &'static str {
+        self.projname
+    }
+    #[inline]
+    pub(crate) fn projection(&self) -> &ProjDelegate {
+        &self.projection
+    }
+    /// Return the inverse projection method
+    #[inline]
+    pub fn has_inverse(&self) -> bool {
+        self.projection.has_inverse()
+    }
+    /// Return the forward projection method
+    #[inline]
+    pub fn has_forward(&self) -> bool {
+        self.projection.has_forward()
+    }
+    #[inline]
+    pub(crate) fn data(&self) -> &ProjData {
+        &self.projdata
+    }
+    #[inline]
+    pub(crate) fn data_mut(&mut self) -> &mut ProjData {
+        &mut self.projdata
+    }
+    #[inline]
+    pub(crate) fn datum(&self) -> &Datum {
+        &self.datum
+    }
+    #[inline]
+    pub(crate) fn geoc(&self) -> bool {
+        self.geoc
+    }
+    #[inline]
+    pub(crate) fn over(&self) -> bool {
+        self.over
+    }
+    // Delegate
+    #[inline]
+    pub(crate) fn ellipsoid(&self) -> &Ellipsoid {
+        &self.projdata.ellps
+    }
+    #[inline]
+    pub fn vto_meter(&self) -> f64 {
+        self.projdata.vto_meter
+    }
+    #[inline]
+    pub fn to_meter(&self) -> f64 {
+        self.projdata.to_meter
+    }
+    #[inline]
+    pub fn axis(&self) -> &Axis {
+        &self.projdata.axis
+    }
+    /// Return true if the axis are normalized
+    #[inline]
+    pub fn normalized_axis(&self) -> bool {
+        self.projdata.axis == NORMALIZED_AXIS
+    }
+    #[inline]
+    pub fn is_latlong(&self) -> bool {
+        self.projdata.is_latlong
+    }
+    #[inline]
+    pub fn is_geocent(&self) -> bool {
+        self.projdata.is_geocent
+    }
+    #[inline]
+    pub fn from_greenwich(&self) -> f64 {
+        self.projdata.from_greenwich
+    }
+}
+
 //-------------------------
 // Initialisation
 //------------------------
@@ -118,7 +167,7 @@ impl Proj {
     // ----------------
     // Datum definition
     // ----------------
-    fn datum_defn<'a>(params: &'a ParamList) -> Result<Option<&'a DatumDefn>> {
+    fn get_datum_defn<'a>(params: &'a ParamList) -> Result<Option<&'a DatumDefn>> {
         // Do we have a "datum" parameter ?
         params
             .get("datum")
@@ -132,7 +181,7 @@ impl Proj {
     // --------------
     // Prime meridian
     // --------------
-    fn prime_meridian(params: &ParamList) -> Result<f64> {
+    fn get_prime_meridian(params: &ParamList) -> Result<f64> {
         params
             .get("pm")
             .map(
@@ -147,7 +196,7 @@ impl Proj {
     // -----------------
     // Datum parameters
     // ----------------
-    fn datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams> {
+    fn get_datum_params(params: &ParamList, defn: Option<&DatumDefn>) -> Result<DatumParams> {
         // Precedence order is 'nadgrids', 'towgs84', 'datum'
         if let Some(p) = params.get("nadgrids") {
             // Nadgrids
@@ -165,7 +214,7 @@ impl Proj {
     // -----------------
     // Ellipsoid
     // ----------------
-    fn ellipsoid(params: &ParamList, datum_def: Option<&DatumDefn>) -> Result<Ellipsoid> {
+    fn get_ellipsoid(params: &ParamList, datum_def: Option<&DatumDefn>) -> Result<Ellipsoid> {
         if let Some(radius) = params.get("R") {
             // Sphere override everything
             Ellipsoid::sphere(radius.try_into()?)
@@ -187,7 +236,7 @@ impl Proj {
     // -----------------
     // Axis
     // ----------------
-    fn axis(params: &ParamList) -> Result<Axis> {
+    fn get_axis(params: &ParamList) -> Result<Axis> {
         if let Some(p) = params.get("axis") {
             let axis_arg: &str = p.try_into()?;
             if axis_arg.len() != 3 {
@@ -210,15 +259,10 @@ impl Proj {
         }
     }
 
-    /// Return true if the axis are normalized
-    pub fn normalized_axis(&self) -> bool {
-        self.axis == NORMALIZED_AXIS
-    }
-
     // -----------------
     // Units
     // ----------------
-    fn units(params: &ParamList, name: &str, default: f64) -> Result<f64> {
+    fn get_units(params: &ParamList, name: &str, default: f64) -> Result<f64> {
         if let Some(p) = params.get(name) {
             units::find_unit_to_meter(p.try_into()?)
                 .map(Ok)
@@ -241,31 +285,30 @@ impl Proj {
             .and_then(|name| find_projection(name.try_into()?).ok_or(Error::ProjectionNotFound))?;
 
         // Get datum definition (if any)
-        let datum_defn = Self::datum_defn(&params)?;
+        let datum_defn = Self::get_datum_defn(&params)?;
 
         // Get datum parameters
-        let datum_params = Self::datum_params(&params, datum_defn)?;
+        let datum_params = Self::get_datum_params(&params, datum_defn)?;
 
         // Do we have an ellipse ?
-        let ellps = Self::ellipsoid(&params, datum_defn)?;
+        let ellps = Self::get_ellipsoid(&params, datum_defn)?;
 
         // Get prime meridian
-        let from_greenwich = Self::prime_meridian(&params)?;
+        let from_greenwich = Self::get_prime_meridian(&params)?;
 
         // Axis
-        let axis = Self::axis(&params)?;
+        let axis = Self::get_axis(&params)?;
 
         // units
-        let to_meter = Self::units(&params, "to_meter", 1.)?;
+        let to_meter = Self::get_units(&params, "to_meter", 1.)?;
         // XXX in proj4 vto_meter accept fractional expression: '/'
-        let vto_meter = Self::units(&params, "vto_meter", to_meter)?;
+        let vto_meter = Self::get_units(&params, "vto_meter", to_meter)?;
 
         // Datum
         let datum = Datum::new(&ellps, datum_params);
 
-        Self {
+        let mut projdata = ProjData {
             ellps,
-            datum,
             axis,
             is_geocent: false,
             is_latlong: false,
@@ -282,24 +325,17 @@ impl Proj {
                 Some(p) => Some(p.try_into()).transpose(),
                 None => params.try_value("k"),
             }?,
+        };
+
+        let project = proj_init.init(&mut projdata, &params)?;
+        Ok(Self {
+            datum,
             geoc: false,
             over: params.check_option("over")?,
-            projection: ProjParams::NoParams,
-            projname: "",
-            inverse: None,
-            forward: None,
-        }
-        .prepare(proj_init, &params)
-    }
-
-    // Initialise projection
-    fn prepare(mut self, proj_init: &ProjInit, params: &ParamList) -> Result<Self> {
-        let (project, inverse, forward) = proj_init.init(&mut self, params)?;
-        self.projname = proj_init.name();
-        self.projection = project;
-        self.inverse = inverse;
-        self.forward = forward;
-        Ok(self)
+            projdata,
+            projname: proj_init.name(),
+            projection: project,
+        })
     }
 
     /// Create from projstring definition
@@ -325,20 +361,10 @@ impl Proj {
 // -------------
 impl fmt::Debug for Proj {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "prime meridian: {:#?}", self.from_greenwich)?;
-        write!(f, "ellps:      {:#?}", self.ellps)?;
         write!(f, "datum:      {:#?}", self.datum)?;
-        write!(f, "axis:       {:#?}", self.axis)?;
-        write!(f, "is_geocent: {:#?}", self.is_geocent)?;
-        write!(f, "is_latlong: {:#?}", self.is_latlong)?;
-        write!(f, "to_meter:   {:#?}", self.to_meter)?;
-        write!(f, "vto_meter:  {:#?}", self.vto_meter)?;
-        write!(f, "x0:         {:#?}", self.x0)?;
-        write!(f, "y0:         {:#?}", self.y0)?;
-        write!(f, "lam0        {:#?}", self.lam0)?;
-        write!(f, "phi0:       {:#?}", self.phi0)?;
         write!(f, "geoc:       {:#?}", self.geoc)?;
         write!(f, "over:       {:#?}", self.over)?;
+        write!(f, "data:       {:#?}", self.projdata)?;
         write!(f, "projname:   {:#?}", self.projname)?;
         write!(f, "projection: {:#?}", self.projection)
     }

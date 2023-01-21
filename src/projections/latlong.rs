@@ -7,7 +7,7 @@
 //
 use crate::errors::Result;
 use crate::parameters::ParamList;
-use crate::proj::Proj;
+use crate::proj::ProjData;
 
 // Projection stub
 super::projection!(latlong);
@@ -18,7 +18,7 @@ pub(super) const NAME: &str = "latlon";
 pub(crate) struct Projection {}
 
 impl Projection {
-    pub fn init(p: &mut Proj, params: &ParamList) -> Result<Self> {
+    pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         p.is_latlong = true;
         p.x0 = Some(0.);
         p.y0 = Some(0.);
@@ -34,6 +34,14 @@ impl Projection {
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         Ok((x, y, z))
     }
+
+    pub const fn has_inverse() -> bool {
+        true
+    }
+
+    pub const fn has_forward() -> bool {
+        true
+    }
 }
 
 #[cfg(test)]
@@ -46,8 +54,10 @@ mod tests {
     fn proj_latlon_init() {
         let p = Proj::from_proj_string("+proj=latlon +datum=WGS84").unwrap();
 
-        assert_eq!(p.x0.unwrap(), 0.);
-        assert_eq!(p.y0.unwrap(), 0.);
+        let d = p.data();
+
+        assert_eq!(d.x0.unwrap(), 0.);
+        assert_eq!(d.y0.unwrap(), 0.);
         assert_eq!(p.projname(), NAME);
     }
 
