@@ -9,31 +9,29 @@ use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::Proj;
 
-use super::{ProjParams, ProjSetup};
+// Projection stub
+super::projection!(latlong);
 
 pub(super) const NAME: &str = "latlon";
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(crate) struct Projection {}
 
 impl Projection {
-    pub fn init(p: &mut Proj, params: &ParamList) -> Result<ProjSetup> {
+    pub fn init(p: &mut Proj, params: &ParamList) -> Result<Self> {
         p.is_latlong = true;
         p.x0 = Some(0.);
         p.y0 = Some(0.);
-        //
-        Ok((
-            ProjParams::latlong(Self {}),
-            Some(Self::inverse),
-            Some(Self::forward),
-        ))
+        Ok(Self {})
     }
 
-    pub fn forward(p: &Proj, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
+    #[inline(always)]
+    pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         Ok((lam, phi, z))
     }
 
-    pub fn inverse(p: &Proj, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+    #[inline(always)]
+    pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         Ok((x, y, z))
     }
 }
@@ -63,5 +61,4 @@ mod tests {
         let (lon_out, lat_out) = transform_xy(&p_from, &p_to, lon_in, lat_in).unwrap();
         assert_eq!((lon_out, lat_out), (lon_in, lat_in));
     }
-   
 }

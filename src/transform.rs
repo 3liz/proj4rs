@@ -146,7 +146,7 @@ where
         } else {
             // Inverse project
             let (mut lam, mut phi, z) = pj_inv(
-                p,
+                &p.projection,
                 // descale and de-offset
                 // z is not scaled since that
                 // is handled by vto_meter before we get here
@@ -196,7 +196,7 @@ where
                 Err(Error::CoordinateOutOfRange)
             } else {
                 let (x, y, z) = pj_fwd(
-                    p,
+                    &p.projection,
                     // ----
                     // lam
                     // ----

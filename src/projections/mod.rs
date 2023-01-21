@@ -22,7 +22,7 @@ use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::Proj;
 
-pub(crate) type ProjFn = fn(&Proj, f64, f64, f64) -> Result<(f64, f64, f64)>;
+pub(crate) type ProjFn = fn(&ProjParams, f64, f64, f64) -> Result<(f64, f64, f64)>;
 
 /// Setup: returned by the init() function
 /// Order of members: (params, inverse, forward)
@@ -46,41 +46,87 @@ impl ProjInit {
     }
 }
 
-macro_rules! proj {
-    ($name:ident) => {
-        ProjInit($name::NAME, $name::Projection::init)
-    };
-}
-
 // Macro for retrieval of parameters from the proj object
 // not that makes us writing a match to a unique element.
+// XXX Use Into trait instead
 macro_rules! downcast {
     ($name:ident, $p:expr) => {
-        match &$p.projdata {
-            crate::projections::ProjParams::$name(data) => data,
+        match $p {
+            $crate::projections::ProjParams::$name(data) => data,
             _ => unreachable!(),
         }
     };
 }
 
-pub(crate) use downcast;
+// Define this in projection definition module
+macro_rules! projection {
+    ($name:ident) => {
+        pub(crate) mod stub {
+            use $crate::errors::Result;
+            use $crate::parameters::ParamList;
+            use $crate::proj::Proj;
+            use $crate::projections::{$name, ProjParams, ProjSetup};
+            pub(crate) fn init_(p: &mut Proj, params: &ParamList) -> Result<ProjSetup> {
+                Ok((
+                    ProjParams::$name($name::Projection::init(p, params)?),
+                    Some(inverse_),
+                    Some(forward_),
+                ))
+            }
+            pub(crate) fn inverse_(
+                p: &ProjParams,
+                u: f64,
+                v: f64,
+                w: f64,
+            ) -> Result<(f64, f64, f64)> {
+                $crate::projections::downcast!($name, p).inverse(u, v, w)
+            }
+            pub(crate) fn forward_(
+                p: &ProjParams,
+                u: f64,
+                v: f64,
+                w: f64,
+            ) -> Result<(f64, f64, f64)> {
+                $crate::projections::downcast!($name, p).forward(u, v, w)
+            }
+        }
+    };
+}
 
-/// Hold per projection data calculated in the `init`
-/// function
-#[allow(non_camel_case_types)]
-#[derive(Debug)]
-pub(crate) enum ProjParams {
-    NoParams,
-    latlong(latlong::Projection),
-    lcc(lcc::Projection),
+pub(crate) use downcast;
+pub(crate) use projection;
+
+macro_rules! declare_projections {
+    ($($name:ident),+) => {
+        const PROJECTIONS: [ProjInit; 2] = [
+        $(
+            ProjInit($name::NAME, $name::stub::init_),
+        )+
+        ];
+        #[allow(non_camel_case_types)]
+        #[derive(Debug)]
+        pub(crate) enum ProjParams {
+            NoParams,
+            $(
+                $name($name::Projection),
+            )+
+        }
+    };
 }
 
 // ----------------------------
 // Projection list
 // ---------------------------
-const PROJECTIONS: [ProjInit; 2] = [proj!(latlong), proj!(lcc)];
 
+#[rustfmt::skip]
+declare_projections! [
+    latlong,
+    lcc
+];
+
+///
 /// Return the datum definition
+///
 pub(crate) fn find_projection(name: &str) -> Option<&ProjInit> {
     PROJECTIONS
         .iter()

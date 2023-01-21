@@ -97,7 +97,6 @@ impl<'a> ParamList<'a> {
     pub fn try_angular_value(&self, name: &str) -> Result<Option<f64>> {
         self.get(name).map(|p| p.try_angular_value()).transpose()
     }
-
 }
 
 // Create from Parameter iterator

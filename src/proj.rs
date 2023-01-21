@@ -45,7 +45,7 @@ pub struct Proj {
     pub(crate) phi0: Option<f64>,
     // Set by projections initialization
     pub(crate) projname: &'static str,
-    pub(crate) projdata: ProjParams,
+    pub(crate) projection: ProjParams,
     inverse: Option<ProjFn>,
     forward: Option<ProjFn>,
 }
@@ -62,13 +62,13 @@ impl Proj {
 
     /// Return the inverse projection method
     #[inline(always)]
-    pub fn inverse(&self) -> Option<ProjFn> {
+    pub(crate) fn inverse(&self) -> Option<ProjFn> {
         self.inverse
     }
 
     /// Return the forward projection method
     #[inline(always)]
-    pub fn forward(&self) -> Option<ProjFn> {
+    pub(crate) fn forward(&self) -> Option<ProjFn> {
         self.forward
     }
 
@@ -284,7 +284,7 @@ impl Proj {
             }?,
             geoc: false,
             over: params.check_option("over")?,
-            projdata: ProjParams::NoParams,
+            projection: ProjParams::NoParams,
             projname: "",
             inverse: None,
             forward: None,
@@ -294,9 +294,9 @@ impl Proj {
 
     // Initialise projection
     fn prepare(mut self, proj_init: &ProjInit, params: &ParamList) -> Result<Self> {
-        let (data, inverse, forward) = proj_init.init(&mut self, params)?;
+        let (project, inverse, forward) = proj_init.init(&mut self, params)?;
         self.projname = proj_init.name();
-        self.projdata = data;
+        self.projection = project;
         self.inverse = inverse;
         self.forward = forward;
         Ok(self)
@@ -340,7 +340,7 @@ impl fmt::Debug for Proj {
         write!(f, "geoc:       {:#?}", self.geoc)?;
         write!(f, "over:       {:#?}", self.over)?;
         write!(f, "projname:   {:#?}", self.projname)?;
-        write!(f, "projdata:   {:#?}", self.projdata)
+        write!(f, "projection: {:#?}", self.projection)
     }
 }
 
