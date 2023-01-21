@@ -19,3 +19,5 @@ pub(crate) const EPS_12: f64 = 1.0e-12;
 // XXX float has excessive precision
 //pub const SEC_TO_RAD: f64 = 4.84813681109535993589914102357e-6;
 pub(crate) const SEC_TO_RAD: f64 = 4.848_136_811_095_36e-6;
+pub(crate) const GRAD_TO_RAD: f64 = 0.015707963267948967;
+

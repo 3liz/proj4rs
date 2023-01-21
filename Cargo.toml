@@ -11,6 +11,7 @@ keywords = ["gis", "proj", "projection", "geography", "geospatial"]
 thiserror = "1.0"
 
 [dev-dependencies]
+approx = "0.5"
 
 [profile.release]
 lto = true

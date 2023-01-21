@@ -1,6 +1,9 @@
 //!
 //! Projection installation
 //!
+//! See <https://proj.org/usage/projections.html#cartographic-projection>
+//! for parameter's descriptions.
+//!
 
 use crate::datum_params::DatumParams;
 use crate::datum_transform::Datum;
@@ -28,6 +31,8 @@ pub struct Proj {
     pub(crate) from_greenwich: f64, // prime meridian
     pub(crate) to_meter: f64,
     pub(crate) vto_meter: f64,
+    pub(crate) geoc: bool,
+    pub(crate) over: bool, // over-ranging flag
     // Set the following as Option since
     // some projections need to test if
     // these parameters have been set or not
@@ -38,11 +43,9 @@ pub struct Proj {
     pub(crate) k0: Option<f64>,
     pub(crate) lam0: Option<f64>,
     pub(crate) phi0: Option<f64>,
-    pub(crate) geoc: bool,
-    pub(crate) over: bool, // over-ranging flag
     // Set by projections initialization
-    projname: &'static str,
-    projdata: ProjParams,
+    pub(crate) projname: &'static str,
+    pub(crate) projdata: ProjParams,
     inverse: Option<ProjFn>,
     forward: Option<ProjFn>,
 }
@@ -55,12 +58,6 @@ impl Proj {
     #[inline(always)]
     pub fn projname(&self) -> &'static str {
         self.projname
-    }
-
-    /// Return the projection data
-    #[inline(always)]
-    pub(crate) fn projdata(&self) -> &ProjParams {
-        &self.projdata
     }
 
     /// Return the inverse projection method
@@ -276,8 +273,8 @@ impl Proj {
             to_meter,
             vto_meter,
             // Central meridian_
-            lam0: params.try_value("lon_0")?,
-            phi0: params.try_value("lat_0")?,
+            lam0: params.try_angular_value("lon_0")?,
+            phi0: params.try_angular_value("lat_0")?,
             x0: params.try_value("x_0")?,
             y0: params.try_value("y_0")?,
             // Proj4 compatibility
@@ -298,6 +295,7 @@ impl Proj {
     // Initialise projection
     fn prepare(mut self, proj_init: &ProjInit, params: &ParamList) -> Result<Self> {
         let (data, inverse, forward) = proj_init.init(&mut self, params)?;
+        self.projname = proj_init.name();
         self.projdata = data;
         self.inverse = inverse;
         self.forward = forward;
@@ -305,7 +303,7 @@ impl Proj {
     }
 
     /// Create from projstring definition
-    pub fn from_projstr(s: &str) -> Result<Self> {
+    pub fn from_proj_string(s: &str) -> Result<Self> {
         Self::init(projstring::parse(s)?)
     }
 
@@ -313,9 +311,9 @@ impl Proj {
     pub fn from_user_string(s: &str) -> Result<Self> {
         let s = s.trim();
         if s.starts_with('+') {
-            Self::from_projstr(s)
+            Self::from_proj_string(s)
         } else if s.eq_ignore_ascii_case("WGS84") {
-            Self::from_projstr("+proj=longlat +ellps=WGS84")
+            Self::from_proj_string("+proj=longlat +ellps=WGS84")
         } else {
             Err(Error::UnrecognizedFormat)
         }
@@ -327,21 +325,21 @@ impl Proj {
 // -------------
 impl fmt::Debug for Proj {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "prime meridian: {:?}", self.from_greenwich)?;
+        write!(f, "prime meridian: {:#?}", self.from_greenwich)?;
         write!(f, "ellps:      {:#?}", self.ellps)?;
         write!(f, "datum:      {:#?}", self.datum)?;
-        write!(f, "axis:       {:?}", self.axis)?;
-        write!(f, "is_geocent: {:?}", self.is_geocent)?;
-        write!(f, "is_latlong: {:?}", self.is_latlong)?;
-        write!(f, "to_meter:   {:?}", self.to_meter)?;
-        write!(f, "vto_meter:  {:?}", self.vto_meter)?;
-        write!(f, "x0:         {:?}", self.x0)?;
-        write!(f, "y0:         {:?}", self.y0)?;
-        write!(f, "lam0        {:?}", self.lam0)?;
-        write!(f, "phi0:       {:?}", self.phi0)?;
-        write!(f, "geoc:       {:?}", self.geoc)?;
-        write!(f, "over:       {:?}", self.over)?;
-        write!(f, "projname:   {:?}", self.projname)?;
+        write!(f, "axis:       {:#?}", self.axis)?;
+        write!(f, "is_geocent: {:#?}", self.is_geocent)?;
+        write!(f, "is_latlong: {:#?}", self.is_latlong)?;
+        write!(f, "to_meter:   {:#?}", self.to_meter)?;
+        write!(f, "vto_meter:  {:#?}", self.vto_meter)?;
+        write!(f, "x0:         {:#?}", self.x0)?;
+        write!(f, "y0:         {:#?}", self.y0)?;
+        write!(f, "lam0        {:#?}", self.lam0)?;
+        write!(f, "phi0:       {:#?}", self.phi0)?;
+        write!(f, "geoc:       {:#?}", self.geoc)?;
+        write!(f, "over:       {:#?}", self.over)?;
+        write!(f, "projname:   {:#?}", self.projname)?;
         write!(f, "projdata:   {:#?}", self.projdata)
     }
 }
@@ -357,7 +355,7 @@ mod tests {
 
     #[test]
     fn proj_invalid_ellps_param() {
-        let p: Result<Proj> = Proj::from_projstr(INVALID_ELLPS);
+        let p: Result<Proj> = Proj::from_proj_string(INVALID_ELLPS);
 
         assert!(p.is_err());
         let err = p.unwrap_err();

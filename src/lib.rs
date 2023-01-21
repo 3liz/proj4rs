@@ -28,8 +28,8 @@ pub mod proj;
 pub mod transform;
 
 // Reexport
-pub use proj::Proj; 
-pub use parameters::{Parameter, ParamList};
+pub use parameters::{ParamList, Parameter};
+pub use proj::Proj;
 
 // Include wasm entry point for wasm32-unknown-unknown
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]

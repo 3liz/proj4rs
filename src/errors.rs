@@ -6,10 +6,10 @@
 pub enum Error {
     #[error("{0}")]
     InputStringError(&'static str),
-    #[error("No value for parameter '{0}'")]
-    NoValueParameter(String),
-    #[error("Cannot retrieve value for parameter '{0}'")]
-    ParameterValueError(String),
+    #[error("No value for parameter")]
+    NoValueParameter,
+    #[error("Cannot retrieve value for parameter")]
+    ParameterValueError,
     #[error("Missing projection name")]
     MissingProjectionError,
     #[error("Unrecognized datum")]
@@ -42,6 +42,10 @@ pub enum Error {
     NoInverseProjectionDefined,
     #[error("ProjErrConicLatEqual")]
     ProjErrConicLatEqual,
+    #[error("Tolerance condition not satisfied")]
+    ToleranceConditionError,
+    #[error("Non convergence of phi2 calculation")]
+    NonInvPhi2Convergence,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

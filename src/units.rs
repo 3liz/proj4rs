@@ -2,7 +2,6 @@
 //! Units
 
 mod constants {
-
     /// Static units table
     /// id, to_meter, display to_meter value, comment, to_meter
     #[rustfmt::skip]
@@ -28,16 +27,6 @@ mod constants {
         ("ind-yd",  "0.91439523",           "Indian Yard",                  0.91439523),
         ("ind-ft",  "0.30479841",           "Indian Foot",                  0.30479841),
         ("ind-ch",  "20.11669506",          "Indian Chain",                 20.11669506),
-    ];
-
-    pub const DEG_TO_RAD: f64 = 0.017453292519943296;
-    pub const GRAD_TO_RAD: f64 = 0.015707963267948967;
-
-    #[rustfmt::skip]
-    pub const ANGLE_UNITS: [(&str, &str, &str, f64);3] = [
-        ("rad",   "1.0",                   "Radian", 1.0),
-        ("deg",   "0.017453292519943296",  "Degree", DEG_TO_RAD),
-        ("grad",  "0.015707963267948967",  "Grad",   GRAD_TO_RAD),
     ];
 }
 

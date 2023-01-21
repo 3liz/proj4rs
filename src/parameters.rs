@@ -36,17 +36,27 @@ impl<'a> TryFrom<&Parameter<'a>> for &'a str {
     type Error = Error;
 
     fn try_from(p: &Parameter<'a>) -> Result<&'a str> {
-        p.value
-            .ok_or_else(|| Error::NoValueParameter(p.name.into()))
+        p.value.ok_or_else(|| Error::NoValueParameter)
     }
 }
 
 impl<'a> Parameter<'a> {
     fn try_value<F: FromStr>(&self) -> Result<F> {
         match self.value.map(F::from_str) {
-            None => Err(Error::NoValueParameter(self.name.into())),
-            Some(result) => result.map_err(|_err| Error::ParameterValueError(self.name.into())),
+            None => Err(Error::NoValueParameter),
+            Some(result) => result.map_err(|_err| Error::ParameterValueError),
         }
+    }
+
+    /// Return a value in radians assuming input is
+    /// in degree (decimal)
+    ///
+    /// By default it is assumed that unspecified input
+    /// is in degree.
+    ///
+    /// TODO: parse dms value
+    pub fn try_angular_value(&self) -> Result<f64> {
+        self.try_value::<f64>().map(|v| v.to_radians())
     }
 
     /// Check the token as a boolean flag
@@ -58,7 +68,7 @@ impl<'a> Parameter<'a> {
         self.value
             .map(bool::from_str)
             .unwrap_or(Ok(true))
-            .map_err(|_err| Error::ParameterValueError(self.name.into()))
+            .map_err(|_err| Error::ParameterValueError)
     }
 }
 
@@ -66,11 +76,6 @@ impl<'a> Parameter<'a> {
 pub struct ParamList<'a>(Vec<Parameter<'a>>);
 
 impl<'a> ParamList<'a> {
-    /// Create a Parameter list from a vector of Params
-    pub fn new(params: Vec<Parameter<'a>>) -> Self {
-        Self(params)
-    }
-
     /// Return Some(param) if the parameter `name` exists `None` otherwise.
     pub fn get(&self, name: &str) -> Option<&Parameter<'a>> {
         self.0.iter().find(|p| p.name == name)
@@ -87,6 +92,18 @@ impl<'a> ParamList<'a> {
         T: FromStr,
     {
         self.get(name).map(|p| p.try_value::<T>()).transpose()
+    }
+
+    pub fn try_angular_value(&self, name: &str) -> Result<Option<f64>> {
+        self.get(name).map(|p| p.try_angular_value()).transpose()
+    }
+
+}
+
+// Create from Parameter iterator
+impl<'a> FromIterator<Parameter<'a>> for ParamList<'a> {
+    fn from_iter<I: IntoIterator<Item = Parameter<'a>>>(iter: I) -> Self {
+        Self(iter.into_iter().collect())
     }
 }
 

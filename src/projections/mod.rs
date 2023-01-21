@@ -56,12 +56,14 @@ macro_rules! proj {
 // not that makes us writing a match to a unique element.
 macro_rules! downcast {
     ($name:ident, $p:expr) => {
-        match $p.projparams {
+        match &$p.projdata {
             crate::projections::ProjParams::$name(data) => data,
             _ => unreachable!(),
         }
     };
 }
+
+pub(crate) use downcast;
 
 /// Hold per projection data calculated in the `init`
 /// function
@@ -73,6 +75,9 @@ pub(crate) enum ProjParams {
     lcc(lcc::Projection),
 }
 
+// ----------------------------
+// Projection list
+// ---------------------------
 const PROJECTIONS: [ProjInit; 2] = [proj!(latlong), proj!(lcc)];
 
 /// Return the datum definition

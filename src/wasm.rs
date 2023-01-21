@@ -17,7 +17,7 @@ impl Projection {
     #[wasm_bindgen(constructor)]
     pub fn new(defn: &str) -> Result<Projection, JsError> {
         Ok(Self {
-            inner: proj::Proj::from_projstr(defn)?,
+            inner: proj::Proj::from_user_string(defn)?,
         })
     }
 }

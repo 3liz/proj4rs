@@ -19,14 +19,12 @@ use crate::errors::{Error, Result};
 use crate::parameters::{ParamList, Parameter};
 
 pub fn parse<'a>(s: &'a str) -> Result<ParamList<'a>> {
-    Ok(ParamList::new(
-        tokenizer::tokens(s)
-            .map(|r| match r {
-                Ok((name, value, _)) => Ok(Parameter { name, value }),
-                Err(err) => Err(err),
-            })
-            .collect::<Result<Vec<Parameter<'a>>>>()?,
-    ))
+    tokenizer::tokens(s)
+        .map(|r| match r {
+            Ok((name, value, _)) => Ok(Parameter { name, value }),
+            Err(err) => Err(err),
+        })
+        .collect()
 }
 
 mod tokenizer {
