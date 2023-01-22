@@ -10,9 +10,7 @@ use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
 // Projection stub
-super::projection!(latlong);
-
-pub(super) const NAME: &str = "latlon";
+super::projection!(latlong, "latlong");
 
 #[derive(Debug)]
 pub(crate) struct Projection {}
@@ -20,8 +18,8 @@ pub(crate) struct Projection {}
 impl Projection {
     pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         p.is_latlong = true;
-        p.x0 = Some(0.);
-        p.y0 = Some(0.);
+        p.x0 = 0.;
+        p.y0 = 0.;
         Ok(Self {})
     }
 
@@ -52,19 +50,19 @@ mod tests {
 
     #[test]
     fn proj_latlon_init() {
-        let p = Proj::from_proj_string("+proj=latlon +datum=WGS84").unwrap();
+        let p = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
         let d = p.data();
 
-        assert_eq!(d.x0.unwrap(), 0.);
-        assert_eq!(d.y0.unwrap(), 0.);
-        assert_eq!(p.projname(), NAME);
+        assert_eq!(d.x0, 0.);
+        assert_eq!(d.y0, 0.);
+        assert_eq!(p.projname(), "latlong");
     }
 
     #[test]
     fn proj_latlon_to_latlon() {
-        let p_from = Proj::from_proj_string("+proj=latlon +datum=WGS84").unwrap();
-        let p_to = Proj::from_proj_string("+proj=latlon +datum=WGS84").unwrap();
+        let p_from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+        let p_to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
         let (lon_in, lat_in) = (2.3522219, 48.856614);
 

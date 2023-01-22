@@ -18,7 +18,7 @@
 use crate::errors::{Error, Result};
 use crate::parameters::{ParamList, Parameter};
 
-pub fn parse<'a>(s: &'a str) -> Result<ParamList<'a>> {
+pub fn parse(s: &str) -> Result<ParamList<'_>> {
     tokenizer::tokens(s)
         .map(|r| match r {
             Ok((name, value, _)) => Ok(Parameter { name, value }),

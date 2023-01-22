@@ -11,7 +11,7 @@
 //!
 //! Most important projections:
 //!
-//! lcc, merc, tmerc, utm et aea
+//! lcc, merc, tmerc, utm (etmerc) et aea
 //! stere et sterea pour for polar regions.
 //!
 
@@ -88,7 +88,7 @@ macro_rules! downcast {
 // `super::projection!(projection_name);`
 //
 macro_rules! projection {
-    ($name:ident) => {
+    ($name:ident, $id:expr) => {
         pub(crate) mod stub {
             use $crate::errors::Result;
             use $crate::parameters::ParamList;
@@ -119,6 +119,10 @@ macro_rules! projection {
             ) -> Result<(f64, f64, f64)> {
                 $crate::projections::downcast!($name, p).forward(u, v, w)
             }
+
+            pub const fn name() -> &'static str {
+                $id
+            }
         }
     };
 }
@@ -128,12 +132,9 @@ use projection;
 
 macro_rules! declare_projections {
     ($($name:ident),+) => {
+        const PROJECTIONS: [ProjInit; 4] = [
         $(
-            mod $name;
-        )+
-        const PROJECTIONS: [ProjInit; 2] = [
-        $(
-            ProjInit($name::NAME, $name::stub::init_),
+            ProjInit($name::stub::name(), $name::stub::init_),
         )+
         ];
         #[allow(non_camel_case_types)]
@@ -150,10 +151,17 @@ macro_rules! declare_projections {
 // Projection list
 // ---------------------------
 
+mod etmerc;
+mod latlong;
+mod lcc;
+mod utm;
+
 #[rustfmt::skip]
 declare_projections! [
     latlong,
-    lcc
+    lcc,
+    etmerc,
+    utm
 ];
 
 ///

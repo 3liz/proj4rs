@@ -1,8 +1,8 @@
 //!
 //! Geodetic to/from geocentrique  conversion
 //!
-use crate::consts::{FRAC_PI_2, PI, TAU};
 use crate::errors::{Error, Result};
+use crate::math::consts::{FRAC_PI_2, PI, TAU};
 
 const GENAU: f64 = 1.0e-12;
 const GENAU2: f64 = GENAU * GENAU;

@@ -36,7 +36,7 @@ impl<'a> TryFrom<&Parameter<'a>> for &'a str {
     type Error = Error;
 
     fn try_from(p: &Parameter<'a>) -> Result<&'a str> {
-        p.value.ok_or_else(|| Error::NoValueParameter)
+        p.value.ok_or(Error::NoValueParameter)
     }
 }
 

@@ -34,9 +34,9 @@
 //!
 #![allow(non_upper_case_globals)]
 
-use crate::consts::EPS_10;
 use crate::ellipsoids::{EllipsoidDefn, FlatteningParam};
 use crate::errors::{Error, Result};
+use crate::math::consts::EPS_10;
 use crate::parameters::ParamList;
 
 use std::ops::ControlFlow;

@@ -1,9 +1,9 @@
 //!
 //! Handle datum parameters
 //!
-use crate::consts::SEC_TO_RAD;
 use crate::datums::DatumParamDefn;
 use crate::errors::{Error, Result};
+use crate::math::consts::SEC_TO_RAD;
 use crate::nadgrids::NadGrids;
 
 /// Datum parameters

@@ -7,7 +7,6 @@
 //! * <http://docs.opengeospatial.org/as/18-005r5/18-005r5.html>
 //! * <https://proj.org/development/reference/cpp/cpp_general.html>
 //!
-mod consts;
 mod datum_params;
 mod datum_transform;
 mod datums;

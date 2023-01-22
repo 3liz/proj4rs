@@ -13,16 +13,16 @@
 //! y_0: y offset in meters
 //!
 
-use crate::consts::{EPS_10, FRAC_PI_2, FRAC_PI_4};
 use crate::errors::{Error, Result};
-use crate::math::{msfn, phi2, tsfn};
+use crate::math::{
+    consts::{EPS_10, FRAC_PI_2, FRAC_PI_4},
+    msfn, phi2, tsfn,
+};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
 // Projection stub
-super::projection!(lcc);
-
-pub(super) const NAME: &str = "lcc";
+super::projection!(lcc, "lcc");
 
 #[derive(Debug)]
 pub(crate) struct Projection {
@@ -40,7 +40,9 @@ impl Projection {
     pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let phi1 = params.try_angular_value("lat_1")?.unwrap_or(0.);
         let phi2 = params.try_angular_value("lat_2")?.unwrap_or_else(|| {
-            p.phi0 = p.phi0.or(Some(phi1));
+            if params.get("lat_0").is_none() {
+                p.phi0 = phi1;
+            }
             phi1
         });
 
@@ -49,7 +51,7 @@ impl Projection {
             return Err(Error::ProjErrConicLatEqual);
         }
 
-        let phi0 = p.phi0();
+        let phi0 = p.phi0;
 
         let sinphi = phi1.sin();
         let cosphi = phi1.cos();
@@ -103,7 +105,7 @@ impl Projection {
             c,
             ellips,
             e: el.e,
-            k0: p.k0(),
+            k0: p.k0,
         })
     }
 
@@ -175,7 +177,7 @@ impl Projection {
 mod tests {
     use super::*;
     use crate::adaptors::transform_xy;
-    use crate::consts::EPS_10;
+    use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use approx::assert_abs_diff_eq;
 
@@ -223,7 +225,7 @@ mod tests {
 
     #[test]
     fn proj_lcc_latlon_to_lcc() {
-        let p_from = Proj::from_proj_string("+proj=latlon +ellps=GRS80").unwrap();
+        let p_from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
         let p_to = Proj::from_proj_string("+proj=lcc +ellps=GRS80 +lat_1=0.5 +lat_2=2").unwrap();
 
         let (lon_in, lat_in) = (2.0f64.to_radians(), 1.0f64.to_radians());

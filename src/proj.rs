@@ -31,44 +31,11 @@ pub struct ProjData {
     pub(crate) from_greenwich: f64, // prime meridian
     pub(crate) to_meter: f64,
     pub(crate) vto_meter: f64,
-    // Set the following as Option since
-    // some projections need to test if
-    // these parameters have been set or not
-    // this is more convenient that checking the
-    // parameter list again
-    pub(crate) x0: Option<f64>,
-    pub(crate) y0: Option<f64>,
-    pub(crate) k0: Option<f64>,
-    pub(crate) lam0: Option<f64>,
-    pub(crate) phi0: Option<f64>,
-}
-
-impl ProjData {
-    /// Returns the x0 value or 0. if the value
-    /// was not defined
-    pub fn x0(&self) -> f64 {
-        self.x0.unwrap_or(0.)
-    }
-    /// Returns the y0 value or 0. if the value
-    /// was not defined
-    pub fn y0(&self) -> f64 {
-        self.x0.unwrap_or(0.)
-    }
-    /// Returns the phi0 (lat_0) value or 0. if the value
-    /// was not defined
-    pub fn phi0(&self) -> f64 {
-        self.phi0.unwrap_or(0.)
-    }
-    /// Returns the lam0 (lon_0) value or 0. if the value
-    /// was not defined
-    pub fn lam0(&self) -> f64 {
-        self.lam0.unwrap_or(0.)
-    }
-    /// Returns the k0 (k_0) value or 1. if the value
-    /// was not defined
-    pub fn k0(&self) -> f64 {
-        self.lam0.unwrap_or(1.)
-    }
+    pub(crate) x0: f64,
+    pub(crate) y0: f64,
+    pub(crate) k0: f64,
+    pub(crate) lam0: f64,
+    pub(crate) phi0: f64,
 }
 
 pub struct Proj {
@@ -143,7 +110,7 @@ impl Proj {
     }
     /// Return true if the axis are normalized
     #[inline]
-    pub fn normalized_axis(&self) -> bool {
+    pub fn is_normalized_axis(&self) -> bool {
         self.projdata.axis == NORMALIZED_AXIS
     }
     #[inline]
@@ -316,15 +283,16 @@ impl Proj {
             to_meter,
             vto_meter,
             // Central meridian_
-            lam0: params.try_angular_value("lon_0")?,
-            phi0: params.try_angular_value("lat_0")?,
-            x0: params.try_value("x_0")?,
-            y0: params.try_value("y_0")?,
+            lam0: params.try_angular_value("lon_0")?.unwrap_or(0.),
+            phi0: params.try_angular_value("lat_0")?.unwrap_or(0.),
+            x0: params.try_value("x_0")?.unwrap_or(0.),
+            y0: params.try_value("y_0")?.unwrap_or(0.),
             // Proj4 compatibility
             k0: match params.get("k0") {
                 Some(p) => Some(p.try_into()).transpose(),
                 None => params.try_value("k"),
-            }?,
+            }?
+            .unwrap_or(1.),
         };
 
         let project = proj_init.init(&mut projdata, &params)?;
@@ -377,7 +345,7 @@ mod tests {
     use super::*;
     use crate::errors::{Error, Result};
 
-    const INVALID_ELLPS: &str = "+proj=latlon +lon_0=5.937 +lat_ts=45.027 +ellps=foo";
+    const INVALID_ELLPS: &str = "+proj=latlong +lon_0=5.937 +lat_ts=45.027 +ellps=foo";
 
     #[test]
     fn proj_invalid_ellps_param() {

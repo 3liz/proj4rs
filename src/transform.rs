@@ -3,11 +3,11 @@
 //! including reprojection and datum shifting
 //!
 
-use crate::consts::{EPS_12, FRAC_PI_2};
 use crate::datum_transform::Datum;
 use crate::errors::{Error, Result};
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
 use crate::math::adjlon;
+use crate::math::consts::{EPS_12, FRAC_PI_2};
 use crate::proj::{Axis, Proj};
 ///
 /// Transform trait
@@ -111,7 +111,7 @@ where
 
     // Return true if the datums are identical is respect
     // to datum transformation.
-    // As of PROJ 4.6.0 behavior, we prevent datum transformation
+    // As of PROJ 4 behavior, we prevent datum transformation
     // if either the source or destination are of an unknown datum type.
     if src_datum.no_datum() || dst_datum.no_datum() || src_datum.is_identical_to(dst_datum) {
         return Ok(());
@@ -134,7 +134,7 @@ where
     }
 
     let d = p.data();
-    let (lam0, x0, y0) = (d.lam0(), d.x0(), d.y0());
+    let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
     let (ra, one_es, to_meter) = (d.ellps.ra, d.ellps.one_es, d.to_meter);
 
     let geoc = p.geoc();
@@ -183,7 +183,7 @@ where
 
     let d = p.data();
 
-    let (lam0, x0, y0) = (d.lam0(), d.x0(), d.y0());
+    let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
     let (a, rone_es, to_meter) = (d.ellps.a, d.ellps.rone_es, d.to_meter);
 
     let proj = p.projection();
@@ -299,7 +299,7 @@ fn adjust_axes<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    if !p.normalized_axis() {
+    if !p.is_normalized_axis() {
         match dir {
             Forward => denormalize_axis(p.axis(), points),
             Inverse => normalize_axis(p.axis(), points),
