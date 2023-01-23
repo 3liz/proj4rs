@@ -127,7 +127,7 @@ fn clens(a: &Coeffs, arg_r: f64) -> f64 {
     arg_r.sin() * hr
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug)]
 pub(crate) struct Projection {
     Qn: f64,     // Merid. quad., scaled to the projection
     Zb: f64,     // Radius vector in polar coord. systems
@@ -143,7 +143,11 @@ impl Projection {
 
         // We have flattening computed, use it !
         let f = p.ellps.f;
-        
+
+        if f == 0. {
+            return Err(Error::EllipsoidRequired)
+        }
+
         // third flattening
         let n = f / (2. - f);
 
@@ -347,7 +351,7 @@ mod tests {
     use approx::assert_abs_diff_eq;
 
     #[test]
-    fn proj_etmerc() {
+    fn proj_etmerc_etmerc() {
         let p = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
 
         println!("{:#?}", p.projection());
@@ -372,19 +376,15 @@ mod tests {
 
         println!("{:#?}", p.projection());
         println!("{:#?}", p.data());
-        
+
         let inputs = [
-            ((2., 1., 0.), (1057002.4054912976,  110955.14117594929, 0.)),
-            ((2., -1., 0.), (1057002.4054912976,  -110955.1411759492, 0.)),
-            ((-2., 1., 0.), (611263.8122789060,  110547.10569680421, 0.)),
-            (
-               (-2., -1., 0.),
-                (611263.8122789060,  -110547.10569680421, 0.),
-            ),
+            ((2., 1., 0.), (1057002.4054912976, 110955.14117594929, 0.)),
+            ((2., -1., 0.), (1057002.4054912976, -110955.1411759492, 0.)),
+            ((-2., 1., 0.), (611263.8122789060, 110547.10569680421, 0.)),
+            ((-2., -1., 0.), (611263.8122789060, -110547.10569680421, 0.)),
         ];
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
-
 }

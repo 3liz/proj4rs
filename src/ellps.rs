@@ -252,7 +252,6 @@ impl Ellipsoid {
             e = 0.;
             f = 0.;
             rf = f64::INFINITY;
-        } else if !(0. ..1.).contains(&es) {
         }
 
         let one_es = 1. - es;

@@ -134,11 +134,11 @@ use projection;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
-        const PROJECTIONS: [ProjInit; 4] = [
+        const PROJECTIONS: [ProjInit; 6] = [
         $(
             ProjInit(stringify!($name), $name::stub::$name),
             $(
-                ProjInit(stringify!($init), $name::stub::$init)
+                ProjInit(stringify!($init), $name::stub::$init),
             )*
         )+
         ];
@@ -156,6 +156,7 @@ macro_rules! declare_projections {
 // Projection list
 // ---------------------------
 
+mod aea;
 mod etmerc;
 mod latlong;
 mod lcc;
@@ -165,6 +166,7 @@ declare_projections! [
     (latlong),
     (lcc),
     (etmerc, utm),
+    (aea, leac),
 ];
 
 ///

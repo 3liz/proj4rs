@@ -52,6 +52,8 @@ pub enum Error {
     InverseProjectionFailure,
     #[error("Invalid UTM zone")]
     InvalidUtmZone,
+    #[error("An ellipsoid is required")]
+    EllipsoidRequired,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -20,12 +20,15 @@ pub(crate) mod consts {
     // Other value op epsilon used
     pub(crate) const EPS_12: f64 = 1.0e-12;
 
+    // Other value op epsilon used
+    pub(crate) const EPS_7: f64 = 1.0e-7;
+
     // XXX float has excessive precision
     //pub const SEC_TO_RAD: f64 = 4.84813681109535993589914102357e-6;
     pub(crate) const SEC_TO_RAD: f64 = 4.848_136_811_095_36e-6;
 }
 
-use consts::{EPS_10, EPS_12, FRAC_PI_2, PI, TAU};
+use consts::{EPS_10, EPS_12, EPS_7, FRAC_PI_2, PI, TAU};
 
 pub(crate) fn adjlon(mut lon: f64) -> f64 {
     // Let lon slightly overshoot,
@@ -43,15 +46,32 @@ pub(crate) fn adjlon(mut lon: f64) -> f64 {
     lon
 }
 
-#[inline(always)]
+#[inline]
 pub(crate) fn msfn(sinphi: f64, cosphi: f64, es: f64) -> f64 {
     cosphi / (1. - es * sinphi * sinphi).sqrt()
 }
 
-#[inline(always)]
+#[inline]
 pub(crate) fn tsfn(phi: f64, sinphi: f64, e: f64) -> f64 {
     //  XXX Avoid division by zero, check denominator
     (0.5 * (FRAC_PI_2 - phi)).tan() / ((1. - sinphi * e) / (1. + sinphi * e)).powf(0.5 * e)
+}
+
+pub(crate) fn qsfn(sinphi: f64, e: f64, one_es: f64) -> f64 {
+    if e >= EPS_7 {
+        let con = e * sinphi;
+        let div1 = 1.0 - con * con;
+        let div2 = 1.0 + con;
+        // avoid zero division, fail gracefully
+        if div1 == 0.0 || div2 == 0.0 {
+            f64::INFINITY
+        } else {
+            one_es * (sinphi / div1 - (0.5 / e) * ((1. - con) / div2).ln())
+        }
+    } else {
+        // XXX why not 2.*sinphi ?
+        sinphi + sinphi
+    }
 }
 
 const PHI2_NITER: i32 = 15;
@@ -155,5 +175,36 @@ pub fn asinh(x: f64) -> f64 {
 pub fn asinh(x: f64) -> f64 {
     let y = x.abs();         // Enforce odd parity
     (y * (1. + y/(1.0f64.hypot(y) + 1.))).ln_1p().copysign(x)
+}
+*/
+
+/*
+/// Meridional distance for ellipsoid and inverse
+/// 8th degree - accurate to < 1e-5 meters when used in conjunction
+/// with typical major axis values.
+/// Inverse determines phi to EPS (1e-11) radians, about 1e-6 seconds.
+pub(crate) enfn(es: f64) -> [f64;5] {
+
+    const C00: f64 = 1.;
+    const C02: f64 = 0.25;
+    const C04: f64 = 0.046875;
+    const C06: f64 = 0.01953125;
+    const C08: f64 = 0.01068115234375;
+    const C22: f64 = 0.75;
+    const C44: f64 = 0.46875;
+    const C46: f64 = 0.01302083333333333333;
+    const C48: f64 = 0.00712076822916666666;
+    const C66: f64 = 0.36458333333333333333;
+    const C68: f64 = 0.00569661458333333333;
+    const C88: f64 = 0.3076171875;
+
+    let t = es * es;
+    [
+        C00 - es * (C02 + es * (C04 + es * (C06 + es * C08))),
+        es * (C22 - es * (C04 + es * (C06 + es * C08))),
+        t * (C44 - es * (C46 + es * C48)),
+        t * es  * (C66 - es * C68),
+        t * t * es * C88,
+    ]
 }
 */
