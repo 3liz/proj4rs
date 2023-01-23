@@ -10,13 +10,13 @@ use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
 // Projection stub
-super::projection!(latlong, "latlong");
+super::projection! { latlong }
 
 #[derive(Debug)]
 pub(crate) struct Projection {}
 
 impl Projection {
-    pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
+    pub fn latlong(p: &mut ProjData, _: &ParamList) -> Result<Self> {
         p.is_latlong = true;
         p.x0 = 0.;
         p.y0 = 0.;

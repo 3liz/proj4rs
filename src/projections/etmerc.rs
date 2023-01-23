@@ -43,10 +43,10 @@
 #![allow(non_snake_case)]
 
 // Projection stub
-super::projection!(etmerc, "etmerc");
+super::projection! { etmerc, utm }
 
 use crate::errors::{Error, Result};
-use crate::math::asinh;
+use crate::math::{adjlon, asinh, consts::PI};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
@@ -54,6 +54,7 @@ const ETMERC_ORDER: usize = 6;
 
 pub type Coeffs = [f64; ETMERC_ORDER];
 
+#[inline]
 fn gatg(c: &Coeffs, B: f64) -> f64 {
     let mut h2 = 0.;
     let cos_2B = 2. * (2. * B).cos();
@@ -71,6 +72,7 @@ fn gatg(c: &Coeffs, B: f64) -> f64 {
 }
 
 // Complex Clenshaw summation
+#[inline]
 fn clens_cplx(a: &Coeffs, arg_r: f64, arg_i: f64) -> (f64, f64) {
     let (sin_arg_r, cos_arg_r) = arg_r.sin_cos();
     let sinh_arg_i = arg_i.sinh();
@@ -106,6 +108,7 @@ fn clens_cplx(a: &Coeffs, arg_r: f64, arg_i: f64) -> (f64, f64) {
 }
 
 // Real Clenshaw summation
+#[inline]
 fn clens(a: &Coeffs, arg_r: f64) -> f64 {
     let cos_arg_r = arg_r.cos();
     let r = 2. * cos_arg_r;
@@ -136,7 +139,7 @@ pub(crate) struct Projection {
 
 #[rustfmt::skip]
 impl Projection {
-    pub fn init(p: &mut ProjData, params: &ParamList) -> Result<Self> {
+    pub fn etmerc(p: &mut ProjData, _params: &ParamList) -> Result<Self> {
 
         // We have flattening computed, use it !
         let f = p.ellps.f;
@@ -219,7 +222,7 @@ impl Projection {
             gtu,
         })
     }
- 
+
     #[inline(always)]
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
 
@@ -290,6 +293,48 @@ impl Projection {
     pub const fn has_forward() -> bool {
         true
     }
+
+    //-------------------
+    // UTM
+    //------------------
+    pub fn utm(p: &mut ProjData, params: &ParamList) -> Result<Self> {
+        if p.lam0 < -1000. || p.lam0 > 1000. {
+            return Err(Error::InvalidUtmZone);
+        }
+
+        p.x0 = 500_000.;
+        p.y0 = if params.check_option("south")? {
+            10_000_000.
+        } else {
+            0.
+        };
+
+        let zone = params.try_value::<u8>("zone").and_then(|zone| match zone {
+            Some(zone) => {
+                if (1..=60).contains(&zone) {
+                    Ok(zone as f64)
+                } else {
+                    Err(Error::InvalidUtmZone)
+                }
+            }
+            None => {
+                // nearest central meridian input
+                let zone = ((adjlon(p.lam0) + PI) * 30. / PI).floor().round();
+                if (1. ..=60.).contains(&zone) {
+                    Ok(zone)
+                } else {
+                    Err(Error::InvalidUtmZone)
+                }
+            }
+        })?;
+
+        p.lam0 = ((zone - 1.) + 0.5) * PI / 30. - PI;
+        p.k0 = 0.9996;
+        p.phi0 = 0.;
+
+        Self::etmerc(p, params)
+    }
+
 }
 
 #[cfg(test)]
@@ -298,33 +343,48 @@ mod tests {
     use crate::adaptors::transform_xy;
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
+    use crate::tests::utils::{test_proj_forward, test_proj_inverse};
     use approx::assert_abs_diff_eq;
 
-    fn scale(a: f64, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
-        (xyz.0 * a, xyz.1 * a, xyz.2)
-    }
-
-    fn to_deg(lpz: (f64, f64, f64)) -> (f64, f64, f64) {
-        (lpz.0.to_degrees(), lpz.1.to_degrees(), lpz.2)
-    }
-
-    fn to_rad(lpz: (f64, f64, f64)) -> (f64, f64, f64) {
-        (lpz.0.to_radians(), lpz.1.to_radians(), lpz.2)
-    }
-
     #[test]
-    fn proj_etmerc_forward() {
+    fn proj_etmerc() {
         let p = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
 
         println!("{:#?}", p.projection());
 
-        let (lam, phi, _) = to_rad((2., 1., 0.));
+        let inputs = [
+            ((2., 1., 0.), (222650.79679758527, 110642.22941193319, 0.)),
+            ((2., -1., 0.), (222650.79679758527, -110642.22941193319, 0.)),
+            ((-2., 1., 0.), (-222650.79679758527, 110642.22941193319, 0.)),
+            (
+                (-2., -1., 0.),
+                (-222650.79679758527, -110642.22941193319, 0.),
+            ),
+        ];
 
-        let out = scale(
-            p.ellipsoid().a,
-            p.projection().forward(lam, phi, 0.).unwrap(),
-        );
-        assert_abs_diff_eq!(out.0, 222650.79679758527, epsilon = EPS_10);
-        assert_abs_diff_eq!(out.1, 110642.22941193319, epsilon = EPS_10);
+        test_proj_forward(&p, &inputs, EPS_10);
+        test_proj_inverse(&p, &inputs, EPS_10);
     }
+
+    #[test]
+    fn proj_etmerc_utm() {
+        let p = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
+
+        println!("{:#?}", p.projection());
+        println!("{:#?}", p.data());
+        
+        let inputs = [
+            ((2., 1., 0.), (1057002.4054912976,  110955.14117594929, 0.)),
+            ((2., -1., 0.), (1057002.4054912976,  -110955.1411759492, 0.)),
+            ((-2., 1., 0.), (611263.8122789060,  110547.10569680421, 0.)),
+            (
+               (-2., -1., 0.),
+                (611263.8122789060,  -110547.10569680421, 0.),
+            ),
+        ];
+
+        test_proj_forward(&p, &inputs, EPS_10);
+        test_proj_inverse(&p, &inputs, EPS_10);
+    }
+
 }

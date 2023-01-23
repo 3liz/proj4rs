@@ -87,22 +87,22 @@ macro_rules! downcast {
 //
 // `super::projection!(projection_name);`
 //
-macro_rules! projection {
-    ($name:ident, $id:expr) => {
+macro_rules! projection_delegate {
+    ($name:ident, $($init:ident),+ $(,)?) => {
         pub(crate) mod stub {
             use $crate::errors::Result;
             use $crate::parameters::ParamList;
             use $crate::proj::ProjData;
             use $crate::projections::{$name, ProjDelegate, ProjParams};
-            pub(crate) fn init_(p: &mut ProjData, params: &ParamList) -> Result<ProjDelegate> {
+            $(pub(crate) fn $init(p: &mut ProjData, params: &ParamList) -> Result<ProjDelegate> {
                 Ok(ProjDelegate(
-                    ProjParams::$name($name::Projection::init(p, params)?),
+                    ProjParams::$name($name::Projection::$init(p, params)?),
                     inverse_,
                     forward_,
                     $name::Projection::has_inverse(),
                     $name::Projection::has_forward(),
                 ))
-            }
+            })+
             pub(crate) fn inverse_(
                 p: &ProjParams,
                 u: f64,
@@ -119,11 +119,13 @@ macro_rules! projection {
             ) -> Result<(f64, f64, f64)> {
                 $crate::projections::downcast!($name, p).forward(u, v, w)
             }
-
-            pub const fn name() -> &'static str {
-                $id
-            }
         }
+    };
+}
+
+macro_rules! projection {
+    ($name:ident $(,)? $($init:ident),*) => {
+        projection_delegate!{ $name, $name, $($init,)* }
     };
 }
 
@@ -131,10 +133,13 @@ use downcast;
 use projection;
 
 macro_rules! declare_projections {
-    ($($name:ident),+) => {
+    ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
         const PROJECTIONS: [ProjInit; 4] = [
         $(
-            ProjInit($name::stub::name(), $name::stub::init_),
+            ProjInit(stringify!($name), $name::stub::$name),
+            $(
+                ProjInit(stringify!($init), $name::stub::$init)
+            )*
         )+
         ];
         #[allow(non_camel_case_types)]
@@ -154,18 +159,16 @@ macro_rules! declare_projections {
 mod etmerc;
 mod latlong;
 mod lcc;
-mod utm;
 
 #[rustfmt::skip]
 declare_projections! [
-    latlong,
-    lcc,
-    etmerc,
-    utm
+    (latlong),
+    (lcc),
+    (etmerc, utm),
 ];
 
 ///
-/// Return the datum definition
+/// Return the projection definition
 ///
 pub(crate) fn find_projection(name: &str) -> Option<&ProjInit> {
     PROJECTIONS
