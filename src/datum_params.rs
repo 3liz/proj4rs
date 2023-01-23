@@ -28,7 +28,6 @@ impl DatumParams {
     pub fn from_towgs84_str(towgs84: &str) -> Result<Self> {
         let mut i = towgs84.split(',');
 
-        #[inline]
         fn parse(v: Option<&str>) -> Result<f64> {
             v.unwrap_or("")
                 .trim()
