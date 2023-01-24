@@ -134,7 +134,7 @@ use projection;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
-        const PROJECTIONS: [ProjInit; 6] = [
+        const PROJECTIONS: [ProjInit; 8] = [
         $(
             ProjInit(stringify!($name), $name::stub::$name),
             $(
@@ -160,6 +160,7 @@ mod aea;
 mod etmerc;
 mod latlong;
 mod lcc;
+mod stere;
 
 #[rustfmt::skip]
 declare_projections! [
@@ -167,6 +168,7 @@ declare_projections! [
     (lcc),
     (etmerc, utm),
     (aea, leac),
+    (stere, ups),
 ];
 
 ///

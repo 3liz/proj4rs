@@ -54,6 +54,8 @@ pub enum Error {
     InvalidUtmZone,
     #[error("An ellipsoid is required")]
     EllipsoidRequired,
+    #[error("Coordinate transform outside projection domain")]
+    CoordTransOutsideProjectionDomain,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

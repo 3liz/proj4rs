@@ -110,6 +110,16 @@ pub struct Ellipsoid {
 use Shape::*;
 
 impl Ellipsoid {
+    #[inline]
+    pub fn is_sphere(&self) -> bool {
+        self.es == 0.
+    }
+
+    #[inline]
+    pub fn is_ellipsoid(&self) -> bool {
+        self.es != 0.
+    }
+
     /// Create sphere
     pub fn sphere(radius: f64) -> Result<Self> {
         if !(radius.is_normal() && radius > 0.) {

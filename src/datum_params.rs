@@ -28,6 +28,8 @@ impl DatumParams {
     pub fn from_towgs84_str(towgs84: &str) -> Result<Self> {
         let mut i = towgs84.split(',');
 
+        // XXX Use js_sys::parsefloat with Wasm
+        // It save about 20ko !
         fn parse(v: Option<&str>) -> Result<f64> {
             v.unwrap_or("")
                 .trim()

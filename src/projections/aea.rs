@@ -70,15 +70,11 @@ impl Projection {
         }
 
         let el = &p.ellps;
-
         let (sinphi, cosphi) = phi1.sin_cos();
-
         let mut n = sinphi;
-
         let secant = (phi1 - phi2).abs() >= EPS_10;
-        let ellips = el.es > 0.;
 
-        if ellips {
+        if el.is_ellipsoid() {
             let m1 = msfn(sinphi, cosphi, el.es);
             let ml1 = qsfn(sinphi, el.e, el.one_es);
             if ml1.is_infinite() {
