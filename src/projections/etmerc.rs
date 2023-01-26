@@ -1,44 +1,15 @@
-//
-// This is a transcript of the original etmerc algorithm from
-// Proj library
-//
-// Original licence:
-//
-// Copyright (c) 2008   Gerald I. Evenden
-//
-//
-// Permission is hereby granted, free of charge, to any person obtaining
-// a copy of this software and associated documentation files (the
-// "Software"), to deal in the Software without restriction, including
-// without limitation the rights to use, copy, modify, merge, publish,
-// distribute, sublicense, and/or sell copies of the Software, and to
-// permit persons to whom the Software is furnished to do so, subject to
-// the following conditions:
-//
-// The above copyright notice and this permission notice shall be
-// included in all copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-// EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-// IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-// CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-// TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-// SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-//
-// The code in this file is largly based upon procedures:
-//
-// Written by: Knud Poder and Karsten Engsager
-//
-// Based on math from: R.Koenig and K.H. Weise, "Mathematische
-// Grundlagen der hoeheren Geodaesie und Kartographie,
-// Springer-Verlag, Berlin/Goettingen" Heidelberg, 1951.
-//
-// Modified and used in original Proj library by permission of Reference Networks
-// Division, Kort og Matrikelstyrelsen (KMS), Copenhagen, Denmark
-//
 //!
-//! Enhanced Transverse Mercator (etmerc)
+//! Implement the Knud Poder/Karsten Engsager algorithm.
+//!
+//! This algorithm is called "exact" in comparison to the Evenden/John Snyder algorithm (tmerc)
+//! (slightly) faster but less accurate. Note that etmerc does not provide spherical projection.
+//!
+//! This algorithm is used as a base for UTM projections.
+//!
+//! Reference: https://proj.org/operations/projections/tmerc.html
+//!
+//! etmerc: "Extended Transverse Mercator" "\n\tCyl, Sph\n\tlat_ts=(0)\nlat_0=(0)"
+//! utm: "Universal Transverse Mercator (UTM)" "\n\tCyl, Sph\n\tzone= south"
 //!
 #![allow(non_snake_case)]
 
@@ -227,7 +198,6 @@ impl Projection {
         })
     }
 
-    #[inline(always)]
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
 
         let (mut Cn, mut Ce) = (phi, lam);
@@ -255,11 +225,10 @@ impl Projection {
                 z,
             ))
         } else {
-            Err(Error::ForwardProjectionFailure)
+            Err(Error::CoordTransOutsideProjectionDomain)
         }
     }
 
-    #[inline(always)]
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let (mut Cn, mut Ce) = (y, x);
         
@@ -302,10 +271,6 @@ impl Projection {
     // UTM
     //------------------
     pub fn utm(p: &mut ProjData, params: &ParamList) -> Result<Self> {
-        if p.lam0 < -1000. || p.lam0 > 1000. {
-            return Err(Error::InvalidUtmZone);
-        }
-
         p.x0 = 500_000.;
         p.y0 = if params.check_option("south")? {
             10_000_000.
@@ -313,7 +278,7 @@ impl Projection {
             0.
         };
 
-        let zone = params.try_value::<u8>("zone").and_then(|zone| match zone {
+        let zone = params.try_value::<i32>("zone").and_then(|zone| match zone {
             Some(zone) => {
                 if (1..=60).contains(&zone) {
                     Ok(zone as f64)

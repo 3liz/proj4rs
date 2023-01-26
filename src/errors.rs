@@ -56,6 +56,8 @@ pub enum Error {
     EllipsoidRequired,
     #[error("Coordinate transform outside projection domain")]
     CoordTransOutsideProjectionDomain,
+    #[error("No convergence for inv. meridian distance")]
+    InvMeridDistConvError,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -89,11 +89,11 @@ impl<'a> ParamList<'a> {
             .unwrap_or(Ok(false))
     }
 
-    pub fn try_value<T>(&self, name: &str) -> Result<Option<T>>
+    pub fn try_value<T>(&'a self, name: &str) -> Result<Option<T>>
     where
-        T: FromStr,
+        T: TryFrom<&'a Parameter<'a>, Error = Error>,
     {
-        self.get(name).map(|p| p.try_value::<T>()).transpose()
+        self.get(name).map(|p| T::try_from(p)).transpose()
     }
 
     pub fn try_angular_value(&self, name: &str) -> Result<Option<f64>> {

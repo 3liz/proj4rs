@@ -1,18 +1,25 @@
 //!
 //! From proj/stere.c
 //!
-//! stere:
+//! see also https://proj.org/operations/projections/stere.html
 //!
-//! Stereographic (Azimuthal, Spherical, ellipsoidal)
+//! Stereographic - Azimuthal
 //!
-//! Parameters: lat_ts.
+//! Provide forward and inverse spherical and ellipsoidal projection.
+//! Defined area: global 2D.
 //!
-//! ups:
+//! Geodetique coordinates to projected coordinates.
 //!
 //! Universal Polar Stereographic (Azimuthal, Spherical, ellipsoidal)
 //!
-//! Parameters: south.
+//! ### Derived projection:
 //!
+//! ups:  Universal Polar Stereographic
+//!
+//! see also https://proj.org/operations/projections/ups.html
+//!
+//! stere: "Stereographic" "\n\tAzi, Sph&Ell\n\tlat_ts=";
+//! ups: "Universal Polar Stereographic") "\n\tAzi, Sph&Ell\n\tsouth";
 //!
 use crate::errors::{Error, Result};
 use crate::math::{
@@ -469,17 +476,16 @@ mod tests {
         println!("{:#?}", p.projection());
 
         let inputs = [
-            ((2., 1., 0.), (2433455.5634384668,-10412543.301512826, 0.)),
+            ((2., 1., 0.), (2433455.5634384668, -10412543.301512826, 0.)),
             ((2., -1., 0.), (2448749.1185681992, -10850493.419804076, 0.)),
             ((-2., 1., 0.), (1566544.4365615332, -10412543.301512826, 0.)),
             (
                 (-2., -1., 0.),
-                (1551250.8814318008,-10850493.419804076, 0.),
+                (1551250.8814318008, -10850493.419804076, 0.),
             ),
         ];
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
-
 }
