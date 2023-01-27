@@ -10,7 +10,7 @@
 use crate::errors::{Error, Result};
 use crate::math::{
     consts::{EPS_10, FRAC_PI_2},
-    enfn, inv_mlfn, mlfn, En,
+    enfn, inv_mlfn, mlfn, Enfn,
 };
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
@@ -21,7 +21,7 @@ pub(crate) struct Ell {
     es: f64,
     esp: f64,
     ml0: f64,
-    en: En,
+    en: Enfn,
 }
 
 #[derive(Debug)]
@@ -226,4 +226,3 @@ impl Sph {
         Ok((if g != 0.0 || h != 0.0 { g.atan2(h) } else { 0. }, phi, z))
     }
 }
-

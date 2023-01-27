@@ -132,7 +132,7 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 9;
+const NUM_PROJECTIONS: usize = 10;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
@@ -164,6 +164,7 @@ mod etmerc;
 mod latlong;
 mod lcc;
 mod stere;
+mod sterea;
 mod tmerc;
 
 #[rustfmt::skip]
@@ -174,6 +175,7 @@ declare_projections! [
     (tmerc),
     (aea, leac),
     (stere, ups),
+    (sterea),
 ];
 
 ///
