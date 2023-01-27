@@ -61,7 +61,8 @@ impl Projection {
             inv_gauss(
                 (x * sinc).atan2(rho * self.cosc0 * cosc - y * self.sinc0 * sinc),
                 (cosc * self.sinc0 + y * sinc * self.cosc0 / rho).asin(),
-            &self.en)
+                &self.en,
+            )
         } else {
             inv_gauss(0., self.phic0, &self.en)
         }?;

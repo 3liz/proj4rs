@@ -51,3 +51,26 @@ pub(crate) mod utils {
         })
     }
 }
+
+use crate::adaptors::transform_point_array;
+use crate::proj::Proj;
+use crate::transform::{transform, Transform};
+use approx::assert_abs_diff_eq;
+
+#[test]
+fn test_transform_array() {
+    let mut data: Vec<(f64, f64, f64)> = (1..=1_000)
+        .map(|_| (2.0f64.to_radians(), 1.0f64.to_radians(), 0.0f64))
+        .collect();
+
+    let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
+    let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
+
+    transform_point_array(&from, &to, data.as_mut_slice()).unwrap();
+
+    // Check values
+    data.iter().for_each(|(x, y, _)| {
+        assert_abs_diff_eq!(*x, 222650.79679758527, epsilon = 1.0e-10);
+        assert_abs_diff_eq!(*y, 110642.22941193319, epsilon = 1.0e-10);
+    });
+}

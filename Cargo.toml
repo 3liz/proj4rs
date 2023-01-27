@@ -26,5 +26,5 @@ wasm-bindgen = "0.2"
 wee_alloc = "0.4"
 
 [[bench]]
-name = "loop_vs_fold"
+name = "bench_proj"
 harness = false
