@@ -4,6 +4,14 @@
 use crate::{errors, proj, transform};
 use wasm_bindgen::prelude::*;
 
+#[wasm_bindgen]
+extern "C" {
+    // Use `js_namespace` here to bind `console.log(..)` instead of just
+    // `log(..)`
+    #[wasm_bindgen(js_namespace = console)]
+    fn log(s: &str);
+}
+
 /// ----------------------------
 /// Wrapper for Projection
 /// ---------------------------
@@ -38,6 +46,31 @@ impl Point {
     pub fn new(x: f64, y: f64, z: f64) -> Point {
         Self { x, y, z }
     }
+
+    #[wasm_bindgen(getter)]
+    pub fn x(&self) -> f64 {
+        self.x
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_x(&mut self, x: f64) {
+        self.x = x;
+    }
+    #[wasm_bindgen(getter)]
+    pub fn y(&self) -> f64 {
+        self.y
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_y(&mut self, y: f64) {
+        self.y = y;
+    }
+    #[wasm_bindgen(getter)]
+    pub fn z(&self) -> f64 {
+        self.z
+    }
+    #[wasm_bindgen(setter)]
+    pub fn set_z(&mut self, z: f64) {
+        self.z = z;
+    }
 }
 
 impl transform::Transform for Point {
@@ -55,6 +88,14 @@ impl transform::Transform for Point {
 
 #[wasm_bindgen]
 pub fn transform(src: &Projection, dst: &Projection, point: &mut Point) -> Result<(), JsError> {
+    if src.inner.is_latlong() {
+        point.x = point.x.to_radians();
+        point.y = point.y.to_radians();
+    }
     transform::transform(&src.inner, &dst.inner, point)?;
+    if dst.inner.is_latlong() {
+        point.x = point.x.to_degrees();
+        point.y = point.y.to_degrees();
+    }
     Ok(())
 }

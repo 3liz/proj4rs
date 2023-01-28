@@ -3,10 +3,7 @@
 //!
 //!
 use crate::errors::{Error, Result};
-use std::str::FromStr;
-
-// XXX Parsing code take about 1kb in wasm, try to use JS parsing functions
-// parseInt(), parseFloat() with wasm-bingen
+use crate::parse::FromStr;
 
 /// Struct holding a pair key/value
 pub struct Parameter<'a> {
@@ -41,8 +38,6 @@ impl<'a> TryFrom<&Parameter<'a>> for &'a str {
 }
 
 impl<'a> Parameter<'a> {
-    // XXX Try to use external parser with Wasm
-    // It save about 20ko !
     fn try_value<F: FromStr>(&self) -> Result<F> {
         match self.value.map(F::from_str) {
             None => Err(Error::NoValueParameter),

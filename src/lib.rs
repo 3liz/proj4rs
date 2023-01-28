@@ -16,6 +16,7 @@ mod geocent;
 mod math;
 mod nadgrids;
 mod parameters;
+mod parse;
 mod prime_meridians;
 mod projections;
 mod projstring;

@@ -58,6 +58,8 @@ pub enum Error {
     CoordTransOutsideProjectionDomain,
     #[error("No convergence for inv. meridian distance")]
     InvMeridDistConvError,
+    #[error("JS parse error")]
+    JsParseError,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;
