@@ -52,7 +52,6 @@ pub(crate) mod utils {
     }
 }
 
-use crate::adaptors::transform_point_array;
 use crate::proj::Proj;
 use crate::transform::{transform, Transform};
 use approx::assert_abs_diff_eq;
@@ -66,7 +65,7 @@ fn test_transform_array() {
     let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
     let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
 
-    transform_point_array(&from, &to, data.as_mut_slice()).unwrap();
+    transform(&from, &to, data.as_mut_slice()).unwrap();
 
     // Check values
     data.iter().for_each(|(x, y, _)| {

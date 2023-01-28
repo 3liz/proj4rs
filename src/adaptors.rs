@@ -52,14 +52,21 @@ impl Transform for [(f64, f64, f64)] {
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.iter_mut().try_for_each(|(x, y, z)| {
-            (*x, *y, *z) = f(*x, *y, *z)?;
-            Ok(())
+            f(*x, *y, *z).map(|xyz| (*x, *y, *z) = xyz )
         })
     }
 }
 
-/// Transform an array of 3 tuple
-#[inline(always)]
-pub fn transform_point_array(src: &Proj, dst: &Proj, pts: &mut [(f64, f64, f64)]) -> Result<()> {
-    transform(src, dst, pts)
+//
+// Transform an array of 2-tuple:
+//
+impl Transform for [(f64, f64)] {
+    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
+    where
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
+    {
+        self.iter_mut().try_for_each(|(x, y)| {
+            f(*x, *y, 0.).map(|xyz| (*x, *y, _) = xyz )
+        })
+    }
 }

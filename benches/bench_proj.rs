@@ -2,7 +2,7 @@
 //! Compare loop vs  try_fold
 //!
 //!
-use proj4rs::adaptors::transform_point_array;
+use proj4rs::transform::{transform, Transform};
 use proj4rs::errors::{Error, Result};
 use proj4rs::proj::Proj;
 
@@ -28,7 +28,7 @@ fn etmerc_transform(itermax: usize) {
     let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
     let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
 
-    transform_point_array(&from, &to, data.as_mut_slice()).unwrap();
+    transform(&from, &to, data.as_mut_slice()).unwrap();
 }
 
 fn criterion_benchmark_proj(c: &mut Criterion) {
