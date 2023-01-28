@@ -20,14 +20,20 @@ pub type Axis = [u8; 3];
 
 const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum ProjType {
+    Geocentric,
+    Latlong,
+    Other,
+}
+
 /// A Proj object hold informations and parameters
 /// for a projection
 #[derive(Debug)]
 pub struct ProjData {
     pub(crate) ellps: Ellipsoid,
     pub(crate) axis: Axis,
-    pub(crate) is_geocent: bool,
-    pub(crate) is_latlong: bool,
+    pub(crate) proj_type: ProjType,
     pub(crate) from_greenwich: f64, // prime meridian
     pub(crate) to_meter: f64,
     pub(crate) vto_meter: f64,
@@ -115,15 +121,20 @@ impl Proj {
     }
     #[inline]
     pub fn is_latlong(&self) -> bool {
-        self.projdata.is_latlong
+        self.projdata.proj_type == ProjType::Latlong
     }
     #[inline]
     pub fn is_geocent(&self) -> bool {
-        self.projdata.is_geocent
+        self.projdata.proj_type == ProjType::Geocentric
     }
     #[inline]
     pub fn from_greenwich(&self) -> f64 {
         self.projdata.from_greenwich
+    }
+
+    #[inline]
+    pub fn projection_type(&self) -> ProjType {
+        self.projdata.proj_type
     }
 }
 
@@ -277,8 +288,7 @@ impl Proj {
         let mut projdata = ProjData {
             ellps,
             axis,
-            is_geocent: false,
-            is_latlong: false,
+            proj_type: ProjType::Other,
             from_greenwich,
             to_meter,
             vto_meter,
@@ -298,7 +308,9 @@ impl Proj {
         let project = proj_init.init(&mut projdata, &params)?;
         Ok(Self {
             datum,
-            geoc: false,
+            // Use Geocentric Latitude
+            // see https://proj.org/operations/conversions/geoc.html
+            geoc: params.check_option("geoc")?,
             over: params.check_option("over")?,
             projdata,
             projname: proj_init.name(),

@@ -11,15 +11,15 @@ use std::ops::ControlFlow::*;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 fn etmerc_transform(itermax: usize) {
-    //let d = 1.0 / (itermax as f64);
+    let d = 1.0 / (itermax as f64);
 
     let mut data: Vec<(f64, f64, f64)> = (1..=itermax)
         .map(|i| {
             (
-                //(-2.0f64 + (i as f64) * 4.0 * d).to_radians(),
-                //(-1.0f64 + (i as f64) * 2.0 * d).to_radians(),
-                2.0f64.to_radians(),
-                1.0f64.to_radians(),
+                (-2.0f64 + (i as f64) * 4.0 * d).to_radians(),
+                (-1.0f64 + (i as f64) * 2.0 * d).to_radians(),
+                //2.0f64.to_radians(),
+                //1.0f64.to_radians(),
                 0.,
             )
         })

@@ -8,7 +8,7 @@ use crate::errors::{Error, Result};
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
 use crate::math::adjlon;
 use crate::math::consts::{EPS_12, FRAC_PI_2};
-use crate::proj::{Axis, Proj};
+use crate::proj::{Axis, Proj, ProjType};
 ///
 /// Transform trait
 ///
@@ -81,20 +81,16 @@ where
     }
 
     adjust_axes(src, Inverse, points)?;
-    geographic_to_cartesian(src, Inverse, points)?;
+    height_unit(src, Inverse, points)?;
     projected_to_geographic(src, points)?;
     prime_meridian(src, Inverse, points)?;
-    height_unit(src, Inverse, points)?;
-    //geometric_to_orthometric(src, Inverse, points)?;
 
     datum_transform(src, dst, points)?;
 
-    //geometric_to_orthometric(dst, Forward, points)?;
-    height_unit(dst, Forward, points)?;
     prime_meridian(dst, Forward, points)?;
-    geographic_to_cartesian(dst, Forward, points)?;
     geographic_to_projected(dst, points)?;
     //long_wrap(dst)?;
+    height_unit(dst, Forward, points)?;
     adjust_axes(dst, Forward, points)?;
 
     Ok(())
@@ -120,53 +116,53 @@ where
     points.transform_coordinates(|x, y, z| Datum::transform(src_datum, dst_datum, x, y, z))
 }
 // ---------------------------------
-// Projected to geographic
+// Projected to geographic (inverse)
 // ---------------------------------
 fn projected_to_geographic<P>(p: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
     // Nothing to do ?
-    if p.is_latlong() && !p.geoc()
-    /* && p.vto_meter == 1. */
-    {
-        return Ok(());
-    }
-
-    let d = p.data();
-    let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
-    let (ra, one_es, to_meter) = (d.ellps.ra, d.ellps.one_es, d.to_meter);
-
-    let geoc = p.geoc();
-    let over = p.over();
-
-    let proj = p.projection();
-
-    // Input points are cartesians
-    // proj4 source: pj_inv.c
-    points.transform_coordinates(|x, y, z| {
-        if x.is_nan() || y.is_nan() {
-            Err(Error::NanCoordinateValue)
-        } else {
-            // Inverse project
-            let (mut lam, mut phi, z) = proj.inverse(
-                // descale and de-offset
-                // z is not scaled since that
-                // is handled by vto_meter before we get here
-                (x * to_meter - x0) * ra,
-                (y * to_meter - y0) * ra,
-                z,
-            )?;
-            lam += lam0;
-            if !over {
-                lam = adjlon(lam);
+    match p.projection_type() {
+        ProjType::Latlong => {
+            if p.geoc() {
+                let rone_es = p.ellipsoid().rone_es;
+                // Geocentric latitude => geodetic latitude
+                points
+                    .transform_coordinates(|lam, phi, z| Ok((lam, (rone_es * phi.tan()).atan(), z)))
+            } else {
+                Ok(())
             }
-            if geoc && (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
-                phi = (one_es * phi.tan()).atan();
-            }
-            Ok((lam, phi, z))
         }
-    })
+        ProjType::Geocentric => geographic_to_cartesian(p, Inverse, points),
+        ProjType::Other => {
+            let d = &p.data();
+            let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
+            let (ra, to_meter) = (d.ellps.ra, d.to_meter);
+
+            let over = p.over();
+            let proj = p.projection();
+
+            // Input points are cartesians
+            // proj4 source: pj_inv.c
+            points.transform_coordinates(|x, y, z| {
+                // Inverse project
+                let (mut lam, mut phi, z) = proj.inverse(
+                    // descale and de-offset
+                    // z is not scaled since that
+                    // is handled by vto_meter before we get here
+                    (x * to_meter - x0) * ra,
+                    (y * to_meter - y0) * ra,
+                    z,
+                )?;
+                lam += lam0;
+                if !over {
+                    lam = adjlon(lam);
+                }
+                Ok((lam, phi, z))
+            })
+        }
+    }
 }
 // ---------------------------------
 // Geographic to projected
@@ -175,67 +171,74 @@ fn geographic_to_projected<P>(p: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    // Nothing to do ?
-    //if (p.is_latlong() && !p.geoc() && p.vto_meter() == 1.) || p.is_geocent() {
-    if (p.is_latlong() && !p.geoc()) || p.is_geocent() {
-        return Ok(());
-    }
-
-    let d = p.data();
-
-    let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
-    let (a, rone_es, to_meter) = (d.ellps.a, d.ellps.rone_es, d.to_meter);
-
-    let proj = p.projection();
-    let geoc = p.geoc();
-    let over = p.over();
-
-    let fr_meter = 1. / p.to_meter();
-
-    // Input points are geographic
-    // proj4 source: pj_fwd.c
-    points.transform_coordinates(|lam, phi, z| {
-        if lam.is_nan() || phi.is_nan() {
-            Err(Error::NanCoordinateValue)
-        } else {
-            // Overrange check
-            let t = phi.abs() - FRAC_PI_2;
-            if t > EPS_12 || lam.abs() > 10. {
-                Err(Error::CoordinateOutOfRange)
+    match p.projection_type() {
+        ProjType::Latlong => {
+            if p.geoc() {
+                let one_es = p.ellipsoid().one_es;
+                points.transform_coordinates(|lam, phi, z| {
+                    // Geodetic latitude to geocentric latitude
+                    Ok(if (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
+                        (lam, (one_es * phi.tan()).atan(), z)
+                    } else {
+                        (lam, phi, z)
+                    })
+                })
             } else {
-                let (x, y, z) = proj.forward(
-                    // ----
-                    // lam
-                    // ----
-                    if !over {
-                        adjlon(lam - lam0)
-                    } else {
-                        lam - lam0
-                    },
-                    // ---
-                    // phi
-                    // ---
-                    if t.abs() <= EPS_12 {
-                        if phi < 0. {
-                            -FRAC_PI_2
-                        } else {
-                            FRAC_PI_2
-                        }
-                    } else if geoc {
-                        (rone_es * phi.tan()).atan()
-                    } else {
-                        phi
-                    },
-                    // ---
-                    // z
-                    // ---
-                    z,
-                )?;
-                // Rescale and offset
-                Ok((fr_meter * (a * x + x0), fr_meter * (a * y + y0), z))
+                Ok(())
             }
         }
-    })
+        ProjType::Geocentric => geographic_to_cartesian(p, Forward, points),
+        ProjType::Other => {
+            let d = p.data();
+
+            let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
+            let (a, to_meter) = (d.ellps.a, d.to_meter);
+
+            let proj = p.projection();
+            let over = p.over();
+
+            let fr_meter = 1. / p.to_meter();
+
+            // Input points are geographic
+            // proj4 source: pj_fwd.c
+            points.transform_coordinates(|lam, phi, z| {
+                // Overrange check
+                let t = phi.abs() - FRAC_PI_2;
+                if t > EPS_12 || lam.abs() > 10. {
+                    Err(Error::CoordinateOutOfRange)
+                } else {
+                    let (x, y, z) = proj.forward(
+                        // ----
+                        // lam
+                        // ----
+                        if !over {
+                            adjlon(lam - lam0)
+                        } else {
+                            lam - lam0
+                        },
+                        // ---
+                        // phi
+                        // ---
+                        if t.abs() <= EPS_12 {
+                            if phi < 0. {
+                                -FRAC_PI_2
+                            } else {
+                                FRAC_PI_2
+                            }
+                        } else {
+                            phi
+                        },
+                        // ---
+                        // z
+                        // ---
+                        z,
+                    )?;
+                    // Rescale and offset
+                    Ok((fr_meter * (a * x + x0), fr_meter * (a * y + y0), z))
+                }
+            })
+        }
+    }
 }
 // ---------------------------------
 // Transform cartesian ("geocentric")
