@@ -6,16 +6,12 @@
   </head>
   <body>
     <script type="module">
-      var Proj4 = {};
-      import init, { Point, Projection, transform } from "./pkg/proj4rs.js";
+      import init, * as Proj from "./pkg/proj4rs.js";
       await init();
-      Proj4.Projection = Projection;
-      Proj4.Point = Point;
-      Proj4.transform = transform;
-      let from = new Proj4.Projection("+proj=latlong +ellps=GRS80");
-      let to = new Proj4.Projection("+proj=etmerc +ellps=GRS80");
-      let point = new Proj4.Point(2.0, 1.0, 0.0);
-      Proj4.transform(from, to, point);
+      let from = new Proj.Projection("+proj=latlong +ellps=GRS80");
+      let to = new Proj.Projection("+proj=etmerc +ellps=GRS80");
+      let point = new Proj.Point(2.0, 1.0, 0.0);
+      Proj.transform(from, to, point);
       console.log(`=> ${point.x} ${point.y}`);
     </script>
   </body>

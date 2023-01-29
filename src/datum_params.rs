@@ -32,8 +32,7 @@ impl DatumParams {
         // XXX Use js_sys::parsefloat with Wasm
         // It save about 20ko !
         fn parse(v: Option<&str>) -> Result<f64> {
-            f64::from_str(v.unwrap_or("")
-                .trim())
+            f64::from_str(v.unwrap_or("").trim())
                 .map(|v| v * SEC_TO_RAD)
                 .map_err(|_| Error::InvalidToWGS84String)
         }

@@ -87,12 +87,12 @@ pub(crate) mod consts {
 pub fn asinh(x: f64) -> f64 {
     (x.abs() + 1.0f64.hypot(x)).ln().copysign(x)
 }
-/*
-pub fn asinh(x: f64) -> f64 {
-    let y = x.abs();         // Enforce odd parity
-    (y * (1. + y/(1.0f64.hypot(y) + 1.))).ln_1p().copysign(x)
-}
-*/
+
+//pub fn asinh(x: f64) -> f64 {
+//    let y = x.abs();         // Enforce odd parity
+//    (y * (1. + y/(1.0f64.hypot(y) + 1.))).ln_1p().copysign(x)
+//}
+
 
 mod adjlon;
 mod gauss;

@@ -51,9 +51,8 @@ impl Transform for [(f64, f64, f64)] {
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
-        self.iter_mut().try_for_each(|(x, y, z)| {
-            f(*x, *y, *z).map(|xyz| (*x, *y, *z) = xyz )
-        })
+        self.iter_mut()
+            .try_for_each(|(x, y, z)| f(*x, *y, *z).map(|xyz| (*x, *y, *z) = xyz))
     }
 }
 
@@ -65,8 +64,7 @@ impl Transform for [(f64, f64)] {
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
-        self.iter_mut().try_for_each(|(x, y)| {
-            f(*x, *y, 0.).map(|xyz| (*x, *y, _) = xyz )
-        })
+        self.iter_mut()
+            .try_for_each(|(x, y)| f(*x, *y, 0.).map(|xyz| (*x, *y, _) = xyz))
     }
 }
