@@ -21,6 +21,12 @@ const FRAC_PI_2_EPS: f64 = 1.001 * FRAC_PI_2;
 /// X         : Calculated Geocentric X coordinate, in meters    (output)
 /// Y         : Calculated Geocentric Y coordinate, in meters    (output)
 /// Z         : Calculated Geocentric Z coordinate, in meters    (output)
+///
+/// This conversion converts geodetic coordinate values (longitude, latitude, elevation above ellipsoid)
+/// to their geocentric (X, Y, Z) representation, where the first axis (X) points from the Earth centre
+/// to the point of longitude=0, latitude=0, the second axis (Y) points from the
+/// Earth centre to the point of longitude=90, latitude=0 and the third axis (Z) points to the North pole
+///
 pub fn geodetic_to_geocentric(x: f64, y: f64, z: f64, a: f64, es: f64) -> Result<(f64, f64, f64)> {
     let mut lon = x;
     let mut lat = y;
@@ -38,11 +44,9 @@ pub fn geodetic_to_geocentric(x: f64, y: f64, z: f64, a: f64, es: f64) -> Result
         lon -= TAU;
     }
 
-    let sin_lat = lat.sin();
+    let (sin_lat, cos_lat) = lat.sin_cos();
     // Earth radius at location
     let rn = a / (1. - es * (sin_lat * sin_lat)).sqrt();
-
-    let cos_lat = lat.cos();
     Ok((
         (rn + z) * cos_lat * lon.cos(),
         (rn + z) * cos_lat * lon.sin(),

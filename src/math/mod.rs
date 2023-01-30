@@ -93,7 +93,6 @@ pub fn asinh(x: f64) -> f64 {
 //    (y * (1. + y/(1.0f64.hypot(y) + 1.))).ln_1p().copysign(x)
 //}
 
-
 mod adjlon;
 mod gauss;
 mod mlfn;

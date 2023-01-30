@@ -54,7 +54,7 @@ impl fmt::Debug for ProjDelegate {
 
 pub(crate) type InitFn = fn(&mut ProjData, &ParamList) -> Result<ProjDelegate>;
 
-/// Returned by projection looku
+/// Returned by projection lookup
 pub(crate) struct ProjInit(&'static str, InitFn);
 
 impl ProjInit {
@@ -132,7 +132,7 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 12;
+const NUM_PROJECTIONS: usize = 14;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
@@ -161,6 +161,7 @@ macro_rules! declare_projections {
 mod aea;
 mod estmerc;
 mod etmerc;
+mod geocent;
 mod latlong;
 mod lcc;
 mod merc;
@@ -178,6 +179,7 @@ declare_projections! [
     (stere, ups),
     (sterea),
     (merc, webmerc),
+    (geocent, cart),
 ];
 
 ///

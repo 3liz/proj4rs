@@ -10,8 +10,7 @@ super::projection! { merc, webmerc }
 
 use crate::errors::{Error, Result};
 use crate::math::{
-    adjlon,
-    asinh,
+    adjlon, asinh,
     consts::{EPS_10, FRAC_PI_2, FRAC_PI_4},
     msfn, phi2,
 };
@@ -26,7 +25,6 @@ pub(crate) struct Projection {
 }
 
 impl Projection {
-
     pub fn merc(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let phits: Option<f64> = params.try_value("lat_ts")?;
         if let Some(phits) = phits {
@@ -75,11 +73,7 @@ impl Projection {
                 z,
             ))
         } else {
-            Ok((
-                self.k0 * lam,
-                self.k0 * asinh(phi.tan()),
-                z,
-            ))
+            Ok((self.k0 * lam, self.k0 * asinh(phi.tan()), z))
         }
     }
 
@@ -192,6 +186,4 @@ mod tests {
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
-
-
 }
