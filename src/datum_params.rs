@@ -56,7 +56,7 @@ impl DatumParams {
         }
     }
 
-    pub fn from_nagrid_str(nadgrids: &str) -> Result<Self> {
+    pub fn from_nadgrid_str(nadgrids: &str) -> Result<Self> {
         NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
     }
 
@@ -93,7 +93,7 @@ impl TryFrom<&DatumParamDefn> for DatumParams {
                 *rz * SEC_TO_RAD,
                 *s / 1_000_000.0 + 1.,
             )),
-            DatumParamDefn::NadGrids(s) => Self::from_nagrid_str(s),
+            DatumParamDefn::NadGrids(s) => Self::from_nadgrid_str(s),
         }
     }
 }

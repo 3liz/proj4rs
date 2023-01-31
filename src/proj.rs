@@ -178,7 +178,7 @@ impl Proj {
         // Precedence order is 'nadgrids', 'towgs84', 'datum'
         if let Some(p) = params.get("nadgrids") {
             // Nadgrids
-            DatumParams::from_nagrid_str(p.try_into()?)
+            DatumParams::from_nadgrid_str(p.try_into()?)
         } else if let Some(p) = params.get("towgs84") {
             DatumParams::from_towgs84_str(p.try_into()?)
             // ToWGS84

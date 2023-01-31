@@ -25,6 +25,7 @@ use crate::datum_params::DatumParams;
 use crate::ellps::Ellipsoid;
 use crate::errors::Result;
 use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
+use crate::transform::Direction;
 
 use DatumParams::*;
 
@@ -83,7 +84,7 @@ impl Datum {
                 })
             }
             NadGrids(grids) => grids
-                .apply(false, x, y, z)
+                .apply_shift(Direction::Forward, x, y, z)
                 .and_then(|(x, y, z)| geodetic_to_geocentric(x, y, z, self.a, self.es)),
             NoDatum => Ok((x, y, z)),
         }
@@ -108,7 +109,7 @@ impl Datum {
                 )
             }
             NadGrids(grids) => geocentric_to_geodetic(x, y, y, self.a, self.es, self.b)
-                .and_then(|(x, y, z)| grids.apply(true, x, y, z)),
+                .and_then(|(x, y, z)| grids.apply_shift(Direction::Inverse, x, y, z)),
             NoDatum => Ok((x, y, z)),
         }
     }

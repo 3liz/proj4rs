@@ -21,7 +21,11 @@ pub enum Error {
     #[error("Latitude out of range")]
     LatitudeOutOfRange,
     #[error("NAD grid not available")]
-    NoNADGridAvailable,
+    NadGridNotAvailable,
+    #[error("Inverse grid shift failed to converge.")]
+    InverseGridShiftConvError,
+    #[error("Point outside of NAD outside Shift area")]
+    PointOutsideNadShiftArea,
     #[error("Invalid 'towgs84' string")]
     InvalidToWGS84String,
     #[error("Invalid axis")]

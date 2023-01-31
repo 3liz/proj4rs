@@ -147,7 +147,7 @@ where
             // proj4 source: pj_inv.c
             points.transform_coordinates(|x, y, z| {
                 // Inverse project
-                let (mut lam, mut phi, z) = proj.inverse(
+                let (mut lam, phi, z) = proj.inverse(
                     // descale and de-offset
                     // z is not scaled since that
                     // is handled by vto_meter before we get here
