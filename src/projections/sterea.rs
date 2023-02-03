@@ -5,7 +5,7 @@
 //!
 //! sterea: "Oblique Stereographic Alternative" "\n\tAzimuthal, Sph&Ell"
 //!
-use crate::errors::{Error, Result};
+use crate::errors::Result;
 use crate::math::{gauss, gauss_ini, inv_gauss, Gauss};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;

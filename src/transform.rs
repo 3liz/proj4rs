@@ -192,7 +192,7 @@ where
             let d = p.data();
 
             let (lam0, x0, y0) = (d.lam0, d.x0, d.y0);
-            let (a, to_meter) = (d.ellps.a, d.to_meter);
+            let a = d.ellps.a;
 
             let proj = p.projection();
             let over = p.over();

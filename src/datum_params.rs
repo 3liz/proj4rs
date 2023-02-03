@@ -67,13 +67,6 @@ impl DatumParams {
     pub fn no_datum(&self) -> bool {
         matches!(self, Self::NoDatum)
     }
-
-    pub fn use_towgs84(&self) -> bool {
-        matches!(
-            self,
-            Self::ToWGS84_0 | Self::ToWGS84_3(..) | Self::ToWGS84_7(..)
-        )
-    }
 }
 
 // Convert from datum parameters definition

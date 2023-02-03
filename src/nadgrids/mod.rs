@@ -7,16 +7,16 @@ use crate::transform::Direction;
 mod grid;
 
 #[cfg(feature = "multi-thread")]
-mod catalog_mt;
+mod catlg_mt;
 
 #[cfg(feature = "multi-thread")]
-use catalog_mt::{catalog, GridRef};
+use catlg_mt::{catalog, GridRef};
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-mod catalog_st;
+mod catlg_st;
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-use catalog_st::{catalog, GridRef};
+use catlg_st::{catalog, GridRef};
 
 use std::ops::ControlFlow;
 
@@ -62,9 +62,9 @@ impl NadGrids {
                 // Allow empty list
                 // Mark also the end of parsing
                 ControlFlow::Break(true)
-            } else if s.starts_with('@') {
+            } else if let Some(s) = s.strip_prefix('@') {
                 // Optional grid
-                if let Some(g) = catalog::find_grid(&s[1..]) {
+                if let Some(g) = catalog::find_grid(s) {
                     v.push(g);
                 }
                 ControlFlow::Continue(())

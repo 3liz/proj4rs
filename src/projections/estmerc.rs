@@ -42,12 +42,12 @@ use Projection::*;
 // Constants for "approximate" transverse mercator
 const FC1: f64 = 1.;
 const FC2: f64 = 0.5;
-const FC3: f64 = 0.16666666666666666666;
-const FC4: f64 = 0.08333333333333333333;
+const FC3: f64 = 0.166_666_666_666_666_66;
+const FC4: f64 = 0.083_333_333_333_333_33;
 const FC5: f64 = 0.05;
-const FC6: f64 = 0.03333333333333333333;
-const FC7: f64 = 0.02380952380952380952;
-const FC8: f64 = 0.01785714285714285714;
+const FC6: f64 = 0.033_333_333_333_333_33;
+const FC7: f64 = 0.023_809_523_809_523_808;
+const FC8: f64 = 0.017_857_142_857_142_856;
 
 impl Projection {
     pub fn estmerc(p: &mut ProjData, _: &ParamList) -> Result<Self> {
@@ -102,7 +102,7 @@ impl Ell {
     fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         // Fail if our longitude is more than 90 degrees from the
         // central meridian since the results are essentially garbage.
-        if lam < -FRAC_PI_2 || lam > FRAC_PI_2 {
+        if !(-FRAC_PI_2..=FRAC_PI_2).contains(&lam) {
             return Err(Error::LatOrLongExceedLimit);
         }
 
@@ -179,7 +179,7 @@ impl Sph {
     fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         // Fail if our longitude is more than 90 degrees from the
         // central meridian since the results are essentially garbage.
-        if lam < -FRAC_PI_2 || lam > FRAC_PI_2 {
+        if !(-FRAC_PI_2..=FRAC_PI_2).contains(&lam) {
             return Err(Error::LatOrLongExceedLimit);
         }
 

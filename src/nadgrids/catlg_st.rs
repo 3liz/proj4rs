@@ -4,7 +4,7 @@
 //! Maintain a list of loaded grids
 //!
 use super::grid::Nadgrid;
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 
 /// Nadgrid factory: simple function pointer that return a NadGrid.
 ///
@@ -38,7 +38,7 @@ impl Node {
 #[derive(Default)]
 pub(super) struct Catalog {
     first: Cell<Option<&'static Node>>,
-    builder: Option<GridBuilder>,
+    builder: RefCell<Option<GridBuilder>>,
 }
 
 impl Catalog {
@@ -51,17 +51,16 @@ impl Catalog {
     fn add_node(&self, grid: Nadgrid) -> &'static Node {
         let node = Box::leak::<'static>(Box::new(Node::new(grid)));
         let last = self.iter().last().map(|n| &n.next).unwrap_or(&self.first);
-        if last.get().is_none() {
-            last.replace(Some(node));
-        }
+        last.replace(Some(node));
         node
     }
 
-    pub(super) fn find(&self, name: &str) -> Option<GridRef> {
+    fn find(&self, name: &str) -> Option<GridRef> {
         match self.iter().find(|n| n.grid.name() == name) {
             Some(n) => Some(&n.grid),
             None => self
                 .builder
+                .borrow()
                 .and_then(|b| b(name))
                 .map(|grid| &self.add_node(grid).grid),
         }
@@ -69,32 +68,31 @@ impl Catalog {
 
     /// Set a builder callback, None if no builder
     /// was set.
-    pub(super) fn set_builder(&mut self, builder: GridBuilder) -> Option<GridBuilder> {
-        self.builder.replace(builder)
+    fn set_builder(&self, builder: GridBuilder) -> Option<GridBuilder> {
+        self.builder.borrow_mut().replace(builder)
     }
 
-    pub(super) fn add_grid(&self, grid: Nadgrid) {
+    fn add_grid(&self, grid: Nadgrid) {
         self.add_node(grid);
     }
 }
 
 pub(crate) mod catalog {
     use super::*;
-    use std::cell::RefCell;
 
     thread_local! {
-        static CATALOG: RefCell<Catalog> = RefCell::new(Catalog::default());
+        static CATALOG: Catalog = Catalog::default();
     }
 
     pub(crate) fn find_grid(name: &str) -> Option<GridRef> {
-        CATALOG.with(|cat| cat.borrow().find(name))
+        CATALOG.with(|cat| cat.find(name))
     }
 
     pub(crate) fn add_grid(grid: Nadgrid) {
-        CATALOG.with(|cat| cat.borrow().add_grid(grid))
+        CATALOG.with(|cat| cat.add_grid(grid))
     }
 
     pub(crate) fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
-        CATALOG.with(|cat| cat.borrow_mut().set_builder(builder))
+        CATALOG.with(|cat| cat.set_builder(builder))
     }
 }

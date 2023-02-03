@@ -43,7 +43,7 @@ fn phi1_inv(qs: f64, e: f64, one_es: f64) -> Result<f64> {
 
             i -= 1;
         }
-        if i <= 0 {
+        if i == 0 {
             Err(Error::ToleranceConditionError)
         } else {
             Ok(phi)

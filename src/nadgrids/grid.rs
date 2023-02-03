@@ -15,7 +15,7 @@ pub(crate) struct Nadgrid {
 
 impl PartialEq for Nadgrid {
     fn eq(&self, other: &Self) -> bool {
-        return self.name == other.name;
+        self.name == other.name
     }
 }
 
@@ -57,18 +57,17 @@ pub(crate) struct Grid {
     pub(crate) del: Lp,
     /// Conversion matrix size
     pub(crate) lim: Lp,
-    /// Conversion matrix: usually stored as f32, f32
-    /// and converted to f64, f64
-    pub(crate) flp: Lp,
     /// Computed epsilon value
     /// as (fabs(del.0)+fabs(del.1))/10000.0
     pub(crate) epsilon: f64,
+    /// Conversion matrix: usually stored as f32, f32
+    /// and converted to f64, f64
     pub(crate) cvs: Box<[Lp]>,
 }
 
 impl Grid {
     /// Check if the grid match with our point.
-    pub(crate) fn matches(&self, lam: f64, phi: f64, z: f64) -> bool {
+    pub(crate) fn matches(&self, lam: f64, phi: f64, _z: f64) -> bool {
         !(self.ll.phi - self.epsilon > phi
             || self.ll.lam - self.epsilon > lam
             || self.ll.phi + (self.lim.phi - 1.) * self.del.phi + self.epsilon < phi
@@ -107,7 +106,7 @@ impl Grid {
         let (tb_lam, tb_phi) = (adjlon(lam - self.ll.lam - PI) + PI, phi - self.ll.phi);
         let (mut t_lam, mut t_phi) = self.nad_intr(tb_lam, tb_phi)?;
 
-        t_lam = tb_lam + t_lam;
+        t_lam += tb_lam;
         t_phi = tb_phi - t_phi;
 
         let mut i = MAX_ITER;

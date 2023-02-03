@@ -2,8 +2,6 @@
 //! Utilities
 //!
 //!
-use crate::errors::{Error, Result};
-
 pub(crate) mod consts {
     //!
     //! Define constants

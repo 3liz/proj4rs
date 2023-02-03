@@ -10,8 +10,8 @@ super::projection! { merc, webmerc }
 
 use crate::errors::{Error, Result};
 use crate::math::{
-    adjlon, asinh,
-    consts::{EPS_10, FRAC_PI_2, FRAC_PI_4},
+    asinh,
+    consts::{EPS_10, FRAC_PI_2},
     msfn, phi2,
 };
 use crate::parameters::ParamList;
@@ -39,10 +39,8 @@ impl Projection {
             if let Some(phits) = phits {
                 p.k0 = msfn(phits.sin(), phits.cos(), p.ellps.es);
             }
-        } else {
-            if let Some(phits) = phits {
+        } else if let Some(phits) = phits {
                 p.k0 = phits.cos();
-            }
         }
 
         Ok(Self {

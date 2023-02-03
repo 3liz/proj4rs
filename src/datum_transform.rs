@@ -115,18 +115,8 @@ impl Datum {
     }
 
     #[inline]
-    pub fn use_nadgrids(&self) -> bool {
-        self.params.use_nadgrids()
-    }
-
-    #[inline]
     pub fn no_datum(&self) -> bool {
         self.params.no_datum()
-    }
-
-    #[inline]
-    pub fn use_towgs84(&self) -> bool {
-        self.params.use_towgs84()
     }
 
     /// Return true if the datum are identical

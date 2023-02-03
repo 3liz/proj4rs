@@ -36,6 +36,7 @@ fn ssfn(phit: f64, sinphi: f64, eccen: f64) -> f64 {
 }
 
 #[allow(non_camel_case_types)]
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum Mode {
     S_POLE,
@@ -54,7 +55,6 @@ pub(crate) struct Projection {
     mode: Mode,
     e: f64,
     phi0: f64,
-    phits: f64,
     sinx1: f64,
     cosx1: f64,
     akm1: f64,
@@ -225,7 +225,7 @@ impl Projection {
             i -= 1;
         }
 
-        if i <= 0 {
+        if i == 0 {
             Err(Error::CoordTransOutsideProjectionDomain)
         } else {
             Ok((lam, phi, z))
@@ -346,12 +346,10 @@ impl Projection {
             } else {
                 N_POLE
             }
+        } else if t > EPS_10 {
+            OBLIQ
         } else {
-            if t > EPS_10 {
-                OBLIQ
-            } else {
-                EQUIT
-            }
+            EQUIT
         };
 
         let phits = phits.abs();
@@ -405,7 +403,6 @@ impl Projection {
             mode,
             e: el.e,
             phi0: p.phi0,
-            phits,
             sinx1,
             cosx1,
             akm1,
