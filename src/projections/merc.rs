@@ -40,7 +40,7 @@ impl Projection {
                 p.k0 = msfn(phits.sin(), phits.cos(), p.ellps.es);
             }
         } else if let Some(phits) = phits {
-                p.k0 = phits.cos();
+            p.k0 = phits.cos();
         }
 
         Ok(Self {

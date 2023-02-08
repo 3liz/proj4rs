@@ -5,44 +5,6 @@ use crate::errors::{Error, Result};
 use crate::math::{adjlon, consts::PI};
 use crate::transform::Direction;
 
-/// Handle NAD grid and subgrids
-#[derive(Debug)]
-pub(crate) struct Nadgrid {
-    name: String,
-    grid: Grid,
-    subgrids: Vec<Grid>,
-}
-
-impl PartialEq for Nadgrid {
-    fn eq(&self, other: &Self) -> bool {
-        self.name == other.name
-    }
-}
-
-impl Nadgrid {
-    pub(crate) fn new(name: String, grid: Grid, subgrids: Vec<Grid>) -> Self {
-        Self {
-            name,
-            grid,
-            subgrids,
-        }
-    }
-
-    pub(crate) fn name(&self) -> &str {
-        &self.name
-    }
-
-    /// Find the correct grid for an input
-    pub(crate) fn find_grid(&self, lam: f64, phi: f64, z: f64) -> Option<&Grid> {
-        if self.grid.matches(lam, phi, z) {
-            Some(&self.grid)
-        } else {
-            // Look in sub grids
-            self.subgrids.iter().find(|g| g.matches(lam, phi, z))
-        }
-    }
-}
-
 /// Lambda phi pair
 #[derive(Debug)]
 pub(crate) struct Lp {
@@ -50,15 +12,57 @@ pub(crate) struct Lp {
     pub(crate) phi: f64,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub(crate) struct GridId([u8; 8]);
+
+impl Default for GridId {
+    fn default() -> Self {
+        Self::root()
+    }
+}
+
+impl GridId {
+    pub(crate) fn as_str(&self) -> &str {
+        std::str::from_utf8(&self.0).unwrap_or("<n/a>")
+    }
+
+    pub const fn root() -> Self {
+        Self([0u8; 8])
+    }
+}
+
+impl From<[u8; 8]> for GridId {
+    fn from(v: [u8; 8]) -> Self {
+        Self(v)
+    }
+}
+
+impl From<u64> for GridId {
+    fn from(v: u64) -> Self {
+        Self(v.to_ne_bytes())
+    }
+}
+
+impl From<(u32, u32)> for GridId {
+    fn from(p: (u32, u32)) -> Self {
+        let mut v: [u8; 8] = [0; 8];
+        v[..4].copy_from_slice(&p.0.to_ne_bytes());
+        v[4..].copy_from_slice(&p.1.to_ne_bytes());
+        Self(v)
+    }
+}
+
 /// Grid table
 #[derive(Debug)]
 pub(crate) struct Grid {
+    pub(crate) id: GridId,
+    pub(crate) lineage: GridId,
     pub(crate) ll: Lp,
     pub(crate) del: Lp,
     /// Conversion matrix size
     pub(crate) lim: Lp,
     /// Computed epsilon value
-    /// as (fabs(del.0)+fabs(del.1))/10000.0
+    /// as (fabs(del.lam)+fabs(del.phi))/10000.0
     pub(crate) epsilon: f64,
     /// Conversion matrix: usually stored as f32, f32
     /// and converted to f64, f64
@@ -66,6 +70,18 @@ pub(crate) struct Grid {
 }
 
 impl Grid {
+    /// Check if grid is direct child of other.
+    #[inline]
+    pub(crate) fn is_child_of(&self, other: &Grid) -> bool {
+        self.lineage == other.id
+    }
+
+    #[inline]
+    pub(crate) fn is_root(&self) -> bool {
+        const ROOT: GridId = GridId::root();
+        self.lineage == ROOT
+    }
+
     /// Check if the grid match with our point.
     pub(crate) fn matches(&self, lam: f64, phi: f64, _z: f64) -> bool {
         !(self.ll.phi - self.epsilon > phi
@@ -100,7 +116,8 @@ impl Grid {
 
     fn nad_cvt_inverse(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         const MAX_ITER: usize = 10;
-        const TOL: f64 = 1.0e-24; // XXX Check this
+        const TOL: f64 = 1.0e-24;
+        const TOL2: f64 = TOL * TOL;
 
         // normalize input to ll origin
         let (tb_lam, tb_phi) = (adjlon(lam - self.ll.lam - PI) + PI, phi - self.ll.phi);
@@ -114,7 +131,7 @@ impl Grid {
             if let Ok((del_lam, del_phi)) = self.nad_intr(t_lam, t_phi) {
                 let (diff_lam, diff_phi) = (t_lam - del_lam - tb_lam, t_phi + del_phi - tb_phi);
 
-                if diff_lam * diff_lam + diff_phi * diff_phi <= TOL {
+                if diff_lam * diff_lam + diff_phi * diff_phi <= TOL2 {
                     break;
                 }
 

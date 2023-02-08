@@ -22,6 +22,8 @@ pub enum Error {
     LatitudeOutOfRange,
     #[error("NAD grid not available")]
     NadGridNotAvailable,
+    #[error("Parent grid not found")]
+    NadGridParentNotFound,
     #[error("Inverse grid shift failed to converge.")]
     InverseGridShiftConvError,
     #[error("Point outside of NAD outside Shift area")]
@@ -64,6 +66,8 @@ pub enum Error {
     InvMeridDistConvError,
     #[error("JS parse error")]
     JsParseError,
+    #[error("Invalid Ntv2 grid format: {0}")]
+    InvalidNtv2GridFormat(&'static str),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

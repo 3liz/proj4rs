@@ -1,6 +1,8 @@
 //!
 //! Wasm bindgen entry point
 //!
+mod nadgrids;
+
 use crate::{errors, proj, transform};
 use wasm_bindgen::prelude::*;
 
@@ -12,9 +14,9 @@ extern "C" {
     fn log(s: &str);
 }
 
-/// ----------------------------
-/// Wrapper for Projection
-/// ---------------------------
+// ----------------------------
+// Wrapper for Projection
+// ---------------------------
 #[wasm_bindgen]
 pub struct Projection {
     inner: proj::Proj,
@@ -30,9 +32,9 @@ impl Projection {
     }
 }
 
-/// ----------------------------
-/// Wrapper for Transform
-/// ---------------------------
+// ----------------------------
+// Wrapper for Transform
+// ---------------------------
 #[wasm_bindgen]
 pub struct Point {
     x: f64,

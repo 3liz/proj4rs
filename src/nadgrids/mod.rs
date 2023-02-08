@@ -10,15 +10,17 @@ mod grid;
 mod catlg_mt;
 
 #[cfg(feature = "multi-thread")]
-use catlg_mt::{catalog, GridRef};
+pub(crate) use catlg_mt::{catalog, GridRef};
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
 mod catlg_st;
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-use catlg_st::{catalog, GridRef};
+pub(crate) use catlg_st::{catalog, GridRef};
 
 use std::ops::ControlFlow;
+
+pub(crate) use grid::{Grid, GridId, Lp};
 
 /// NadGrids
 ///
@@ -42,8 +44,28 @@ impl NadGrids {
         phi: f64,
         z: f64,
     ) -> Result<(f64, f64, f64)> {
-        // Find the correct grid for an input
-        match self.0.iter().find_map(|g| g.find_grid(lam, phi, z)) {
+        // Find the correct (root)  grid for an input
+        let mut iter = self.0.iter();
+        let mut candidate = iter.find(|g| g.is_root() && g.matches(lam, phi, z));
+
+        // Check for childs grid
+        if let Some(grid) = candidate {
+            iter.try_fold(grid, |grid, g| {
+                if !g.is_child_of(grid) {
+                    // No more childs, stop with the last candidate
+                    ControlFlow::Break(())
+                } else if g.matches(lam, phi, z) {
+                    // Match, check for childs
+                    candidate.replace(g);
+                    ControlFlow::Continue(g)
+                } else {
+                    // Go next child
+                    ControlFlow::Continue(grid)
+                }
+            });
+        }
+
+        match candidate {
             Some(g) => g.nad_cvt(dir, lam, phi, z),
             None => Err(Error::PointOutsideNadShiftArea),
         }
@@ -64,14 +86,11 @@ impl NadGrids {
                 ControlFlow::Break(true)
             } else if let Some(s) = s.strip_prefix('@') {
                 // Optional grid
-                if let Some(g) = catalog::find_grid(s) {
-                    v.push(g);
-                }
+                catalog::find_grids(s, &mut v);
                 ControlFlow::Continue(())
             } else {
                 // Mandatory grid
-                if let Some(g) = catalog::find_grid(s) {
-                    v.push(g);
+                if catalog::find_grids(s, &mut v) {
                     ControlFlow::Continue(())
                 } else {
                     ControlFlow::Break(false)

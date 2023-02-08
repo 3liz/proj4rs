@@ -3,7 +3,8 @@
 //!
 //! Maintain a list of loaded grids
 //!
-use super::grid::Nadgrid;
+use super::grid::Grid;
+use crate::errors::Error;
 use std::ptr::null_mut;
 use std::sync::atomic::{AtomicPtr, Ordering};
 use std::sync::Mutex;
@@ -13,24 +14,28 @@ use std::sync::Mutex;
 /// This is an infaillible method that should return [`None`] if
 /// no Nadgrid can be found or if an error occured when loading/building
 /// the nadgrid.
-pub(crate) type GridBuilder = fn(&str) -> Option<Nadgrid>;
+pub(crate) type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
 /// Static reference to nadgrids
 ///
 /// Nadgrids have a static lifetime on the heap
 /// It means they are never deallocated;
-pub(crate) type GridRef = &'static Nadgrid;
+pub(crate) type GridRef = &'static Grid;
 
 /// Node to chain loaded nadgrids
 struct Node {
-    grid: Nadgrid,
+    name: String,
+    grid: Grid,
+    parent: Option<&'static Node>,
     next: AtomicPtr<Node>,
 }
 
 impl Node {
-    fn new(grid: Nadgrid) -> Self {
+    fn new(name: String, grid: Grid, parent: Option<&'static Node>) -> Self {
         Self {
+            name,
             grid,
+            parent,
             next: null_mut::<Node>().into(),
         }
     }
@@ -44,10 +49,17 @@ impl Node {
             unsafe { Some(&*p) }
         }
     }
+
+    fn is_child_of(&self, node: &Self) -> bool {
+        match self.parent {
+            Some(p) => std::ptr::eq(p, node) || p.is_child_of(node),
+            _ => false,
+        }
+    }
 }
 
 /// Private catalog implementation
-pub(super) struct Catalog {
+pub(crate) struct Catalog {
     first: AtomicPtr<Node>,
     builder: Option<GridBuilder>,
 }
@@ -62,38 +74,58 @@ impl Default for Catalog {
 }
 
 impl Catalog {
-    fn iter(&self) -> impl Iterator<Item = &'static Node> {
-        std::iter::successors(Node::get(&self.first), |prev| Node::get(&prev.next))
-    }
-
-    /// Add an externally created grid
-    /// to the catalog
-    fn add_node(&self, grid: Nadgrid) -> &'static Node {
-        let last = self.iter().last().map(|n| &n.next).unwrap_or(&self.first);
-        let node_ptr = Box::into_raw(Box::new(Node::new(grid)));
-        last.store(node_ptr, Ordering::Relaxed);
-        unsafe { &*node_ptr }
-    }
-
-    /// Find a grid from its name
-    fn find(&self, name: &str) -> Option<GridRef> {
-        match self.iter().find(|n| n.grid.name() == name) {
-            Some(n) => Some(&n.grid),
-            None => self
-                .builder
-                .and_then(|b| b(name))
-                .map(|grid| &self.add_node(grid).grid),
-        }
-    }
-
     /// Set a builder callback, None if no builder
     /// was set.
     fn set_builder(&mut self, builder: GridBuilder) -> Option<GridBuilder> {
         self.builder.replace(builder)
     }
 
-    fn add_grid(&self, grid: Nadgrid) {
-        self.add_node(grid);
+    /// Add an externally created grid
+    /// to the catalog
+    fn add_node(&self, node: Node) -> &'static Node {
+        let node_ptr = if let Some(parent) = node.parent {
+            // Insert the node juste behind parent
+            node.next
+                .store(parent.next.load(Ordering::Relaxed), Ordering::Relaxed);
+            let node_ptr = Box::into_raw(Box::new(node));
+            parent.next.store(node_ptr, Ordering::Relaxed);
+            node_ptr
+        } else {
+            let node_ptr = Box::into_raw(Box::new(node));
+            let last = self.iter().last().map(|n| &n.next).unwrap_or(&self.first);
+            last.store(node_ptr, Ordering::Relaxed);
+            node_ptr
+        };
+        unsafe { &*node_ptr }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &'static Node> {
+        std::iter::successors(Node::get(&self.first), |prev| Node::get(&prev.next))
+    }
+
+    /// Find a grid from its name
+    pub(crate) fn find(&self, name: &str) -> Option<impl Iterator<Item = GridRef>> {
+        let mut iter = self.iter();
+        let node = iter.find(|n| n.name == name);
+        node.map(|node| {
+            std::iter::once(&node.grid).chain(iter.filter(|n| n.is_child_of(node)).map(|n| &n.grid))
+        })
+    }
+
+    /// Add a grid to the gridlist
+    ///
+    /// Note that parent must exists in the list.
+    pub(crate) fn add_grid(&self, name: String, grid: Grid) -> Result<(), Error> {
+        let parent = if !grid.is_root() {
+            self.iter().find(|n| n.grid.id == grid.lineage)
+        } else {
+            None
+        };
+        if !grid.is_root() && parent.is_none() {
+            return Err(Error::NadGridParentNotFound);
+        }
+        self.add_node(Node::new(name, grid, parent));
+        Ok(())
     }
 }
 
@@ -105,12 +137,25 @@ pub(crate) mod catalog {
         static ref CATALOG: Mutex<Catalog> = Mutex::new(Catalog::default());
     }
 
-    pub(crate) fn find_grid(name: &str) -> Option<GridRef> {
-        CATALOG.lock().unwrap().find(name)
+    pub(crate) fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
+        let cat = CATALOG.lock().unwrap();
+        match cat.find(name) {
+            Some(iter) => {
+                grids.extend(iter);
+                true
+            }
+            None => cat
+                .builder
+                .and_then(|b| {
+                    b(&cat, name);
+                    cat.find(name).map(|iter| grids.extend(iter))
+                })
+                .is_some(),
+        }
     }
 
-    pub(crate) fn add_grid(grid: Nadgrid) {
-        CATALOG.lock().unwrap().add_grid(grid)
+    pub(crate) fn add_grid(name: String, grid: Grid) -> Result<(), Error> {
+        CATALOG.lock().unwrap().add_grid(name, grid)
     }
 
     pub(crate) fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
