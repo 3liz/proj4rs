@@ -21,7 +21,8 @@ pub(crate) type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 pub(crate) type GridRef = &'static Grid;
 
 /// Node to chain loaded nadgrids
-struct Node {
+#[derive(Debug)]
+pub(super) struct Node {
     name: String,
     grid: Grid,
     parent: Option<&'static Node>,

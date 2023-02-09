@@ -1,6 +1,17 @@
 //!
 //! Unit tests
 //!
+use env_logger;
+use std::sync::Once;
+
+static INIT: Once = Once::new();
+
+pub fn setup() {
+    // Init setup
+    INIT.call_once(|| {
+        env_logger::init().unwrap();
+    });
+}
 
 pub(crate) mod utils {
     use crate::errors::Result;

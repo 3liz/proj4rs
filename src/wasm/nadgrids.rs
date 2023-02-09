@@ -28,17 +28,8 @@ pub fn add_nadgrid(key: &str, view: &DataView) -> Result<(), JsError> {
         return Err(Error::InvalidNtv2GridFormat(ERR_INVALID_HEADER).into());
     }
 
-    //let nusbgridsfields = view.get_int32_endian(24, is_le);
     let nsubgrids = view.get_int32_endian(40, is_le) as usize;
-    //let shifttype = view.buffer().slice_with_end(56, 56 + 8).as_string();
-    //let from_semi_major_axis = view.get_float64_endian(120, is_le);
-    //let from_semi_minor_axis = view.get_float64_endian(136, is_le);
-    //let to_semi_major_axis = view.get_float64_endian(152, is_le);
-    //let to_semi_minor_axis = view.get_float64_endian(168, is_le);
 
-    // Read first grid
-    let grid = read_subgrid(view, HEADER_SIZE, is_le)?;
-    catalog::add_grid(key.into(), grid)?;
     // Read subsequent grids
     (1..nsubgrids).try_for_each(|i| {
         read_subgrid(view, (i + 1) * HEADER_SIZE, is_le)

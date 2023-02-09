@@ -6,12 +6,11 @@ mod nadgrids;
 use crate::{errors, proj, transform};
 use wasm_bindgen::prelude::*;
 
-#[wasm_bindgen]
-extern "C" {
-    // Use `js_namespace` here to bind `console.log(..)` instead of just
-    // `log(..)`
-    #[wasm_bindgen(js_namespace = console)]
-    fn log(s: &str);
+// Js entry point
+#[wasm_bindgen(start)]
+pub fn main() {
+    #[cfg(feature = "logging")]
+    console_log::init_with_level(log::Level::Trace).unwrap();
 }
 
 // ----------------------------

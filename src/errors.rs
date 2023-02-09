@@ -68,6 +68,10 @@ pub enum Error {
     JsParseError,
     #[error("Invalid Ntv2 grid format: {0}")]
     InvalidNtv2GridFormat(&'static str),
+    #[error("IO error")]
+    IoError(#[from] std::io::Error),
+    #[error("UTF8 error")]
+    Utf8Error(#[from] std::str::Utf8Error),
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

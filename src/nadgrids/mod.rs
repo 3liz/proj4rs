@@ -18,6 +18,9 @@ mod catlg_st;
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
 pub(crate) use catlg_st::{catalog, GridRef};
 
+#[cfg(not(target_arch = "wasm32"))]
+mod parse;
+
 use std::ops::ControlFlow;
 
 pub(crate) use grid::{Grid, GridId, Lp};

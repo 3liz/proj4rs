@@ -21,6 +21,12 @@ impl Default for GridId {
     }
 }
 
+impl PartialEq<[u8; 8]> for GridId {
+    fn eq(&self, other: &[u8; 8]) -> bool {
+        self.0 == *other
+    }
+}
+
 impl GridId {
     pub(crate) fn as_str(&self) -> &str {
         std::str::from_utf8(&self.0).unwrap_or("<n/a>")
