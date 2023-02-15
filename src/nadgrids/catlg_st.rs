@@ -12,17 +12,17 @@ use std::cell::{Cell, RefCell};
 /// This is an infaillible method that should return [`None`] if
 /// no Nadgrid can be found or if an error occured when loading/building
 /// the nadgrid.
-pub(crate) type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
+pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
 /// Static reference to nadgrids
 ///
 /// Grids  have a static lifetime on the heap
 /// It means they are never deallocated;
-pub(crate) type GridRef = &'static Grid;
+pub type GridRef = &'static Grid;
 
 /// Node to chain loaded nadgrids
 #[derive(Debug)]
-pub(super) struct Node {
+struct Node {
     name: String,
     grid: Grid,
     parent: Option<&'static Node>,
@@ -49,7 +49,7 @@ impl Node {
 
 /// Private catalog implementation
 #[derive(Default)]
-pub(crate) struct Catalog {
+pub struct Catalog {
     first: Cell<Option<&'static Node>>,
     builder: RefCell<Option<GridBuilder>>,
 }
@@ -82,7 +82,7 @@ impl Catalog {
         node
     }
 
-    pub(crate) fn find(&self, name: &str) -> Option<impl Iterator<Item = GridRef>> {
+    pub fn find(&self, name: &str) -> Option<impl Iterator<Item = GridRef>> {
         let mut iter = self.iter();
         let node = iter.find(|n| n.name == name);
         node.map(|node| {
@@ -92,7 +92,7 @@ impl Catalog {
 
     /// Add a grid to the gridlist
     /// Note that parent must exists in the list.
-    pub(crate) fn add_grid(&self, name: String, grid: Grid) -> Result<(), Error> {
+    pub fn add_grid(&self, name: String, grid: Grid) -> Result<(), Error> {
         let parent = if !grid.is_root() {
             self.iter().find(|n| n.grid.id == grid.lineage)
         } else {
@@ -106,14 +106,14 @@ impl Catalog {
     }
 }
 
-pub(crate) mod catalog {
+pub mod catalog {
     use super::*;
 
     thread_local! {
         static CATALOG: Catalog = Catalog::default();
     }
 
-    pub(crate) fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
+    pub fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
         CATALOG.with(|cat| match cat.find(name) {
             Some(iter) => {
                 grids.extend(iter);
@@ -123,18 +123,18 @@ pub(crate) mod catalog {
                 .builder
                 .borrow()
                 .and_then(|b| {
-                    b(cat, name);
+                    b(cat, name).unwrap_or(());
                     cat.find(name).map(|iter| grids.extend(iter))
                 })
                 .is_some(),
         })
     }
 
-    pub(crate) fn add_grid(name: String, grid: Grid) -> Result<(), Error> {
+    pub fn add_grid(name: String, grid: Grid) -> Result<(), Error> {
         CATALOG.with(|cat| cat.add_grid(name, grid))
     }
 
-    pub(crate) fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
+    pub fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
         CATALOG.with(|cat| cat.set_builder(builder))
     }
 }

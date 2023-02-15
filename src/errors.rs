@@ -18,6 +18,8 @@ pub enum Error {
     InvalidEllipsoid,
     #[error("{0}")]
     InvalidParameterValue(&'static str),
+    #[error("Invalid coordinate dimension")]
+    InvalidCoordinateDimension,
     #[error("Latitude out of range")]
     LatitudeOutOfRange,
     #[error("NAD grid not available")]
@@ -40,6 +42,8 @@ pub enum Error {
     NanCoordinateValue,
     #[error("Coordinate out of range")]
     CoordinateOutOfRange,
+    #[error("Invalid number of coordinates")]
+    InvalidNumberOfCoordinates,
     #[error("Projection not found")]
     ProjectionNotFound,
     #[error("No forward projection defined for dest projection")]
@@ -72,6 +76,10 @@ pub enum Error {
     IoError(#[from] std::io::Error),
     #[error("UTF8 error")]
     Utf8Error(#[from] std::str::Utf8Error),
+    #[error("Grid file not found {0}")]
+    GridFileNotFound(String),
+    #[error("Unknown grid format")]
+    UnknownGridFormat,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

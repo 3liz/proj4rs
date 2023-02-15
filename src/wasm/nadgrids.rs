@@ -31,9 +31,12 @@ pub fn add_nadgrid(key: &str, view: &DataView) -> Result<(), JsError> {
     let nsubgrids = view.get_int32_endian(40, is_le) as usize;
 
     // Read subsequent grids
-    (1..nsubgrids).try_for_each(|i| {
-        read_subgrid(view, (i + 1) * HEADER_SIZE, is_le)
-            .and_then(|grid| catalog::add_grid(key.into(), grid))
+    (0..nsubgrids).try_fold(HEADER_SIZE, |offset, _i| {
+        read_subgrid(view, offset, is_le).and_then(|grid| {
+            let offs = offset + grid.gs_count() * 16 + HEADER_SIZE;
+            catalog::add_grid(key.into(), grid)?;
+            Ok(offs)
+        })
     })?;
     Ok(())
 }
@@ -121,6 +124,7 @@ fn read_subgrid(view: &DataView, offset: usize, is_le: bool) -> Result<Grid, Err
         id,
         lineage,
         ll,
+        ur,
         del,
         lim,
         epsilon,

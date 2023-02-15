@@ -5,25 +5,27 @@ use crate::errors::{Error, Result};
 use crate::transform::Direction;
 
 mod grid;
+mod header;
 
 #[cfg(feature = "multi-thread")]
 mod catlg_mt;
 
 #[cfg(feature = "multi-thread")]
-pub(crate) use catlg_mt::{catalog, GridRef};
+pub use catlg_mt::{catalog, Catalog, GridRef};
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
 mod catlg_st;
 
 #[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-pub(crate) use catlg_st::{catalog, GridRef};
+pub use catlg_st::{catalog, Catalog, GridRef};
 
 #[cfg(not(target_arch = "wasm32"))]
-mod parse;
+pub mod files;
 
 use std::ops::ControlFlow;
 
-pub(crate) use grid::{Grid, GridId, Lp};
+pub(crate) use grid::Lp;
+pub use grid::{Grid, GridId};
 
 /// NadGrids
 ///

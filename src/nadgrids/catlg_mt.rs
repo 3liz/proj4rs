@@ -14,13 +14,13 @@ use std::sync::Mutex;
 /// This is an infaillible method that should return [`None`] if
 /// no Nadgrid can be found or if an error occured when loading/building
 /// the nadgrid.
-pub(crate) type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
+pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
 /// Static reference to nadgrids
 ///
 /// Nadgrids have a static lifetime on the heap
 /// It means they are never deallocated;
-pub(crate) type GridRef = &'static Grid;
+pub type GridRef = &'static Grid;
 
 /// Node to chain loaded nadgrids
 struct Node {

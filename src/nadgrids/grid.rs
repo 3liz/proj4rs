@@ -4,6 +4,7 @@
 use crate::errors::{Error, Result};
 use crate::math::{adjlon, consts::PI};
 use crate::transform::Direction;
+use std::fmt::{self, Display};
 
 /// Lambda phi pair
 #[derive(Debug)]
@@ -13,7 +14,7 @@ pub(crate) struct Lp {
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub(crate) struct GridId([u8; 8]);
+pub struct GridId([u8; 8]);
 
 impl Default for GridId {
     fn default() -> Self {
@@ -60,10 +61,11 @@ impl From<(u32, u32)> for GridId {
 
 /// Grid table
 #[derive(Debug)]
-pub(crate) struct Grid {
+pub struct Grid {
     pub(crate) id: GridId,
     pub(crate) lineage: GridId,
     pub(crate) ll: Lp,
+    pub(crate) ur: Lp,
     pub(crate) del: Lp,
     /// Conversion matrix size
     pub(crate) lim: Lp,
@@ -75,25 +77,69 @@ pub(crate) struct Grid {
     pub(crate) cvs: Box<[Lp]>,
 }
 
+impl Display for Grid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        writeln!(f, "Id:      {}", self.id.as_str())?;
+        writeln!(f, "Lineage: {}", self.lineage.as_str())?;
+        writeln!(
+            f,
+            "Lower Left  ({:>12.7}, {:>12.7})",
+            self.ll.lam.to_degrees(),
+            self.ll.phi.to_degrees()
+        )?;
+        writeln!(
+            f,
+            "Upper Right ({:>12.7}, {:>12.7})",
+            self.ur.lam.to_degrees(),
+            self.ur.phi.to_degrees()
+        )?;
+        writeln!(
+            f,
+            "Size ({} x {})",
+            self.lim.lam as usize, self.lim.phi as usize
+        )?;
+        writeln!(
+            f,
+            "Delta ({},{})",
+            self.del.lam.to_degrees(),
+            self.del.phi.to_degrees()
+        )
+    }
+}
+
 impl Grid {
     /// Check if grid is direct child of other.
     #[inline]
-    pub(crate) fn is_child_of(&self, other: &Grid) -> bool {
+    pub fn is_child_of(&self, other: &Grid) -> bool {
         self.lineage == other.id
     }
 
     #[inline]
-    pub(crate) fn is_root(&self) -> bool {
+    pub fn is_root(&self) -> bool {
         const ROOT: GridId = GridId::root();
         self.lineage == ROOT
     }
 
     /// Check if the grid match with our point.
-    pub(crate) fn matches(&self, lam: f64, phi: f64, _z: f64) -> bool {
+    pub fn matches(&self, lam: f64, phi: f64, _z: f64) -> bool {
         !(self.ll.phi - self.epsilon > phi
             || self.ll.lam - self.epsilon > lam
             || self.ll.phi + (self.lim.phi - 1.) * self.del.phi + self.epsilon < phi
             || self.ll.lam + (self.lim.lam - 1.) * self.del.lam + self.epsilon < lam)
+    }
+
+    #[inline]
+    pub fn num_rows(&self) -> usize {
+        self.lim.phi as usize
+    }
+
+    #[inline]
+    pub fn row_len(&self) -> usize {
+        self.lim.lam as usize
+    }
+
+    pub fn gs_count(&self) -> usize {
+        self.num_rows() * self.row_len()
     }
 
     pub(crate) fn nad_cvt(

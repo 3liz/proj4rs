@@ -15,7 +15,6 @@ mod ellipsoids;
 mod ellps;
 mod geocent;
 mod math;
-mod nadgrids;
 mod parameters;
 mod parse;
 mod prime_meridians;
@@ -25,6 +24,7 @@ mod units;
 
 pub mod adaptors;
 pub mod errors;
+pub mod nadgrids;
 pub mod proj;
 pub mod transform;
 
