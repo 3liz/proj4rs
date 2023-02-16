@@ -1,0 +1,16 @@
+[tasks.default]
+alias = "defaults"
+
+[tasks.defaults]
+dependencies = [
+    "build"
+]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks.wasm]
+script = [
+    "wasm-pack build --target web --no-default-features"
+]

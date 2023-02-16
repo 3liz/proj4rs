@@ -7,17 +7,9 @@ use crate::transform::Direction;
 mod grid;
 mod header;
 
-#[cfg(feature = "multi-thread")]
-mod catlg_mt;
+mod catlg;
 
-#[cfg(feature = "multi-thread")]
-pub use catlg_mt::{catalog, Catalog, GridRef};
-
-#[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-mod catlg_st;
-
-#[cfg(any(not(feature = "multi-thread"), target_arch = "wasm32"))]
-pub use catlg_st::{catalog, Catalog, GridRef};
+pub use catlg::{catalog, Catalog, GridRef};
 
 #[cfg(not(target_arch = "wasm32"))]
 pub mod files;
