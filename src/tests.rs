@@ -18,11 +18,11 @@ pub(crate) mod utils {
     use crate::proj::{Proj, ProjData};
     use approx::assert_abs_diff_eq;
 
-    pub fn scale(d: &ProjData, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
+    pub(crate) fn scale(d: &ProjData, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
         (xyz.0 * d.ellps.a + d.x0, xyz.1 * d.ellps.a + d.y0, xyz.2)
     }
 
-    pub fn descale(d: &ProjData, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
+    pub(crate) fn descale(d: &ProjData, xyz: (f64, f64, f64)) -> (f64, f64, f64) {
         (
             (xyz.0 - d.x0) * d.ellps.ra,
             (xyz.1 - d.y0) * d.ellps.ra,
@@ -30,15 +30,19 @@ pub(crate) mod utils {
         )
     }
 
-    pub fn to_deg(lam: f64, phi: f64, z: f64) -> (f64, f64, f64) {
+    pub(crate) fn to_deg(lam: f64, phi: f64, z: f64) -> (f64, f64, f64) {
         (lam.to_degrees(), phi.to_degrees(), z)
     }
 
-    pub fn to_rad(lpz: (f64, f64, f64)) -> (f64, f64, f64) {
+    pub(crate) fn to_rad(lpz: (f64, f64, f64)) -> (f64, f64, f64) {
         (lpz.0.to_radians(), lpz.1.to_radians(), lpz.2)
     }
 
-    pub fn test_proj_forward(p: &Proj, inputs: &[((f64, f64, f64), (f64, f64, f64))], prec: f64) {
+    pub(crate) fn test_proj_forward(
+        p: &Proj,
+        inputs: &[((f64, f64, f64), (f64, f64, f64))],
+        prec: f64,
+    ) {
         let d = p.data();
         inputs.iter().for_each(|(input, expect)| {
             let (lam, phi, z) = to_rad(*input);
@@ -50,7 +54,11 @@ pub(crate) mod utils {
         })
     }
 
-    pub fn test_proj_inverse(p: &Proj, inputs: &[((f64, f64, f64), (f64, f64, f64))], prec: f64) {
+    pub(crate) fn test_proj_inverse(
+        p: &Proj,
+        inputs: &[((f64, f64, f64), (f64, f64, f64))],
+        prec: f64,
+    ) {
         let d = p.data();
         inputs.iter().for_each(|(expect, input)| {
             let (x, y, z) = descale(d, *input);

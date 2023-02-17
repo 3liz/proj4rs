@@ -30,7 +30,7 @@ pub enum ProjType {
 /// A Proj object hold informations and parameters
 /// for a projection
 #[derive(Debug)]
-pub struct ProjData {
+pub(crate) struct ProjData {
     pub(crate) ellps: Ellipsoid,
     pub(crate) axis: Axis,
     pub(crate) proj_type: ProjType,
@@ -44,6 +44,24 @@ pub struct ProjData {
     pub(crate) phi0: f64,
 }
 
+///
+/// Projection definition
+///
+/// A projection is initalized with a projstring which is basically the same
+/// as those used with proj4.
+///
+/// See <https://proj.org/usage/projections.html#cartographic-projection> for
+/// a detailed description of the parameters
+///
+/// ```rust
+/// use proj4rs::Proj;
+///
+/// // Create utm projection
+/// let utm = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
+///
+/// // Create latlon stub projection with ellipsoid "GRS80"
+/// let geo = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
+/// ```
 pub struct Proj {
     datum: Datum,
     geoc: bool,
@@ -67,12 +85,12 @@ impl Proj {
     pub(crate) fn projection(&self) -> &ProjDelegate {
         &self.projection
     }
-    /// Return the inverse projection method
+    /// Check if inverse projection exists
     #[inline]
     pub fn has_inverse(&self) -> bool {
         self.projection.has_inverse()
     }
-    /// Return the forward projection method
+    /// Check if forward projection exists
     #[inline]
     pub fn has_forward(&self) -> bool {
         self.projection.has_forward()
@@ -80,10 +98,6 @@ impl Proj {
     #[inline]
     pub(crate) fn data(&self) -> &ProjData {
         &self.projdata
-    }
-    #[inline]
-    pub(crate) fn data_mut(&mut self) -> &mut ProjData {
-        &mut self.projdata
     }
     #[inline]
     pub(crate) fn datum(&self) -> &Datum {

@@ -1,19 +1,20 @@
 //!
-//! Projections
+//! Implemented projections
 //!
-//! We definitely do not want to use trait object, se we use
-//! enum for type abstraction.  
-//!
-//! Instead of writing massive boilerplate for delegation to inner types
-//! (there may be dozens of projection !) , we use
-//! pointer to associated function. This spare us writing huge  `match`
-//! for each fonction call.
-//!
-//! Most important projections:
-//!
-//! lcc, merc, tmerc, utm (etmerc) et aea
-//! stere et sterea pour for polar regions.
-//!
+
+// We definitely do not want to use trait object, se we use
+// enum for type abstraction.
+//
+// Instead of writing massive boilerplate for delegation to inner types
+// (there may be dozens of projection !) , we use
+// pointer to associated function. This spare us writing huge  `match`
+// for each fonction call.
+//
+// Most important projections:
+//
+// lcc, merc, tmerc, utm (etmerc) et aea
+// stere et sterea pour for polar regions.
+//
 
 use crate::errors::Result;
 use crate::parameters::ParamList;
@@ -158,16 +159,16 @@ macro_rules! declare_projections {
 // Projection list
 // ---------------------------
 
-mod aea;
-mod estmerc;
-mod etmerc;
-mod geocent;
-mod latlong;
-mod lcc;
-mod merc;
-mod stere;
-mod sterea;
-mod tmerc;
+pub mod aea;
+pub mod estmerc;
+pub mod etmerc;
+pub mod geocent;
+pub mod latlong;
+pub mod lcc;
+pub mod merc;
+pub mod stere;
+pub mod sterea;
+pub mod tmerc;
 
 #[rustfmt::skip]
 declare_projections! [

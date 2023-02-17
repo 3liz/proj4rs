@@ -1,10 +1,9 @@
-//
-// Stub projection implementation for lat/long coordinates. We
-// don't actually change the coordinates, but we want proj=latlong
-// to act sort of like a projection.
-//
-// Original author: Frank Warmerdam, warmerdam@pobox.com
-//
+//!
+//! Stub projection implementation for lat/long coordinates. 
+//!
+//! We don't actually change the coordinates, but we want proj=latlong
+//! to act sort of like a projection.
+//!
 use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::{ProjData, ProjType};

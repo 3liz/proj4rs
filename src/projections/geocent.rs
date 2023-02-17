@@ -1,7 +1,8 @@
-//
-// Stub projection implementation for geocent coordinates. No
-// transformation occurs here because it is handled in transform.rs
-//
+//!
+//! Stub projection implementation for geocent coordinates. 
+//!
+//! No transformation occurs here because it is handled in transform.rs
+//!
 use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::{ProjData, ProjType};

@@ -16,9 +16,9 @@ use crate::proj::{Axis, Proj, ProjType};
 /// implementation details (useful for collections of coordinates)
 ///
 /// The closure will return error if processing of the coordinate fail.
-/// If The method may return an error, then the whole processing
+/// If the method return an error, then the whole processing
 /// stop. Indeed, the strategy to stop or continue on error
-/// is left to the `ApplyTransform` implementation.
+/// is left to the `Transform` implementation.
 ///
 ///
 /// Single point transform example:
@@ -47,7 +47,6 @@ use crate::proj::{Axis, Proj, ProjType};
 /// }
 /// ```
 ///
-
 pub trait Transform {
     fn transform_coordinates<F>(&mut self, f: F) -> Result<()>
     where
@@ -58,16 +57,22 @@ pub trait Transform {
 // Transformation
 // ------------------
 
-/// Select transformation direction
+/// Transformation direction
 #[derive(PartialEq)]
 pub enum Direction {
+    /// Proceed with forward transformation - usually geographic
+    /// to projected
     Forward,
+    /// Proceed with inverse transformation
     Inverse,
 }
 
 use Direction::*;
 
 /// The transformation function
+///
+/// Transform coordinates from `src` to `dst` CRS.
+/// `points` must implement [`Transform`]
 pub fn transform<P>(src: &Proj, dst: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,

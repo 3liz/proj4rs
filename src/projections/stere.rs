@@ -1,7 +1,7 @@
 //!
 //! From proj/stere.c
 //!
-//! see also https://proj.org/operations/projections/stere.html
+//! See also <https://proj.org/operations/projections/stere.html>
 //!
 //! Stereographic - Azimuthal
 //!
@@ -16,7 +16,7 @@
 //!
 //! ups:  Universal Polar Stereographic
 //!
-//! see also https://proj.org/operations/projections/ups.html
+//! See also <https://proj.org/operations/projections/ups.html>
 //!
 //! stere: "Stereographic" "\n\tAzi, Sph&Ell\n\tlat_ts=";
 //! ups: "Universal Polar Stereographic") "\n\tAzi, Sph&Ell\n\tsouth";
@@ -421,7 +421,6 @@ impl Projection {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::adaptors::transform_xy;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
     use approx::assert_abs_diff_eq;

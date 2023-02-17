@@ -85,14 +85,6 @@ impl Projection {
             Sph(s) => s.inverse(x, y, z),
         }
     }
-
-    pub const fn has_inverse() -> bool {
-        true
-    }
-
-    pub const fn has_forward() -> bool {
-        true
-    }
 }
 // ---------------
 // Ellipsoidal

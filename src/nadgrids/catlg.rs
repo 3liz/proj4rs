@@ -5,6 +5,7 @@
 //!
 use super::grid::Grid;
 use crate::errors::Error;
+use crate::log::error;
 
 /// Nadgrid factory: simple function pointer that return a NadGrid.
 ///
@@ -179,7 +180,7 @@ pub mod catalog {
         static ref CATALOG: Mutex<Catalog> = Mutex::new(Catalog::default());
     }
 
-    pub(crate) fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
+    pub fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
         let cat = CATALOG.lock().unwrap();
         match cat.find(name) {
             Some(iter) => {
@@ -189,18 +190,20 @@ pub mod catalog {
             None => cat
                 .builder
                 .and_then(|b| {
-                    b(&cat, name);
+                    if b(&cat, name).is_err() {
+                        error!("Error looking for grid shift {}", name);
+                    }
                     cat.find(name).map(|iter| grids.extend(iter))
                 })
                 .is_some(),
         }
     }
 
-    pub(crate) fn add_grid(name: String, grid: Grid) -> Result<(), Error> {
+    pub fn add_grid(name: String, grid: Grid) -> Result<(), Error> {
         CATALOG.lock().unwrap().add_grid(name, grid)
     }
 
-    pub(crate) fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
+    pub fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
         CATALOG.lock().unwrap().builder.replace(builder)
     }
 }
@@ -222,7 +225,9 @@ pub mod catalog {
                 .builder
                 .borrow()
                 .and_then(|b| {
-                    b(cat, name).unwrap_or(());
+                    if b(cat, name).is_err() {
+                        error!("Error looking for grid shift {}", name);
+                    }
                     cat.find(name).map(|iter| grids.extend(iter))
                 })
                 .is_some(),

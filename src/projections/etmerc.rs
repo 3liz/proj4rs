@@ -6,7 +6,7 @@
 //!
 //! This algorithm is used as a base for UTM projections.
 //!
-//! Reference: https://proj.org/operations/projections/tmerc.html
+//! Reference: <https://proj.org/operations/projections/tmerc.html>
 //!
 //! etmerc: "Extended Transverse Mercator" "\n\tCyl, Sph\n\tlat_ts=(0)\nlat_0=(0)"
 //! utm: "Universal Transverse Mercator (UTM)" "\n\tCyl, Sph\n\tzone= south"
@@ -23,7 +23,7 @@ use crate::proj::ProjData;
 
 const ETMERC_ORDER: usize = 6;
 
-pub type Coeffs = [f64; ETMERC_ORDER];
+type Coeffs = [f64; ETMERC_ORDER];
 
 #[inline]
 fn gatg(c: &Coeffs, B: f64) -> f64 {
@@ -309,7 +309,6 @@ impl Projection {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::adaptors::transform_xy;
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};

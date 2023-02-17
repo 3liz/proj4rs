@@ -1,5 +1,6 @@
 //!
-//! Units
+//! Predefined units for conversion
+//!
 
 macro_rules! unit {
     ($name:expr, $display:expr, $comment:expr, $to_meter:expr) => {
@@ -37,7 +38,7 @@ mod constants {
     ];
 }
 
-/// Return the datum definition
+/// Return the unit definition
 pub fn find_unit_to_meter(name: &str) -> Option<f64> {
     constants::UNITS
         .iter()
