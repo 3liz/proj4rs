@@ -45,7 +45,6 @@ pub mod projections;
 pub mod transform;
 
 // Reexport
-pub use parameters::{ParamList, Parameter};
 pub use proj::Proj;
 
 // Include wasm entry point for wasm32-unknown-unknown
@@ -73,6 +72,7 @@ mod log {
     macro_rules! __info__     ( ($($tt:tt)*) => {{}} );
     macro_rules! __warn__     ( ($($tt:tt)*) => {{}} );
 
+    #[allow(unused_imports)]
     pub(crate) use {
         __debug__ as debug, __error__ as error, __info__ as info, __trace__ as trace,
         __warn__ as warn,
