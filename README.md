@@ -49,7 +49,7 @@ Install [wasm-pack](https://rustwasm.github.io/wasm-pack/book/)
 wasm-pack build --target web --no-default-features
 ```
 
-Or if you have installed (https://sagiegurari.github.io/cargo-make/), use the following
+Or if you have installed [cargo-make](https://sagiegurari.github.io/cargo-make/), use the following
 command:
 
 ```
