@@ -41,4 +41,33 @@ let point = new Proj.Point(2.0, 1.0, 0.0);
 Proj.transform(from, to, point);
 ```
 
+## Compiling for WASM
+
+Install [wasm-pack](https://rustwasm.github.io/wasm-pack/book/)
+
+```
+wasm-pack build --target web --no-default-features
+```
+
+Or if you have installed (https://sagiegurari.github.io/cargo-make/), use the following
+command:
+
+```
+cargo make wasm
+```
+
+### Running the WASM example
+
+There is a [`index.html`] file for testing the WASM module in a navigator.
+
+For security reason you need to run it from a server; you can pop up 
+a server from python with the following command:
+
+```
+python3 -m http.server
+```
+ 
+The server will automatically serve the `index.html` file in the current directory.
+
+
 
