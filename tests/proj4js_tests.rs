@@ -1,11 +1,14 @@
 //!
-//! Tests from proj4js 
+//! Tests from proj4js
 //!
 //! Note: projection results may differs from proj by 10^-4 due to difference
 //! in math functions implementations (asinh, log1py...)
 //!
-use proj4rs::{errors::{Error, Result}, proj, transform};
 use approx::assert_abs_diff_eq;
+use proj4rs::{
+    errors::{Error, Result},
+    proj, transform,
+};
 
 #[test]
 fn test_transform_with_datum() {
@@ -21,21 +24,20 @@ fn test_transform_with_datum() {
         "+units=m +towgs84=414.1,41.3,603.1,-0.855,2.141,-7.023,0 ",
         "+no_defs"
     );
-    
+
     let from = proj::Proj::from_user_string(sweref99tm).unwrap();
     let to = proj::Proj::from_user_string(rt90).unwrap();
 
-    let mut inp = (319180. , 6399862., 0.);
+    let mut inp = (319180., 6399862., 0.);
 
     transform::transform(&from, &to, &mut inp).unwrap();
-    assert_abs_diff_eq!(inp.0, 1271137.92755580, epsilon=1.0e-6);
-    assert_abs_diff_eq!(inp.1, 6404230.29136189, epsilon=1.0e-6);
+    assert_abs_diff_eq!(inp.0, 1271137.92755580, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 6404230.29136189, epsilon = 1.0e-6);
 }
-
 
 #[test]
 fn test_transform_null_datum() {
-    // Test when nadgrid list is empty 
+    // Test when nadgrid list is empty
     // ESPG:2154 definition
     let epsg2154 = concat!(
         "+proj=lcc +lat_0=46.5 +lon_0=3 +lat_1=49 +lat_2=44 ",
@@ -53,6 +55,17 @@ fn test_transform_null_datum() {
 
     let mut inp = (489353.59, 6587552.2, 0.);
     transform::transform(&from, &to, &mut inp).unwrap();
-    assert_abs_diff_eq!(inp.0, 28943.07106250, epsilon=1.0e-6);
-    assert_abs_diff_eq!(inp.1, 5837421.86618963, epsilon=1.0e-6);
+    assert_abs_diff_eq!(inp.0, 28943.07106250, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 5837421.86618963, epsilon = 1.0e-6);
+}
+
+#[test]
+fn test_longlat_alias() {
+    let wgs84 = concat!(
+        "+title=WGS 84 (long/lat) +proj=longlat +ellps=WGS84 ",
+        "+datum=WGS84 +units=degrees",
+    );
+
+    let projection = proj::Proj::from_user_string(wgs84);
+    assert!(projection.is_ok());
 }

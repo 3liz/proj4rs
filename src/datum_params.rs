@@ -8,33 +8,26 @@ use crate::nadgrids::NadGrids;
 use crate::parse::FromStr;
 
 /// Datum parameters
-#[derive(Debug, PartialEq)]
+#[derive(Default, Debug, PartialEq)]
 pub enum DatumParams {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),
     ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),
     NadGrids(NadGrids),
+    #[default]
     NoDatum,
-}
-
-impl Default for DatumParams {
-    fn default() -> Self {
-        DatumParams::NoDatum
-    }
 }
 
 impl DatumParams {
     /// Create parameters from a 'towgs84 like string'
     /// Values are expected to be in second of arcs
     pub fn from_towgs84_str(towgs84: &str) -> Result<Self> {
-
         let mut i = towgs84.split(',');
 
         // XXX Use js_sys::parsefloat with Wasm
         // It save about 20ko !
         fn parse(v: Option<&str>) -> Result<f64> {
-            f64::from_str(v.unwrap_or("").trim())
-                .map_err(|_| Error::InvalidToWGS84String)
+            f64::from_str(v.unwrap_or("").trim()).map_err(|_| Error::InvalidToWGS84String)
         }
 
         match towgs84.split(',').count() {

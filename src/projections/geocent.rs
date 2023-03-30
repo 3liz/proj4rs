@@ -1,5 +1,5 @@
 //!
-//! Stub projection implementation for geocent coordinates. 
+//! Stub projection implementation for geocent coordinates.
 //!
 //! No transformation occurs here because it is handled in transform.rs
 //!

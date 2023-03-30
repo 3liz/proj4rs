@@ -1,8 +1,11 @@
 //!
 //! Compute forward and inverse projections
 //!
-use proj4rs::{errors::{Error, Result}, proj, transform};
 use clap::{ArgAction, Parser};
+use proj4rs::{
+    errors::{Error, Result},
+    proj, transform,
+};
 
 use std::io::{self, BufRead};
 
@@ -11,30 +14,28 @@ use std::io::{self, BufRead};
 #[command(propagate_version = true)]
 struct Cli {
     /// Destination projection
-    #[arg(long, required=true)]
+    #[arg(long, required = true)]
     to: String,
     /// Source projection
-    #[arg(long, default_value="+proj=latlong")]
+    #[arg(long, default_value = "+proj=latlong")]
     from: String,
     /// Perform inverse projection
     #[arg(short, long)]
-    inverse: bool, 
+    inverse: bool,
     /// Increase verbosity
     #[arg(short, long, action = ArgAction::Count)]
-    verbose: u8, 
+    verbose: u8,
 }
 
-
 fn main() -> Result<()> {
-
     let args = Cli::parse();
 
     init_logger(args.verbose);
 
     log::debug!(
-        "\nfrom: {}\nto: {}\ninverse: {}", 
-        args.from, 
-        args.to, 
+        "\nfrom: {}\nto: {}\ninverse: {}",
+        args.from,
+        args.to,
         args.inverse
     );
 
@@ -54,7 +55,7 @@ fn main() -> Result<()> {
         Error::ParameterValueError
     }
 
-    for line in  stdin.lines() {
+    for line in stdin.lines() {
         let line = line.unwrap();
         let inputs = line.as_str().split_whitespace().collect::<Vec<_>>();
         if inputs.len() != 2 {
@@ -65,8 +66,8 @@ fn main() -> Result<()> {
         let x: f64 = inputs[0].parse().map_err(from_parse_err)?;
         let y: f64 = inputs[1].parse().map_err(from_parse_err)?;
 
-        let mut point = (x, y, 0.); 
-            
+        let mut point = (x, y, 0.);
+
         if src.is_latlong() {
             point.0 = point.0.to_radians();
             point.1 = point.1.to_radians();
@@ -98,4 +99,3 @@ fn init_logger(verbose: u8) {
     }
     .init();
 }
-

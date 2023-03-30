@@ -1,5 +1,5 @@
 //!
-//! Stub projection implementation for lat/long coordinates. 
+//! Stub projection implementation for lat/long coordinates.
 //!
 //! We don't actually change the coordinates, but we want proj=latlong
 //! to act sort of like a projection.
@@ -9,7 +9,7 @@ use crate::parameters::ParamList;
 use crate::proj::{ProjData, ProjType};
 
 // Projection stub
-super::projection! { latlong }
+super::projection! { latlong, longlat }
 
 #[derive(Debug)]
 pub(crate) struct Projection {}
@@ -20,6 +20,10 @@ impl Projection {
         p.x0 = 0.;
         p.y0 = 0.;
         Ok(Self {})
+    }
+
+    pub fn longlat(p: &mut ProjData, params: &ParamList) -> Result<Self> {
+        Self::latlong(p, params)
     }
 
     #[inline(always)]

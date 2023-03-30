@@ -133,7 +133,7 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 14;
+const NUM_PROJECTIONS: usize = 15;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
@@ -172,7 +172,7 @@ pub mod tmerc;
 
 #[rustfmt::skip]
 declare_projections! [
-    (latlong),
+    (latlong, longlat),
     (lcc),
     (etmerc, utm),
     (tmerc),

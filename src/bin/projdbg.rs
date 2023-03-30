@@ -1,7 +1,10 @@
 //!
-//! Display debugging projection infos 
+//! Display debugging projection infos
 //!
-use proj4rs::{errors::{Error, Result}, proj, transform};
+use proj4rs::{
+    errors::{Error, Result},
+    proj,
+};
 use std::env;
 
 fn main() -> Result<()> {
