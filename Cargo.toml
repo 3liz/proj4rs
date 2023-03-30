@@ -15,7 +15,9 @@ log = { version = "0.4", optional = true, features = ["release_max_level_info"] 
 [dev-dependencies]
 approx = "0.5"
 criterion = { version = "0.3" }
-env_logger = "0.3.3"
+env_logger = "0.10"
+clap = { version = "4", features=["derive"] }
+log = "0.4"
 
 [profile.release]
 lto = true
@@ -39,3 +41,6 @@ console_log = "0.2"
 [[bench]]
 name = "bench_proj"
 harness = false
+
+[[example]]
+name = "rsproj"

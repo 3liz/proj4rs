@@ -27,13 +27,13 @@ impl DatumParams {
     /// Create parameters from a 'towgs84 like string'
     /// Values are expected to be in second of arcs
     pub fn from_towgs84_str(towgs84: &str) -> Result<Self> {
+
         let mut i = towgs84.split(',');
 
         // XXX Use js_sys::parsefloat with Wasm
         // It save about 20ko !
         fn parse(v: Option<&str>) -> Result<f64> {
             f64::from_str(v.unwrap_or("").trim())
-                .map(|v| v * SEC_TO_RAD)
                 .map_err(|_| Error::InvalidToWGS84String)
         }
 
@@ -47,10 +47,10 @@ impl DatumParams {
                 parse(i.next())?,
                 parse(i.next())?,
                 parse(i.next())?,
-                parse(i.next())?,
-                parse(i.next())?,
-                parse(i.next())?,
-                parse(i.next())?,
+                parse(i.next())? * SEC_TO_RAD,
+                parse(i.next())? * SEC_TO_RAD,
+                parse(i.next())? * SEC_TO_RAD,
+                parse(i.next())? / 1_000_000.0 + 1.,
             )),
             _ => Err(Error::InvalidToWGS84String),
         }

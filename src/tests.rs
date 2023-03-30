@@ -9,7 +9,7 @@ static INIT: Once = Once::new();
 pub fn setup() {
     // Init setup
     INIT.call_once(|| {
-        env_logger::init().unwrap();
+        env_logger::init();
     });
 }
 

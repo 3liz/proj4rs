@@ -98,7 +98,7 @@ impl Datum {
                 geocentric_to_geodetic(x - dx, y - dy, z - dz, self.a, self.es, self.b)
             }
             ToWGS84_7(dx, dy, dz, rx, ry, rz, s) => {
-                let (x, y, z) = ((x - dx) / s, (x - dy) / s, (y - dz) / s);
+                let (x, y, z) = ((x - dx) / s, (y - dy) / s, (z - dz) / s);
                 geocentric_to_geodetic(
                     x + rz * y - ry * z,
                     -rz * x + y + rx * z,
