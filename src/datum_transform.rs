@@ -108,7 +108,7 @@ impl Datum {
                     self.b,
                 )
             }
-            NadGrids(grids) => geocentric_to_geodetic(x, y, y, self.a, self.es, self.b)
+            NadGrids(grids) => geocentric_to_geodetic(x, y, z, self.a, self.es, self.b)
                 .and_then(|(x, y, z)| grids.apply_shift(Direction::Inverse, x, y, z)),
             NoDatum => Ok((x, y, z)),
         }

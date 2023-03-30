@@ -41,6 +41,11 @@ impl NadGrids {
         phi: f64,
         z: f64,
     ) -> Result<(f64, f64, f64)> {
+
+        if self.0.is_empty() {
+            return Ok((lam, phi, z));
+        }
+
         // Find the correct (root)  grid for an input
         let mut iter = self.0.iter();
         let mut candidate = iter.find(|g| g.is_root() && g.matches(lam, phi, z));
@@ -104,5 +109,9 @@ impl NadGrids {
                 }
             }
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        return self.0.is_empty()
     }
 }

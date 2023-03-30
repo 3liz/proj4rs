@@ -355,12 +355,12 @@ impl Proj {
 // -------------
 impl fmt::Debug for Proj {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "datum:      {:#?}", self.datum)?;
-        write!(f, "geoc:       {:#?}", self.geoc)?;
-        write!(f, "over:       {:#?}", self.over)?;
-        write!(f, "data:       {:#?}", self.projdata)?;
-        write!(f, "projname:   {:#?}", self.projname)?;
-        write!(f, "projection: {:#?}", self.projection)
+        writeln!(f, "datum:      {:#?}", self.datum)?;
+        writeln!(f, "geoc:       {:#?}", self.geoc)?;
+        writeln!(f, "over:       {:#?}", self.over)?;
+        writeln!(f, "data:       {:#?}", self.projdata)?;
+        writeln!(f, "projname:   {:#?}", self.projname)?;
+        writeln!(f, "projection: {:#?}", self.projection)
     }
 }
 
