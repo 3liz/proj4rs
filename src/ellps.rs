@@ -169,6 +169,16 @@ impl Ellipsoid {
         Self::calc_ellipsoid_params(a, sp).and_then(|ellps| ellps.spherification(params))
     }
 
+    /// Create from a given semi major axis and ellipsoid parameters
+    pub fn try_from_semi_major_axis(
+        a: f64,
+        params: &ParamList,
+    ) -> Result<Self> {
+        // Get the shape parameter
+        let sp = Self::find_shape_parameter(params).unwrap_or(Ok(SP_es(0.)))?;
+        Self::calc_ellipsoid_params(a, sp).and_then(|ellps| ellps.spherification(params))
+    }
+
     fn find_shape_parameter(params: &ParamList) -> Option<Result<Shape>> {
         // Shape parameters tokens in order of precedence
         const SHAPE_TOKENS: &[&str] = &[TOK_rf, TOK_f, TOK_es, TOK_e, TOK_b];

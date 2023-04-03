@@ -80,6 +80,8 @@ pub enum Error {
     GridFileNotFound(String),
     #[error("Unknown grid format")]
     UnknownGridFormat,
+    #[error("Numerical argument too  large")]
+    ArgumentTooLarge,
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

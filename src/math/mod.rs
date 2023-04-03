@@ -91,6 +91,7 @@ pub fn asinh(x: f64) -> f64 {
 //    (y * (1. + y/(1.0f64.hypot(y) + 1.))).ln_1p().copysign(x)
 //}
 
+mod aasincos;
 mod adjlon;
 mod gauss;
 mod mlfn;
@@ -99,6 +100,7 @@ mod phi2;
 mod qsfn;
 mod tsfn;
 
+pub(crate) use aasincos::{aacos, aasin, aatan2, asqrt};
 pub(crate) use adjlon::adjlon;
 pub(crate) use gauss::{gauss, gauss_ini, inv_gauss, Gauss};
 pub(crate) use mlfn::{enfn, inv_mlfn, mlfn, Enfn};

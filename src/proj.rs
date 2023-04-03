@@ -219,6 +219,8 @@ impl Proj {
         } else if let Some(defn) = datum_def {
             // Retrieve from datum definition + parameters
             Ellipsoid::try_from_ellipsoid_with_params(defn.ellps, params)
+        } else if let Some(a) = params.get("a") {
+            Ellipsoid::try_from_semi_major_axis(a.try_into()?, params)
         } else {
             // Get a free WGS84
             Ellipsoid::try_from_ellipsoid_with_params(&ellipsoids::constants::WGS84, params)
