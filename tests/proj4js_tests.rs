@@ -6,7 +6,6 @@
 //!
 use approx::assert_abs_diff_eq;
 use proj4rs::{
-    errors::{Error, Result},
     proj, transform,
 };
 

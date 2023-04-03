@@ -2,18 +2,28 @@
 //! Predefined units for conversion
 //!
 
+#[derive(Debug, Copy, Clone)]
+pub struct UnitDefn {
+    pub name: &'static str,
+    pub to_meter: f64,
+}
+
 macro_rules! unit {
     ($name:expr, $display:expr, $comment:expr, $to_meter:expr) => {
-        ($name, $to_meter)
+        UnitDefn { name: $name, to_meter: $to_meter }
     };
 }
 
+pub const METER: UnitDefn = unit!("m", "1", "Meter", 1.0);
+
+pub const DEGREES: &str = "degrees"; 
+
 mod constants {
+    use super::*;
     /// Static units table
     /// id, to_meter, display to_meter value, comment, to_meter
     #[rustfmt::skip]
-    //pub const UNITS: [(&str, &str, &str, f64);21] = [
-    pub const UNITS: [(&str, f64);21] = [
+    pub const UNITS: [UnitDefn;21] = [
         unit!("km",      "1000",                 "Kilometer",                    1000.0),
         unit!("m",       "1",                    "Meter",                        1.0),
         unit!("dm",      "1/10",                 "Decimeter",                    0.1),
@@ -38,10 +48,14 @@ mod constants {
     ];
 }
 
+pub fn from_value(to_meter: f64) -> UnitDefn {
+    UnitDefn { name: "", to_meter }
+}
+
 /// Return the unit definition
-pub fn find_unit_to_meter(name: &str) -> Option<f64> {
+pub fn find_units(name: &str) -> Option<UnitDefn> {
     constants::UNITS
         .iter()
-        .find(|d| d.0.eq_ignore_ascii_case(name))
-        .map(|d| d.1)
+        .find(|d| d.name.eq_ignore_ascii_case(name)).copied()
+
 }

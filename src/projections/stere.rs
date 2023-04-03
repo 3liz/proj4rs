@@ -423,7 +423,6 @@ mod tests {
     use super::*;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
-    use approx::assert_abs_diff_eq;
 
     #[test]
     fn proj_stere_stere_ellipsoidal() {

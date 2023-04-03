@@ -29,6 +29,41 @@ impl Projection {
             inner: proj::Proj::from_user_string(defn)?,
         })
     }
+
+    #[wasm_bindgen(getter, js_name = projName)]
+    pub fn projname(&self) -> String {
+        self.inner.projname().into()
+    }
+
+    #[wasm_bindgen(getter, js_name = isLatlon)]
+    pub fn is_latlong(&self) -> bool {
+        self.inner.is_latlong()
+    }
+    
+    #[wasm_bindgen(getter, js_name = isGeocentric)]
+    pub fn is_geocent(&self) -> bool {
+        self.inner.is_geocent()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn axis(&self) -> String {
+        String::from_utf8_lossy(self.inner.axis()).into_owned()
+    }
+
+    #[wasm_bindgen(getter, js_name = isNormalizedAxis)]
+    pub fn is_normalized_axis(&self) -> bool {
+        self.inner.is_normalized_axis()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn to_meter(&self) -> f64 {
+        self.inner.to_meter()
+    }
+
+    #[wasm_bindgen(getter)]
+    pub fn units(&self) -> String {
+        self.inner.units().into()
+    }
 }
 
 // ----------------------------
