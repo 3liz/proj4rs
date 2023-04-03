@@ -10,13 +10,16 @@ pub struct UnitDefn {
 
 macro_rules! unit {
     ($name:expr, $display:expr, $comment:expr, $to_meter:expr) => {
-        UnitDefn { name: $name, to_meter: $to_meter }
+        UnitDefn {
+            name: $name,
+            to_meter: $to_meter,
+        }
     };
 }
 
 pub const METER: UnitDefn = unit!("m", "1", "Meter", 1.0);
 
-pub const DEGREES: &str = "degrees"; 
+pub const DEGREES: &str = "degrees";
 
 mod constants {
     use super::*;
@@ -56,6 +59,6 @@ pub fn from_value(to_meter: f64) -> UnitDefn {
 pub fn find_units(name: &str) -> Option<UnitDefn> {
     constants::UNITS
         .iter()
-        .find(|d| d.name.eq_ignore_ascii_case(name)).copied()
-
+        .find(|d| d.name.eq_ignore_ascii_case(name))
+        .copied()
 }

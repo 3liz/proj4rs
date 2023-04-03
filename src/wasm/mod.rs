@@ -39,7 +39,7 @@ impl Projection {
     pub fn is_latlong(&self) -> bool {
         self.inner.is_latlong()
     }
-    
+
     #[wasm_bindgen(getter, js_name = isGeocentric)]
     pub fn is_geocent(&self) -> bool {
         self.inner.is_geocent()

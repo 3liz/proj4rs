@@ -279,23 +279,23 @@ impl Proj {
                 // Just a dummy value
                 Ok(units::METER)
             } else {
-                units::find_units(name)
-                    .ok_or(Error::InvalidParameterValue("Invalid units"))
+                units::find_units(name).ok_or(Error::InvalidParameterValue("Invalid units"))
             }
         } else {
-            Ok(params.try_value::<f64>("to_meter")?
+            Ok(params
+                .try_value::<f64>("to_meter")?
                 .map(units::from_value)
                 .unwrap_or(units::METER))
         }
     }
 
     fn get_vertical_units(params: &ParamList) -> Result<units::UnitDefn> {
-         if let Some(p) = params.get("vunits") {
-            units::find_units(p.try_into()?)
-                    .ok_or(Error::InvalidParameterValue("Invalid units"))
+        if let Some(p) = params.get("vunits") {
+            units::find_units(p.try_into()?).ok_or(Error::InvalidParameterValue("Invalid units"))
         } else {
             // XXX in proj4 vto_meter accept fractional expression: '/'
-            Ok(params.try_value::<f64>("vto_meter")?
+            Ok(params
+                .try_value::<f64>("vto_meter")?
                 .map(units::from_value)
                 .unwrap_or(units::METER))
         }
@@ -331,7 +331,7 @@ impl Proj {
         // horizontal units
         let horz_units = Self::get_horizontal_units(&params)?;
         let vert_units = Self::get_vertical_units(&params)?;
-        
+
         let to_meter = horz_units.to_meter;
         let vto_meter = vert_units.to_meter;
 

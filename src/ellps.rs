@@ -170,10 +170,7 @@ impl Ellipsoid {
     }
 
     /// Create from a given semi major axis and ellipsoid parameters
-    pub fn try_from_semi_major_axis(
-        a: f64,
-        params: &ParamList,
-    ) -> Result<Self> {
+    pub fn try_from_semi_major_axis(a: f64, params: &ParamList) -> Result<Self> {
         // Get the shape parameter
         let sp = Self::find_shape_parameter(params).unwrap_or(Ok(SP_es(0.)))?;
         Self::calc_ellipsoid_params(a, sp).and_then(|ellps| ellps.spherification(params))

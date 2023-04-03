@@ -4,8 +4,8 @@
 use crate::errors::{Error, Result};
 use crate::transform::Direction;
 
-mod grid;
 mod catlg;
+mod grid;
 
 pub use catlg::{catalog, Catalog, GridRef};
 

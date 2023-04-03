@@ -5,9 +5,7 @@
 //! in math functions implementations (asinh, log1py...)
 //!
 use approx::assert_abs_diff_eq;
-use proj4rs::{
-    proj, transform,
-};
+use proj4rs::{proj, transform};
 
 #[test]
 fn test_transform_with_datum() {
