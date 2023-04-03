@@ -14,7 +14,6 @@ pub fn setup() {
 }
 
 pub(crate) mod utils {
-    use crate::errors::Result;
     use crate::proj::{Proj, ProjData};
     use approx::assert_abs_diff_eq;
 
@@ -72,7 +71,7 @@ pub(crate) mod utils {
 }
 
 use crate::proj::Proj;
-use crate::transform::{transform, Transform};
+use crate::transform::transform;
 use approx::assert_abs_diff_eq;
 
 #[test]

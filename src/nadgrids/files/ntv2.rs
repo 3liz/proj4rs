@@ -136,7 +136,7 @@ fn read_ntv2_grid<R: Read>(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::nadgrids::{Catalog, GridRef};
+    use crate::nadgrids::Catalog;
     use crate::tests::setup;
     use std::env;
     use std::fs::File;

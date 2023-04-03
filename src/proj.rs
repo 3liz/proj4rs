@@ -66,6 +66,9 @@ pub struct Proj {
     datum: Datum,
     geoc: bool,
     over: bool, // over-ranging flag
+    // Units
+    units: &'static str,
+    vunits: &'static str,
     // Set by projections initialization
     projdata: ProjData,
     projname: &'static str,
@@ -149,6 +152,19 @@ impl Proj {
     #[inline]
     pub fn projection_type(&self) -> ProjType {
         self.projdata.proj_type
+    }
+
+    pub fn units(&self) -> &'static str {
+        if self.is_latlong() {
+            units::DEGREES
+        } else {
+            self.units
+        }
+    }
+
+    #[inline]
+    pub fn vunits(&self) -> &'static str {
+        self.vunits
     }
 }
 
@@ -256,13 +272,32 @@ impl Proj {
     // -----------------
     // Units
     // ----------------
-    fn get_units(params: &ParamList, name: &str, default: f64) -> Result<f64> {
-        if let Some(p) = params.get(name) {
-            units::find_unit_to_meter(p.try_into()?)
-                .map(Ok)
-                .unwrap_or_else(|| p.try_into())
+    fn get_horizontal_units(params: &ParamList) -> Result<units::UnitDefn> {
+        if let Some(p) = params.get("units") {
+            let name: &str = p.try_into()?;
+            if name.eq_ignore_ascii_case(units::DEGREES) {
+                // Just a dummy value
+                Ok(units::METER)
+            } else {
+                units::find_units(name)
+                    .ok_or(Error::InvalidParameterValue("Invalid units"))
+            }
         } else {
-            Ok(default)
+            Ok(params.try_value::<f64>("to_meter")?
+                .map(units::from_value)
+                .unwrap_or(units::METER))
+        }
+    }
+
+    fn get_vertical_units(params: &ParamList) -> Result<units::UnitDefn> {
+         if let Some(p) = params.get("vunits") {
+            units::find_units(p.try_into()?)
+                    .ok_or(Error::InvalidParameterValue("Invalid units"))
+        } else {
+            // XXX in proj4 vto_meter accept fractional expression: '/'
+            Ok(params.try_value::<f64>("vto_meter")?
+                .map(units::from_value)
+                .unwrap_or(units::METER))
         }
     }
 
@@ -293,10 +328,12 @@ impl Proj {
         // Axis
         let axis = Self::get_axis(&params)?;
 
-        // units
-        let to_meter = Self::get_units(&params, "to_meter", 1.)?;
-        // XXX in proj4 vto_meter accept fractional expression: '/'
-        let vto_meter = Self::get_units(&params, "vto_meter", to_meter)?;
+        // horizontal units
+        let horz_units = Self::get_horizontal_units(&params)?;
+        let vert_units = Self::get_vertical_units(&params)?;
+        
+        let to_meter = horz_units.to_meter;
+        let vto_meter = vert_units.to_meter;
 
         // Datum
         let datum = Datum::new(&ellps, datum_params);
@@ -328,6 +365,8 @@ impl Proj {
             // see https://proj.org/operations/conversions/geoc.html
             geoc: params.check_option("geoc")?,
             over: params.check_option("over")?,
+            units: horz_units.name,
+            vunits: vert_units.name,
             projdata,
             projname: proj_init.name(),
             projection: project,

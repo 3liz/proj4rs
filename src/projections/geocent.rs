@@ -46,7 +46,6 @@ impl Projection {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::adaptors::transform_xyz;
     use crate::proj::Proj;
     use approx::assert_abs_diff_eq;

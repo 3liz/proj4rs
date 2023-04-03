@@ -105,7 +105,6 @@ impl<'a> FromIterator<Parameter<'a>> for ParamList<'a> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::projstring::parse;
 
     #[test]

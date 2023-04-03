@@ -6,14 +6,9 @@
   </head>
   <body>
     <script type="module">
-      import init, * as Proj from "./pkg/proj4rs.js";
-      await init();
-      let from = new Proj.Projection("+proj=latlong +ellps=GRS80");
-      let to = new Proj.Projection("+proj=etmerc +ellps=GRS80");
-      let point = new Proj.Point(2.0, 1.0, 0.0);
-      Proj.transform(from, to, point);
-      console.log(`=> ${point.x} ${point.y}`);
+      import {} from "./js/tests/test_defs.js";
+      import {} from "./js/tests/test_index.js";
+      import {} from "./js/tests/test_core.js";
     </script>
   </body>
 </html>
-

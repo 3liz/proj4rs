@@ -47,7 +47,6 @@ impl Projection {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::adaptors::transform_xy;
     use crate::proj::Proj;
 
