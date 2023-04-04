@@ -93,6 +93,7 @@ pub fn asinh(x: f64) -> f64 {
 
 mod aasincos;
 mod adjlon;
+mod auth;
 mod gauss;
 mod mlfn;
 mod msfn;
@@ -102,6 +103,7 @@ mod tsfn;
 
 pub(crate) use aasincos::{aacos, aasin, aatan2, asqrt};
 pub(crate) use adjlon::adjlon;
+pub(crate) use auth::{authlat, authset};
 pub(crate) use gauss::{gauss, gauss_ini, inv_gauss, Gauss};
 pub(crate) use mlfn::{enfn, inv_mlfn, mlfn, Enfn};
 pub(crate) use msfn::msfn;
