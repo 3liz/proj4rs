@@ -115,8 +115,16 @@ function transformer(from, to, coords) {
 
 var wgs84 = new Proj.Projection('+proj=longlat +ellps=WGS84 +datum=WGS84 +units=degrees');
 
+
+function testDef(code){
+  return code in defs;
+}
+
 function getProj(item) {
     if (typeof item === 'string') {
+        if (testDef(item)) {
+            return defs[item];
+        }
         return new Proj.Projection(item);
     }
     if (item.oProj) {
@@ -127,7 +135,7 @@ function getProj(item) {
 
 // This method allows for variadic arguments:
 // The first argument must always be a projection
-// Numbe of arguments:
+// Number of arguments:
 // * 1 argument: Transformation from/to WGS84 to given projection
 // * 2 arguments: two cases
 //     * The second argument is a projection: return a transform object
@@ -137,8 +145,12 @@ function getProj(item) {
 //       to the input coordinates in arg2.
 // * 3 arguments:
 //    * First and second arguments are respectively source and destination projections.
-//      Third argument is coordinates on wich to apply transformation, returns
+//      Third argument is coordinates on which to apply transformation, returns
 //      the results of the transformation.
+// The projection arguments could be:
+// * The projection code stored in proj4.defs
+// * The proj4 string
+// * proj4.Proj object
 //
 function proj4(fromProj, toProj, coords) {
     fromProj = getProj(fromProj);
