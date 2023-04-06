@@ -1,7 +1,7 @@
 //
 // Proj4js compatibility wrapper
 //
-// This module is a wrapper around proj4rs in order to provide the same interface as 
+// This module is a wrapper around proj4rs in order to provide the same interface as
 // Proj4js
 //
 
@@ -9,7 +9,7 @@
 import init, * as Proj from "../pkg/proj4rs.js";
 await init();
 
-/// Used as factory for creating projection alias 
+/// Used as factory for creating projection alias
 function defs(name) {
     var that = this;
     if (arguments.length === 2) {
@@ -62,7 +62,7 @@ function toPoint(coords) {
     }
 }
 
-// Transfrom any point-like object or array with z and/or m coordinates. 
+// Transfrom any point-like object or array with z and/or m coordinates.
 // Handle denormalized axis.
 function transform(source, dest, point) {
     let projPoint = toPoint(point);
@@ -84,8 +84,8 @@ function transform(source, dest, point) {
 
 
 // From proj4js
-// Transform and return the same structural object: return an array in case input is an array 
-// or an object in case input is an object, 
+// Transform and return the same structural object: return an array in case input is an array
+// or an object in case input is an object,
 // by recopying extra fields from input to output
 function transformer(from, to, coords) {
     let transformed = transform(from, to, coords);
@@ -118,16 +118,19 @@ var wgs84 = new Proj.Projection('+proj=longlat +ellps=WGS84 +datum=WGS84 +units=
 function getProj(item) {
     if (typeof item === 'string') {
         return new Proj.Projection(item);
-    } 
+    }
+    if (item.oProj) {
+      return item.oProj;
+    }
     return item
 }
 
 // This method allows for variadic arguments:
 // The first argument must always be a projection
 // Numbe of arguments:
-// * 1 argument: Projection from WGS84 to given projection
+// * 1 argument: Transformation from/to WGS84 to given projection
 // * 2 arguments: two cases
-//     * The second argument is a projection: return a transform object 
+//     * The second argument is a projection: return a transform object
 //       from projection in arg1 to projection in arg2
 //     * The second argument is coordinates (object coordinate's like or array:
 //       return the result of projection from WGS84 to given projection applied
@@ -139,14 +142,17 @@ function getProj(item) {
 //
 function proj4(fromProj, toProj, coords) {
     fromProj = getProj(fromProj);
+    var single = false;
     var obj;
     if (typeof toProj === 'undefined') {
       toProj = fromProj;
       fromProj = wgs84;
+      single = true;
     } else if (typeof toProj.x !== 'undefined' || Array.isArray(toProj)) {
       coords = toProj;
       toProj = fromProj;
       fromProj = wgs84;
+      single = true;
     }
     toProj = getProj(toProj);
     if (coords) {
@@ -160,6 +166,9 @@ function proj4(fromProj, toProj, coords) {
           return transformer(toProj, fromProj, coords);
         }
       };
+      if (single) {
+        obj.oProj = toProj;
+      }
       return obj;
     }
 }
@@ -181,7 +190,7 @@ function make_globals() {
 make_globals();
 
 proj4.defs = defs;
-proj4.defaultDatum = 'WGS84'; 
+proj4.defaultDatum = 'WGS84';
 proj4.WGS84 = defs.WGS84;
 proj4.toPoint = toPoint;
 proj4.defs = defs;
