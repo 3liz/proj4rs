@@ -26,7 +26,7 @@ pub(crate) struct Projection {
 
 impl Projection {
     pub fn merc(p: &mut ProjData, params: &ParamList) -> Result<Self> {
-        let phits: Option<f64> = params.try_value("lat_ts")?;
+        let phits: Option<f64> = params.try_angular_value("lat_ts")?;
         if let Some(phits) = phits {
             if phits >= FRAC_PI_2 {
                 return Err(Error::InvalidParameterValue(
