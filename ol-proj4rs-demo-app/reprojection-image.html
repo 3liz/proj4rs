@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <title>Image Reprojection</title>
+    <link rel="stylesheet" href="node_modules/ol/ol.css">
+    <style>
+      .map {
+        width: 100%;
+        height: 400px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>OpenLayers + Proj4rs</header>
+    <h4 id="title">Image Reprojection</h4>
+    <div id="map" class="map"></div>
+    <div>
+      <input type="checkbox" id="interpolate" checked />
+      <label for="interpolate">Interpolate</label>
+    </div>
+    <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
+    <script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"></script>
+    <script type="module" src="reprojection-image.js"></script>
+  </body>
+</html>

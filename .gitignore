@@ -1,2 +1,7 @@
 /target
 /Cargo.lock
+
+node_modules
+dist
+assets/js/*
+assets/pkg/*
