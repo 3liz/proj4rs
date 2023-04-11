@@ -70,7 +70,7 @@ impl Projection {
     // stere
     // -----------
     pub fn stere(p: &mut ProjData, params: &ParamList) -> Result<Self> {
-        Self::init(p, params.try_value("lat_ts")?.unwrap_or(FRAC_PI_2))
+        Self::init(p, params.try_angular_value("lat_ts")?.unwrap_or(FRAC_PI_2))
     }
 
     // -----------
@@ -478,6 +478,27 @@ mod tests {
                 (-2., -1., 0.),
                 (1551250.8814318008, -10850493.419804076, 0.),
             ),
+        ];
+
+        test_proj_forward(&p, &inputs, EPS_10);
+        test_proj_inverse(&p, &inputs, EPS_10);
+    }
+
+    #[test]
+    fn proj_stere_lat_ts() {
+        let p = Proj::from_proj_string(
+            "+proj=stere +lat_0=90 +lat_ts=70 +lon_0=-45 +k=1 +x_0=0 +y_0=0 +datum=WGS84",
+        )
+        .unwrap();
+
+        println!("{:#?}", p.data());
+        println!("{:#?}", p.projection());
+
+        let inputs = [
+            ((2., 1., 0.), (8862877.257787468, -8264766.749473205, 0.)),
+            ((2., -1., 0.), (9175584.980072394, -8556371.418055642, 0.)),
+            ((-2., 1., 0.), (8264766.749473205, -8862877.25778747, 0.)),
+            ((-2., -1., 0.), (8556371.418055642, -9175584.980072396, 0.)),
         ];
 
         test_proj_forward(&p, &inputs, EPS_10);
