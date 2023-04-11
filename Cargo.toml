@@ -10,7 +10,7 @@ keywords = ["gis", "proj", "projection", "geography", "geospatial"]
 [dependencies]
 thiserror = "1.0"
 lazy_static = { version = "1", optional = true }
-log = { version = "0.4", optional = true, features = ["release_max_level_info"] }
+log = { version = "0.4", optional = true  }
 
 [dev-dependencies]
 approx = "0.5"
@@ -31,12 +31,15 @@ default = ["multi-thread"]
 multi-thread = ["lazy_static"]
 logging = ["log"]
 local_tests = []
+wasm-strict = []
+proj4js-compat = []
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen = "0.2"
 js-sys = "0.3"
+web-sys = { version = "0.3", features = ["console"] }
 wee_alloc = "0.4"
-console_log = "0.2"
+console_log = "1.0"
 
 [[bench]]
 name = "bench_proj"

@@ -6,6 +6,8 @@ mod nadgrids;
 use crate::{errors, proj, transform};
 use wasm_bindgen::prelude::*;
 
+use crate::log;
+
 // Js entry point
 #[wasm_bindgen(start)]
 pub fn main() {
@@ -110,6 +112,10 @@ impl Point {
 }
 
 impl transform::Transform for Point {
+    /// Strict mode: return exception
+    /// as soon as with have invalidcoordinates or
+    /// that the reprojection failed
+    #[cfg(feature = "wasm-strict")]
     fn transform_coordinates<F>(&mut self, mut f: F) -> errors::Result<()>
     where
         F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
@@ -120,10 +126,37 @@ impl transform::Transform for Point {
             self.z = z;
         })
     }
+    /// Relaxed mode: allow transformation failure: return NAN in case
+    /// of projection failure
+    /// Note: this is what is expected mostly from js app (at least OpenLayer)
+    #[cfg(not(feature = "wasm-strict"))]
+    fn transform_coordinates<F>(&mut self, mut f: F) -> errors::Result<()>
+    where
+        F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
+    {
+        f(self.x, self.y, self.z).map(|(x, y, z)| {
+            self.x = x;
+            self.y = y;
+            self.z = z;
+        }).or_else(|_err| {
+            // This will be activated with 'logging' feature
+            log::error!("{:?}: ({}, {}, {})", _err, self.x, self.y, self.z);
+            self.x = f64::NAN;        
+            self.y = f64::NAN;        
+            self.z = f64::NAN;
+            Ok(())
+        })
+    }
 }
 
 #[wasm_bindgen]
 pub fn transform(src: &Projection, dst: &Projection, point: &mut Point) -> Result<(), JsError> {
+    log::debug!("transform: {}, {}, {}",point.x, point.y, point.z);
+
+    if point.x.is_nan() || point.y.is_nan() {
+        return Err(JsError::from(errors::Error::NanCoordinateValue));
+    }
+
     if src.inner.is_latlong() {
         point.x = point.x.to_radians();
         point.y = point.y.to_radians();

@@ -85,6 +85,7 @@ impl Projection {
         Ok((self.c_x * lam * phi.cos(), self.c_y * phi.sin(), z))
     }
 
+    #[cfg(not(feature = "proj4js-compat"))]
     #[inline(always)]
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let mut phi = aasin(y / self.c_y)?;
@@ -97,6 +98,22 @@ impl Projection {
             Err(Error::CoordinateOutOfRange)
         }
     }
+
+    /// This is an infaillible version of Mollwey
+    /// While proj version is faillible
+    #[cfg(feature = "proj4js-compat")]
+    #[inline(always)]
+    pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+        let mut phi = aasin(y / self.c_y)?;
+        let mut lam = x / (self.c_x * phi.cos());
+        if lam.abs() > PI {
+            lam = PI * lam.signum(); 
+        }
+        phi += phi;
+        phi = aasin((phi + phi.sin()) / self.c_p)?;
+        Ok((lam, phi, z))
+    }
+
 
     pub const fn has_inverse() -> bool {
         true

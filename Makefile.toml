@@ -12,5 +12,17 @@ args = ["build"]
 
 [tasks.wasm]
 script = [
-    "wasm-pack build --target web --no-default-features"
+    "wasm-pack build --target web --no-default-features --features=proj4js-compat"
 ]
+
+[tasks.wasm_debug]
+script = [
+    "wasm-pack build --target web --no-default-features --features=logging --features=proj4js-compat"
+]
+
+[tasks.wasm_strict]
+script = [
+    "wasm-pack build --target web --no-default-features --features=wasm_strict --features=proj4js-compat"
+]
+
+
