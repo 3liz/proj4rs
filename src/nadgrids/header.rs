@@ -6,7 +6,7 @@ use crate::nadgrids::GridId;
 use std::io::Read;
 
 #[derive(Copy, Clone)]
-pub enum Endianness {
+pub(crate) enum Endianness {
     Be = 0,
     Le = 1,
 }
@@ -31,7 +31,7 @@ impl Endianness {
 }
 
 /// Generic header struct
-pub struct Header<const N: usize> {
+pub(crate) struct Header<const N: usize> {
     buf: [u8; N],
     pub endian: Endianness,
 }

@@ -9,7 +9,7 @@ use crate::parse::FromStr;
 
 /// Datum parameters
 #[derive(Default, Debug, PartialEq)]
-pub enum DatumParams {
+pub(crate) enum DatumParams {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),
     ToWGS84_7(f64, f64, f64, f64, f64, f64, f64),

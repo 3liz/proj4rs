@@ -4,23 +4,26 @@ This a Proj4 port in Rust.
 
 This port implemente the Proj4 Api - i.e no 3D/4D/orthometric transformation ATM.
 
-The aim of Proj4rs is to provide at short term the same functionality as the original
-proj4 library.
-
-The long term project is to integrate feature from the proj library in its latest
-version.
+The aim of Proj4rs is to provide the same functionality as the original
+proj4js library.
 
 The goal of proj4rs is not to be a remplacement of proj, but instead beeing a light
 weight implementation of transformations from crs to crs that could be used
 in WASM environment
 
-There is no actual support for WKT, if such supports would exist one day, it would be under
-a dedicated crate for transforming proj string to to WKT and vice-versa.
-
-If you need full support for WKT, please rely on proj which provide
-a great implementation of the standards.
+This crate does not provide support for WKT, instead, there is a dedicated crate for transforming 
+WKT strings to proj string.
 
 It is targeted to be WASM compatible for the `wasm32-unknown-unknown` target.
+
+Documentation on [doc.rs](https://docs.rs/proj4rs/)
+
+## WKT support
+
+If you need full support for WKT, please rely on `proj` which provides
+a great implementation of the standards.
+
+If you want WKT support in WASM please have a look at https://github.com/3liz/proj4wkt-rs
 
 ## Grid shift supports 
 
@@ -28,7 +31,9 @@ Currently, only Ntv2 multi grids is supported for native build and WASM.
 
 ## Js Api
 
-When compiled for WASM, the library expose a javascript api very similar to proj4js.
+When compiled for WASM, the library expose a javascript api very similar to proj4js. A thin
+javascript layer provide full compatibility with proj4js and thus can be used as a proj4js
+replacement.
 
 Example:
 

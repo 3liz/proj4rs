@@ -3,9 +3,23 @@ name = "proj4rs"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.66"
-description = "Rust adaptation of Proj4js"
+description = "Rust adaptation of Proj4"
 readme = "./README.md"
 keywords = ["gis", "proj", "projection", "geography", "geospatial"]
+authors = ["David Marteau <dmarteau@3liz.com>"]
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/3liz/proj4rs/"
+repository = "https://github.com/3liz/proj4rs/"
+documentation = "https://docs.rs/proj4rs/"
+exclude = [
+    "js/*",
+    "Makefile.toml",
+    "ol-proj4rs-demo-app",
+    "fixtures",
+    ".docker",
+    "PROJ4_General_Parameters.pdf",
+    "index.html",
+]
 
 [dependencies]
 thiserror = "1.0"

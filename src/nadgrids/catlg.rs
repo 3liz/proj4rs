@@ -7,17 +7,18 @@ use super::grid::Grid;
 use crate::errors::Error;
 use crate::log::error;
 
-/// Nadgrid factory: simple function pointer that return a NadGrid.
+/// Nadgrid factory: function pointer that load
+/// nadgrid into the catalog
 ///
-/// This is an infaillible method that should return [`None`] if
-/// no Nadgrid can be found or if an error occured when loading/building
-/// the nadgrid.
+/// Should return an error if no Nadgrid can be found or
+/// an error occured when loading/building the nadgrid.
 pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
 /// Static reference to nadgrids
 ///
 /// Grids  have a static lifetime on the heap
 /// It means they are never deallocated;
+#[doc(hidden)]
 pub type GridRef = &'static Grid;
 
 #[cfg(feature = "multi-thread")]
@@ -103,7 +104,7 @@ impl Node {
         }
     }
 
-    fn is_child_of(&self, node: &Self) -> bool {
+    pub fn is_child_of(&self, node: &Self) -> bool {
         match self.parent {
             Some(p) => std::ptr::eq(p, node) || p.is_child_of(node),
             _ => false,

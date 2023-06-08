@@ -101,7 +101,7 @@ mod phi2;
 mod qsfn;
 mod tsfn;
 
-pub(crate) use aasincos::{aacos, aasin, aatan2, asqrt};
+pub(crate) use aasincos::aasin;
 pub(crate) use adjlon::adjlon;
 pub(crate) use auth::{authlat, authset};
 pub(crate) use gauss::{gauss, gauss_ini, inv_gauss, Gauss};

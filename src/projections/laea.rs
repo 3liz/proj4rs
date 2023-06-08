@@ -397,7 +397,6 @@ impl SProj {
 
 #[cfg(test)]
 mod tests {
-    use crate::adaptors::transform_xy;
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};

@@ -1,5 +1,6 @@
 //! arc sin, cosine, tan2 and sqrt that will NOT fail
 //!
+#![allow(dead_code)]
 use crate::errors::{Error, Result};
 use crate::math::consts::{FRAC_PI_2, PI};
 

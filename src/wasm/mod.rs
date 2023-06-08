@@ -134,24 +134,26 @@ impl transform::Transform for Point {
     where
         F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
     {
-        f(self.x, self.y, self.z).map(|(x, y, z)| {
-            self.x = x;
-            self.y = y;
-            self.z = z;
-        }).or_else(|_err| {
-            // This will be activated with 'logging' feature
-            log::error!("{:?}: ({}, {}, {})", _err, self.x, self.y, self.z);
-            self.x = f64::NAN;        
-            self.y = f64::NAN;        
-            self.z = f64::NAN;
-            Ok(())
-        })
+        f(self.x, self.y, self.z)
+            .map(|(x, y, z)| {
+                self.x = x;
+                self.y = y;
+                self.z = z;
+            })
+            .or_else(|_err| {
+                // This will be activated with 'logging' feature
+                log::error!("{:?}: ({}, {}, {})", _err, self.x, self.y, self.z);
+                self.x = f64::NAN;
+                self.y = f64::NAN;
+                self.z = f64::NAN;
+                Ok(())
+            })
     }
 }
 
 #[wasm_bindgen]
 pub fn transform(src: &Projection, dst: &Projection, point: &mut Point) -> Result<(), JsError> {
-    log::debug!("transform: {}, {}, {}",point.x, point.y, point.z);
+    log::debug!("transform: {}, {}, {}", point.x, point.y, point.z);
 
     if point.x.is_nan() || point.y.is_nan() {
         return Err(JsError::from(errors::Error::NanCoordinateValue));

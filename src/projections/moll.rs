@@ -8,6 +8,7 @@
 //! wag5: "Wagner V" "\n\tPCyl., Sph.";
 //!
 use crate::ellps::Ellipsoid;
+#[allow(unused_imports)]
 use crate::errors::{Error, Result};
 use crate::math::{
     aasin,
@@ -107,13 +108,12 @@ impl Projection {
         let mut phi = aasin(y / self.c_y)?;
         let mut lam = x / (self.c_x * phi.cos());
         if lam.abs() > PI {
-            lam = PI * lam.signum(); 
+            lam = PI * lam.signum();
         }
         phi += phi;
         phi = aasin((phi + phi.sin()) / self.c_p)?;
         Ok((lam, phi, z))
     }
-
 
     pub const fn has_inverse() -> bool {
         true
@@ -126,7 +126,6 @@ impl Projection {
 
 #[cfg(test)]
 mod tests {
-    use crate::adaptors::transform_xy;
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};

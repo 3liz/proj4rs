@@ -9,12 +9,12 @@ use std::fmt::{self, Display};
 /// Lambda phi pair
 #[derive(Debug)]
 pub(crate) struct Lp {
-    pub(crate) lam: f64,
-    pub(crate) phi: f64,
+    pub lam: f64,
+    pub phi: f64,
 }
 
 #[derive(Debug, Copy, Clone, PartialEq)]
-pub struct GridId([u8; 8]);
+pub(crate) struct GridId([u8; 8]);
 
 impl Default for GridId {
     fn default() -> Self {
@@ -29,7 +29,7 @@ impl PartialEq<[u8; 8]> for GridId {
 }
 
 impl GridId {
-    pub(crate) fn as_str(&self) -> &str {
+    pub fn as_str(&self) -> &str {
         std::str::from_utf8(&self.0).unwrap_or("<n/a>")
     }
 

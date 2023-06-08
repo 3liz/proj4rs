@@ -18,7 +18,7 @@ pub mod files;
 use std::ops::ControlFlow;
 
 pub(crate) use grid::Lp;
-pub use grid::{Grid, GridId};
+pub(crate) use grid::{Grid, GridId};
 
 /// NadGrids
 ///
