@@ -1,22 +1,64 @@
 # Proj4rs
 
-This a Proj4 port in Rust. 
+Rust library for transforming geographic point coordinates
+from one coordinate system to another.
+This is a pure Rust implementation
+of the [PROJ.4 project](https://proj.org/en/9.2/faq.html#what-happened-to-proj-4).
 
-This port implemente the Proj4 Api - i.e no 3D/4D/orthometric transformation ATM.
+The documentation is available on [docs.rs](https://docs.rs/proj4rs/).
 
-The aim of Proj4rs is to provide the same functionality as the original
-proj4js library.
+# Features and Limitations
 
-The goal of proj4rs is not to be a remplacement of proj, but instead beeing a light
-weight implementation of transformations from crs to crs that could be used
-in WASM environment
+- The aim of Proj4rs is to provide the same functionality as the
+[proj4js library](https://github.com/proj4js/proj4js).
+- This port implement the PROJ.4 API,
+which means there's no 3D/4D/orthometric transformation ATM.
+- The goal of Proj4rs is not to be a replacement of PROJ,
+but instead being a lightweight implementation of transformations
+from CRS to CRS that could be used in Rust and WASM environments.
+- This crate does not provide support for WKT. Instead,
+there is a dedicated crate for transforming WKT strings to proj string.
+- It aims to be WASM compatible for the `wasm32-unknown-unknown` target.
+- No installation of external C libraries such as `libproj` or `sqlite3` is needed.
 
-This crate does not provide support for WKT, instead, there is a dedicated crate for transforming 
-WKT strings to proj string.
+## Basic usage in Rust
 
-It is targeted to be WASM compatible for the `wasm32-unknown-unknown` target.
+Define the coordinate system with proj strings and use the `transform` function.
+You can easily get the projection string of any coordinate system
+from [EPSG.io](https://epsg.io/).
 
-Documentation on [doc.rs](https://docs.rs/proj4rs/)
+Example:
+
+```rust
+use proj4rs;
+use proj4rs::proj::Proj;
+
+// EPSG:5174 - Example
+let from = Proj::from_proj_string(concat!(
+    "+proj=tmerc +lat_0=38 +lon_0=127.002890277778",
+    " +k=1 +x_0=200000 +y_0=500000 +ellps=bessel",
+    " +towgs84=-145.907,505.034,685.756,-1.162,2.347,1.592,6.342",
+    " +units=m +no_defs +type=crs"
+))
+.unwrap();
+
+// EPSG:4326 - WGS84, known to us as basic longitude and latitude.
+let to = Proj::from_proj_string(concat!(
+    "+proj=longlat +ellps=WGS84",
+    " +datum=WGS84 +no_defs"
+))
+.unwrap();
+
+let mut point_3d = (198236.3200000003, 453407.8560000006, 0.0);
+proj4rs::transform::transform(&from, &to, &mut point_3d).unwrap();
+
+// Note that WGS84 output from this library is in radians, not degrees.
+point_3d.0 = point_3d.0 * (180.0 / std::f64::consts::PI);
+point_3d.1 = point_3d.1 * (180.0 / std::f64::consts::PI);
+
+// Output in longitude, latitude, height.
+println!("{}",point_3d); // 126.98069676435814, 37.58308534678718, 0.x
+```
 
 ## WKT support
 
@@ -29,11 +71,12 @@ If you want WKT support in WASM please have a look at https://github.com/3liz/pr
 
 Currently, only Ntv2 multi grids is supported for native build and WASM.
 
-## Js Api
+## JavaScript API
 
-When compiled for WASM, the library expose a javascript api very similar to proj4js. A thin
-javascript layer provide full compatibility with proj4js and thus can be used as a proj4js
-replacement.
+When compiled for WASM, the library exposes JavaScript API
+that is very similar to that of proj4js.
+A thin JavaScript layer provide full compatibility with proj4js
+and thus can be used as a proj4js replacement.
 
 Example:
 
@@ -65,8 +108,8 @@ cargo make wasm
 
 There is a [`index.html`] file for testing the WASM module in a navigator.
 
-For security reason you need to run it from a server; you can pop up 
-a server from python with the following command:
+For security reasons, you need to run it from a server. 
+You can start a Python server with the following command:
 
 ```
 python3 -m http.server
