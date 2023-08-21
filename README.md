@@ -56,7 +56,7 @@ proj4rs::transform::transform(&from, &to, &mut point_3d).unwrap();
 point_3d.0 = point_3d.0 * (180.0 / std::f64::consts::PI);
 point_3d.1 = point_3d.1 * (180.0 / std::f64::consts::PI);
 
-// Output in longitude, latitude, height.
+// Output in longitude, latitude, and height.
 println!("{}",point_3d); // 126.98069676435814, 37.58308534678718, 0.x
 ```
 
