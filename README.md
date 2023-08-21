@@ -11,7 +11,7 @@ The documentation is available on [docs.rs](https://docs.rs/proj4rs/).
 
 - The aim of Proj4rs is to provide the same functionality as the
 [proj4js library](https://github.com/proj4js/proj4js).
-- This port implement the PROJ.4 API,
+- This port implements the PROJ.4 API,
 which means there's no 3D/4D/orthometric transformation ATM.
 - The goal of Proj4rs is not to be a replacement of PROJ,
 but instead being a lightweight implementation of transformations
@@ -65,17 +65,17 @@ println!("{}",point_3d); // 126.98069676435814, 37.58308534678718, 0.x
 If you need full support for WKT, please rely on `proj` which provides
 a great implementation of the standards.
 
-If you want WKT support in WASM please have a look at https://github.com/3liz/proj4wkt-rs
+If you want WKT support in WASM, please have a look at https://github.com/3liz/proj4wkt-rs
 
 ## Grid shift supports 
 
-Currently, only Ntv2 multi grids is supported for native build and WASM.
+Currently, only Ntv2 multi grids are supported for native build and WASM.
 
 ## JavaScript API
 
 When compiled for WASM, the library exposes JavaScript API
 that is very similar to that of proj4js.
-A thin JavaScript layer provide full compatibility with proj4js
+A thin JavaScript layer provides full compatibility with proj4js
 and thus can be used as a proj4js replacement.
 
 Example:
@@ -116,6 +116,3 @@ python3 -m http.server
 ```
  
 The server will automatically serve the `index.html` file in the current directory.
-
-
-
