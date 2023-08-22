@@ -1,5 +1,10 @@
 # Proj4rs
 
+[![Crates.io](https://img.shields.io/crates/d/proj4rs)](https://crates.io/crates/proj4rs)
+[![Documentation](https://img.shields.io/badge/Documentation-Published-green)](https://docs.rs/proj4rs/latest/proj4rs/)
+
+---
+
 Rust library for transforming geographic point coordinates
 from one coordinate system to another.
 This is a pure Rust implementation
