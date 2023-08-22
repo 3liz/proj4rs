@@ -113,7 +113,7 @@ impl Point {
 
 impl transform::Transform for Point {
     /// Strict mode: return exception
-    /// as soon as with have invalidcoordinates or
+    /// as soon as with have invalid coordinates or
     /// that the reprojection failed
     #[cfg(feature = "wasm-strict")]
     fn transform_coordinates<F>(&mut self, mut f: F) -> errors::Result<()>

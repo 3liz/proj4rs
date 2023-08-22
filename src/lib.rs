@@ -13,7 +13,7 @@
 //! The long term project is to integrate feature from the proj library in its latest
 //! version.
 //!
-//! The goal of proj4rs is not to be a remplacement of proj, but instead beeing a light
+//! The goal of proj4rs is not to be a remplacement of proj, but instead being a light
 //! weight implementation of transformations from crs to crs that could be used
 //! in WASM environment
 //!

@@ -5,21 +5,21 @@
 //! converting data from one crs to another
 //!
 //! Datum shifts are carried out with the following steps:
-//!  
+//!
 //!    1. Convert (latitude, longitude, ellipsoidal height) to
 //!       3D geocentric cartesian coordinates (X, Y, Z)
 //!    2. Transform the (X, Y, Z) coordinates to the new datum, using a
 //!       7 parameter Helmert transformation.
 //!    3. Convert (X, Y, Z) back to (latitude, longitude, ellipsoidal height)
 //!
-//! Actually, the step 2 use WGS84 as conversion *hub* wich leads to apply
+//! Actually, the step 2 use WGS84 as conversion *hub* which leads to apply
 //! 2 Helmert transformations.
 //!
-//! With natgrids the steps are sligtly differents:
+//! With natgrids the steps are slightly different:
 //!    1. Apply nadgrid transformation with source datum
 //!    2. Convert to geocentric with source ellipsoid parameters
 //!    3. Convert to geodetic with dest ellipsoid.
-//!    4. Apply inverse nadgrids transformation vith destination datum
+//!    4. Apply inverse nadgrids transformation with destination datum
 //!
 use crate::datum_params::DatumParams;
 use crate::ellps::Ellipsoid;

@@ -8,7 +8,7 @@
 //! Provide forward and inverse spherical and ellipsoidal projection.
 //! Defined area: global 2D.
 //!
-//! Geodetique coordinates to projected coordinates.
+//! Geodetic coordinates to projected coordinates.
 //!
 //! Universal Polar Stereographic (Azimuthal, Spherical, ellipsoidal)
 //!

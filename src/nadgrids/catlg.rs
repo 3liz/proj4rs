@@ -11,7 +11,7 @@ use crate::log::error;
 /// nadgrid into the catalog
 ///
 /// Should return an error if no Nadgrid can be found or
-/// an error occured when loading/building the nadgrid.
+/// an error occurred when loading/building the nadgrid.
 pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
 /// Static reference to nadgrids

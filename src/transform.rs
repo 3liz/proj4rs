@@ -207,7 +207,7 @@ where
             // Input points are geographic
             // proj4 source: pj_fwd.c
             points.transform_coordinates(|lam, phi, z| {
-                // Overrange check
+                // Over range check
                 let t = phi.abs() - FRAC_PI_2;
                 if t > EPS_12 || lam.abs() > 10. {
                     Err(Error::CoordinateOutOfRange)
@@ -284,7 +284,7 @@ where
     }
 }
 // --------------------------
-// Prime meridian adjustement
+// Prime meridian adjustment
 // -------------------------
 fn prime_meridian<P>(p: &Proj, dir: Direction, points: &mut P) -> Result<()>
 where

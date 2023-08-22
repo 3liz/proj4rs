@@ -112,7 +112,7 @@ pub fn geocentric_to_geodetic(
     };
 
     //--------------------------------------------------------------
-    // Following iterative algorithm was developped by
+    // Following iterative algorithm was developed by
     // Institut for Erdmessung", University of Hannover, July 1988.
     // Internet: www.ife.uni-hannover.de
     // Iterative computation of CPHI,SPHI and Height.
