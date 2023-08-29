@@ -15,7 +15,7 @@ use crate::math::{
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Ell {
     k0: f64,
     es: f64,
@@ -24,14 +24,14 @@ pub(crate) struct Ell {
     en: Enfn,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Sph {
     phi0: f64,
     esp: f64,
     ml0: f64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Projection {
     Ell(Ell),
     Sph(Sph),

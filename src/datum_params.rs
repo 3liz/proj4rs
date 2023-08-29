@@ -8,7 +8,7 @@ use crate::nadgrids::NadGrids;
 use crate::parse::FromStr;
 
 /// Datum parameters
-#[derive(Default, Debug, PartialEq)]
+#[derive(Default, Clone, Debug, PartialEq)]
 pub(crate) enum DatumParams {
     ToWGS84_0,
     ToWGS84_3(f64, f64, f64),

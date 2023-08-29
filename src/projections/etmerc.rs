@@ -98,7 +98,7 @@ fn clens(a: &Coeffs, arg_r: f64) -> f64 {
     arg_r.sin() * hr
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     Qn: f64,     // Merid. quad., scaled to the projection
     Zb: f64,     // Radius vector in polar coord. systems

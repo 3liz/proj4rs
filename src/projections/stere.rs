@@ -50,7 +50,7 @@ use Mode::*;
 // Projection stub
 super::projection! { stere, ups }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     mode: Mode,
     e: f64,

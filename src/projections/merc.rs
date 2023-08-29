@@ -17,7 +17,7 @@ use crate::math::{
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     is_ellps: bool,
     k0: f64,

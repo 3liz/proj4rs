@@ -26,6 +26,7 @@ pub(crate) type ProjFn = fn(&ProjParams, f64, f64, f64) -> Result<(f64, f64, f64
 
 /// Setup: returned by the init() function
 /// Order of members: (params, inverse, forward)
+#[derive(Clone)]
 pub(crate) struct ProjDelegate(ProjParams, ProjFn, ProjFn, bool, bool);
 
 impl ProjDelegate {
@@ -146,7 +147,7 @@ macro_rules! declare_projections {
         )+
         ];
         #[allow(non_camel_case_types)]
-        #[derive(Debug)]
+        #[derive(Debug, Clone)]
         pub(crate) enum ProjParams {
             $(
                 $name($name::Projection),

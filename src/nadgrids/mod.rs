@@ -24,7 +24,7 @@ pub(crate) use grid::{Grid, GridId};
 ///
 /// Returned from the sequence
 /// of nadgrids from projstring definition
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct NadGrids(Vec<GridRef>);
 
 impl PartialEq for NadGrids {
