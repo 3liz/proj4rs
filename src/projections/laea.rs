@@ -17,7 +17,7 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { laea }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Projection {
     El(EProj),
     Sp(SProj),
@@ -63,7 +63,7 @@ impl Projection {
 
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum EMode {
     N_POLE,
     S_POLE,
@@ -83,7 +83,7 @@ enum EMode {
     },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct EProj {
     phi0: f64,
     e: f64,
@@ -263,7 +263,7 @@ impl EProj {
 
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 enum SMode {
     N_POLE,
     S_POLE,
@@ -271,7 +271,7 @@ enum SMode {
     OBLIQ { sinb1: f64, cosb1: f64 },
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct SProj {
     phi0: f64,
     mode: SMode,

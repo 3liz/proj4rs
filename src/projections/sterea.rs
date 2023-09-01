@@ -13,7 +13,7 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { sterea }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     k0: f64,
     phic0: f64,

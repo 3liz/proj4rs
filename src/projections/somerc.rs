@@ -16,7 +16,7 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { somerc }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     e: f64,
     rone_es: f64,

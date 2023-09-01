@@ -10,7 +10,7 @@ use crate::proj::{ProjData, ProjType};
 // Projection stub
 super::projection! { geocent, cart }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {}
 
 impl Projection {

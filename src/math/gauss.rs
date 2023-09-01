@@ -34,7 +34,7 @@ fn srat(esinp: f64, ratexp: f64) -> f64 {
     ((1. - esinp) / (1. + esinp)).powf(ratexp)
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Gauss {
     c: f64,
     k: f64,

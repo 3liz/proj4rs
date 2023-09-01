@@ -29,7 +29,7 @@ pub enum ProjType {
 
 /// A Proj object hold informations and parameters
 /// for a projection
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct ProjData {
     pub(crate) ellps: Ellipsoid,
     pub(crate) axis: Axis,
@@ -62,6 +62,7 @@ pub(crate) struct ProjData {
 /// // Create latlon stub projection with ellipsoid "GRS80"
 /// let geo = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
 /// ```
+#[derive(Clone)]
 pub struct Proj {
     datum: Datum,
     geoc: bool,

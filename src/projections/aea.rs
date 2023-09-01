@@ -51,7 +51,7 @@ fn phi1_inv(qs: f64, e: f64, one_es: f64) -> Result<f64> {
     }
 }
 
-#[derive(Debug, Default)]
+#[derive(Debug, Default, Clone)]
 pub(crate) struct Projection {
     e: f64,
     one_es: f64,

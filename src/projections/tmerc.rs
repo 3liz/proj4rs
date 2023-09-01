@@ -17,7 +17,7 @@ use crate::projections::{estmerc, etmerc};
 // Projection stub
 super::projection! { tmerc }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) enum Projection {
     Exact(etmerc::Projection),
     Approx(estmerc::Projection),

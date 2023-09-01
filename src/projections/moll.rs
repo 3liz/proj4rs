@@ -20,7 +20,7 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { moll, wag4, wag5 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
     c_x: f64,
     c_y: f64,

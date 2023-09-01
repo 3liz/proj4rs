@@ -34,7 +34,7 @@ const SRS_WGS84_SEMIMINOR: f64 = 6356752.314;
 const SRS_WGS84_ES: f64 = 0.0066943799901413165;
 
 /// Hold datum Informations
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub(crate) struct Datum {
     params: DatumParams,
     pub a: f64,
