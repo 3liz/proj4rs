@@ -41,7 +41,6 @@ impl Transform for Line {
 
 #[cfg(test)]
 mod tests {
-
     use approx::assert_abs_diff_eq;
 
     use crate::{transform::transform, Proj};
@@ -61,24 +60,14 @@ mod tests {
     #[test]
     fn transforms_point() {
         let mut point = Point::from(COORD_0);
-
-        let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-        let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
-
-        transform(&from, &to, &mut point).unwrap();
-
+        transform_helper(&mut point);
         assert_cord_eq(COORD_1, point.0)
     }
 
     #[test]
     fn transforms_multi_point() {
         let mut multi_point: MultiPoint = (0..10).map(|_| Point::from(COORD_0)).collect();
-
-        let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-        let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
-
-        transform(&from, &to, &mut multi_point).unwrap();
-
+        transform_helper(&mut multi_point);
         multi_point
             .iter()
             .for_each(|point| assert_cord_eq(COORD_1, point.0));
@@ -87,14 +76,15 @@ mod tests {
     #[test]
     fn transforms_line() {
         let mut line = Line::new(-COORD_0, COORD_0);
-
-        let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-        let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
-
-        transform(&from, &to, &mut line).unwrap();
-
+        transform_helper(&mut line);
         assert_cord_eq(-COORD_1, line.start);
         assert_cord_eq(COORD_1, line.end);
+    }
+
+    fn transform_helper<T: Transform>(geometry: &mut T) {
+        let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
+        let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
+        transform(&from, &to, geometry).unwrap();
     }
 
     fn assert_cord_eq(expected_coord: Coord, actual_coord: Coord) {
