@@ -1,12 +1,12 @@
 use geo_types::geometry::*;
 
-use crate::{errors::Result, transform::Transform};
+use crate::{
+    errors::Result,
+    transform::{Transform, TransformClosure},
+};
 
 impl Transform for Coord {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         let mut xy = (self.x, self.y);
         (&mut xy).transform_coordinates(f)?;
         *self = Coord::from(xy);
@@ -15,29 +15,20 @@ impl Transform for Coord {
 }
 
 impl Transform for Point {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         self.0.transform_coordinates(f)
     }
 }
 
 impl Transform for MultiPoint {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         self.iter_mut()
             .try_for_each(|point| point.transform_coordinates(f))
     }
 }
 
 impl Transform for Line {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         let (mut start, mut end) = self.points();
         start.transform_coordinates(f)?;
         end.transform_coordinates(f)?;
@@ -47,10 +38,7 @@ impl Transform for Line {
 }
 
 impl Transform for LineString {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         self.coords_mut()
             .try_for_each(|coord| coord.transform_coordinates(f))
     }

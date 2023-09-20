@@ -9,6 +9,10 @@ use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
 use crate::math::adjlon;
 use crate::math::consts::{EPS_12, FRAC_PI_2};
 use crate::proj::{Axis, Proj, ProjType};
+
+pub trait TransformClosure: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)> {}
+impl<F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>> TransformClosure for F {}
+
 ///
 /// Transform trait
 ///
@@ -24,7 +28,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// Single point transform example:
 ///
 /// ```rust
-/// use proj4rs::transform::{transform, Transform};
+/// use proj4rs::transform::{transform, Transform, TransformClosure};
 /// use proj4rs::errors::Result;
 ///
 /// pub struct Point {
@@ -34,9 +38,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// }
 ///
 /// impl Transform for Point {
-///     fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-///     where
-///         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
+///     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()>
 ///     {
 ///         f(self.x, self.y, self.z).map(|(x, y, z)| {
 ///             self.x = x;
@@ -48,9 +50,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// ```
 ///
 pub trait Transform {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>;
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()>;
 }
 
 // ------------------
