@@ -1,6 +1,9 @@
 //!
 //! Transform adaptors
 //!
+#[cfg(feature = "geo-types")]
+pub mod geo_types;
+
 use crate::errors::Result;
 use crate::proj::Proj;
 use crate::transform::{transform, Transform};
