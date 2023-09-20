@@ -18,6 +18,19 @@ impl Transform for (f64, f64, f64) {
     }
 }
 
+//
+// Transform a 2-tuple
+//
+impl Transform for (f64, f64) {
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
+    where
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
+    {
+        (self.0, self.1) = f(self.0, self.1, 0.).map(|(x, y, _)| (x, y))?;
+        Ok(())
+    }
+}
+
 /// Transform a 3-tuple
 ///
 /// ```rust
@@ -105,6 +118,6 @@ impl Transform for [(f64, f64)] {
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.iter_mut()
-            .try_for_each(|(x, y)| f(*x, *y, 0.).map(|xyz| (*x, *y, _) = xyz))
+            .try_for_each(|xy| xy.transform_coordinates(f))
     }
 }
