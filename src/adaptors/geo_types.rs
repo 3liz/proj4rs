@@ -35,23 +35,29 @@ mod tests {
 
     use super::*;
 
+    const X_0: f64 = 2.;
+    const Y_0: f64 = 1.;
+    const X_1: f64 = 222650.79679758527;
+    const Y_1: f64 = 110642.22941193319;
+    const EPS: f64 = 1.0e-10;
+
     #[test]
     fn transforms_point() {
-        let mut point = Point::from((2.0f64.to_radians(), 1.0f64.to_radians()));
+        let mut point = Point::from((X_0.to_radians(), Y_0.to_radians()));
 
         let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
         let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
 
         transform(&from, &to, &mut point).unwrap();
 
-        assert_abs_diff_eq!(point.x(), 222650.79679758527, epsilon = 1.0e-10);
-        assert_abs_diff_eq!(point.y(), 110642.22941193319, epsilon = 1.0e-10);
+        assert_abs_diff_eq!(point.x(), X_1, epsilon = EPS);
+        assert_abs_diff_eq!(point.y(), Y_1, epsilon = EPS);
     }
 
     #[test]
     fn transforms_multi_point() {
         let mut multi_point: MultiPoint = (0..10)
-            .map(|_| Point::from((2.0f64.to_radians(), 1.0f64.to_radians())))
+            .map(|_| Point::from((X_0.to_radians(), Y_0.to_radians())))
             .collect();
 
         let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
@@ -60,8 +66,8 @@ mod tests {
         transform(&from, &to, &mut multi_point).unwrap();
 
         multi_point.iter().for_each(|point| {
-            assert_abs_diff_eq!(point.x(), 222650.79679758527, epsilon = 1.0e-10);
-            assert_abs_diff_eq!(point.y(), 110642.22941193319, epsilon = 1.0e-10);
+            assert_abs_diff_eq!(point.x(), X_1, epsilon = EPS);
+            assert_abs_diff_eq!(point.y(), Y_1, epsilon = EPS);
         });
     }
 }
