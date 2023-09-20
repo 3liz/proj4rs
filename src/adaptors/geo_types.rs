@@ -67,6 +67,17 @@ impl Transform for MultiPolygon {
     }
 }
 
+impl Transform for Rect {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        let (mut min, mut max) = (self.min(), self.max());
+        min.transform_coordinates(f)?;
+        max.transform_coordinates(f)?;
+        self.set_min(min);
+        self.set_max(max);
+        Ok(())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
@@ -151,6 +162,14 @@ mod tests {
         interiors.into_iter().for_each(|line_string| {
             assert_cord_eq(COORD_1, line_string.0[0]);
         })
+    }
+
+    #[test]
+    fn transforms_rect() {
+        let mut rect = Rect::new(-COORD_0, COORD_0);
+        transform_helper(&mut rect);
+        assert_cord_eq(-COORD_1, rect.min());
+        assert_cord_eq(COORD_1, rect.max());
     }
 
     fn transform_helper<T: Transform>(geometry: &mut T) {
