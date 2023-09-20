@@ -1,11 +1,11 @@
 use geo_types::geometry::*;
 
-use crate::transform::Transform;
+use crate::{errors::Result, transform::Transform};
 
 impl Transform for Coord {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
-        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         let mut xy = (self.x, self.y);
         (&mut xy).transform_coordinates(f)?;
@@ -15,18 +15,18 @@ impl Transform for Coord {
 }
 
 impl Transform for Point {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
-        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.0.transform_coordinates(f)
     }
 }
 
 impl Transform for MultiPoint {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
-        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.iter_mut()
             .try_for_each(|point| point.transform_coordinates(f))
@@ -34,9 +34,9 @@ impl Transform for MultiPoint {
 }
 
 impl Transform for Line {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
-        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         let (mut start, mut end) = self.points();
         start.transform_coordinates(f)?;
@@ -47,9 +47,9 @@ impl Transform for Line {
 }
 
 impl Transform for LineString {
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
-        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.coords_mut()
             .try_for_each(|coord| coord.transform_coordinates(f))
