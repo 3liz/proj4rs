@@ -9,7 +9,7 @@ use crate::transform::{transform, Transform};
 // Transform a 3-tuple
 //
 impl Transform for (f64, f64, f64) {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
@@ -87,7 +87,7 @@ pub fn transform_xy(src: &Proj, dst: &Proj, x: f64, y: f64) -> Result<(f64, f64)
 // Transform an array of 3-tuple:
 //
 impl Transform for [(f64, f64, f64)] {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
@@ -100,7 +100,7 @@ impl Transform for [(f64, f64, f64)] {
 // Transform an array of 2-tuple:
 //
 impl Transform for [(f64, f64)] {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> Result<()>
     where
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
