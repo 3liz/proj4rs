@@ -46,6 +46,16 @@ impl Transform for Line {
     }
 }
 
+impl Transform for LineString {
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    where
+        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+    {
+        self.coords_mut()
+            .try_for_each(|coord| coord.transform_coordinates(f))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
@@ -93,6 +103,14 @@ mod tests {
         transform_helper(&mut line);
         assert_cord_eq(-COORD_1, line.start);
         assert_cord_eq(COORD_1, line.end);
+    }
+
+    #[test]
+    fn transforms_line_string() {
+        let mut line_string = LineString::new(vec![-COORD_0, COORD_0]);
+        transform_helper(&mut line_string);
+        assert_cord_eq(-COORD_1, line_string.0[0]);
+        assert_cord_eq(COORD_1, line_string.0[1]);
     }
 
     fn transform_helper<T: Transform>(geometry: &mut T) {
