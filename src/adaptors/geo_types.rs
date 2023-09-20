@@ -51,6 +51,15 @@ impl Transform for MultiLineString {
     }
 }
 
+impl Transform for Polygon {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        self.exterior.transform_coordinates(f)?;
+        self.interiors
+            .iter_mut()
+            .try_for_each(|interior| interior.transform_coordinates(f))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
@@ -119,6 +128,21 @@ mod tests {
         multi_line_string.into_iter().for_each(|line_string| {
             assert_cord_eq(-COORD_1, line_string.0[0]);
             assert_cord_eq(COORD_1, line_string.0[1]);
+        })
+    }
+
+    #[test]
+    fn transforms_polygon() {
+        let mut polygon = Polygon::new(
+            LineString::new(vec![-COORD_0]),
+            vec![LineString::new(vec![COORD_0])],
+        );
+        transform_helper(&mut polygon);
+
+        let (exterior, interiors) = polygon.into_inner();
+        assert_cord_eq(-COORD_1, exterior.0[0]);
+        interiors.into_iter().for_each(|line_string| {
+            assert_cord_eq(COORD_1, line_string.0[0]);
         })
     }
 
