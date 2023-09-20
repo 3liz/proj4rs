@@ -92,7 +92,7 @@ impl Transform for [(f64, f64, f64)] {
         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
     {
         self.iter_mut()
-            .try_for_each(|(x, y, z)| f(*x, *y, *z).map(|xyz| (*x, *y, *z) = xyz))
+            .try_for_each(|xyz| xyz.transform_coordinates(f))
     }
 }
 
