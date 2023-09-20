@@ -2,17 +2,24 @@ use geo_types::geometry::*;
 
 use crate::transform::Transform;
 
+impl Transform for Coord {
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
+    where
+        F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
+    {
+        let mut xy = (self.x, self.y);
+        (&mut xy).transform_coordinates(f)?;
+        *self = Coord::from(xy);
+        Ok(())
+    }
+}
+
 impl Transform for Point {
     fn transform_coordinates<F>(&mut self, f: &mut F) -> crate::errors::Result<()>
     where
         F: FnMut(f64, f64, f64) -> crate::errors::Result<(f64, f64, f64)>,
     {
-        let mut xy = (self.0.x, self.0.y);
-        (&mut xy).transform_coordinates(f)?;
-        self.set_x(xy.0);
-        self.set_y(xy.1);
-
-        Ok(())
+        self.0.transform_coordinates(f)
     }
 }
 
@@ -56,6 +63,13 @@ mod tests {
     const COORD_1: Coord = Coord { x: X_1, y: Y_1 };
 
     const EPS: f64 = 1.0e-10;
+
+    #[test]
+    fn transforms_coord() {
+        let mut coord = COORD_0;
+        transform_helper(&mut coord);
+        assert_cord_eq(COORD_1, coord)
+    }
 
     #[test]
     fn transforms_point() {
