@@ -15,3 +15,26 @@ impl Transform for Point {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use approx::assert_abs_diff_eq;
+
+    use crate::{transform::transform, Proj};
+
+    use super::*;
+
+    #[test]
+    fn transforms_point() {
+        let mut point = Point::from((2.0f64.to_radians(), 1.0f64.to_radians()));
+
+        let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
+        let to = Proj::from_proj_string("+proj=etmerc +ellps=GRS80").unwrap();
+
+        transform(&from, &to, &mut point).unwrap();
+
+        assert_abs_diff_eq!(point.x(), 222650.79679758527, epsilon = 1.0e-10);
+        assert_abs_diff_eq!(point.y(), 110642.22941193319, epsilon = 1.0e-10);
+    }
+}
