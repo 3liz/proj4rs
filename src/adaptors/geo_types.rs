@@ -60,6 +60,13 @@ impl Transform for Polygon {
     }
 }
 
+impl Transform for MultiPolygon {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        self.iter_mut()
+            .try_for_each(|polygon| polygon.transform_coordinates(f))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
