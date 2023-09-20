@@ -44,6 +44,13 @@ impl Transform for LineString {
     }
 }
 
+impl Transform for MultiLineString {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        self.iter_mut()
+            .try_for_each(|line_string| line_string.transform_coordinates(f))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
@@ -99,6 +106,20 @@ mod tests {
         transform_helper(&mut line_string);
         assert_cord_eq(-COORD_1, line_string.0[0]);
         assert_cord_eq(COORD_1, line_string.0[1]);
+    }
+
+    #[test]
+    fn transforms_multi_line_string() {
+        let mut multi_line_string = MultiLineString::new(vec![
+            LineString::new(vec![-COORD_0, COORD_0]),
+            LineString::new(vec![-COORD_0, COORD_0]),
+        ]);
+        transform_helper(&mut multi_line_string);
+
+        multi_line_string.into_iter().for_each(|line_string| {
+            assert_cord_eq(-COORD_1, line_string.0[0]);
+            assert_cord_eq(COORD_1, line_string.0[1]);
+        })
     }
 
     fn transform_helper<T: Transform>(geometry: &mut T) {
