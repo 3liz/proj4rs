@@ -86,6 +86,31 @@ impl Transform for Triangle {
     }
 }
 
+impl Transform for Geometry {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        match self {
+            Geometry::Point(geometry) => geometry.transform_coordinates(f),
+            Geometry::Line(geometry) => geometry.transform_coordinates(f),
+            Geometry::LineString(geometry) => geometry.transform_coordinates(f),
+            Geometry::Polygon(geometry) => geometry.transform_coordinates(f),
+            Geometry::MultiPoint(geometry) => geometry.transform_coordinates(f),
+            Geometry::MultiLineString(geometry) => geometry.transform_coordinates(f),
+            Geometry::MultiPolygon(geometry) => geometry.transform_coordinates(f),
+            Geometry::Rect(geometry) => geometry.transform_coordinates(f),
+            Geometry::Triangle(geometry) => geometry.transform_coordinates(f),
+            Geometry::GeometryCollection(geometry) => geometry.transform_coordinates(f),
+        }
+    }
+}
+
+impl Transform for GeometryCollection {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        self.0
+            .iter_mut()
+            .try_for_each(|geometry| geometry.transform_coordinates(f))
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
