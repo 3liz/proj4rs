@@ -78,6 +78,14 @@ impl Transform for Rect {
     }
 }
 
+impl Transform for Triangle {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        self.0.transform_coordinates(f)?;
+        self.1.transform_coordinates(f)?;
+        self.2.transform_coordinates(f)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use approx::assert_abs_diff_eq;
