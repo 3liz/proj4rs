@@ -25,9 +25,8 @@ exclude = [
 thiserror = "1.0"
 lazy_static = { version = "1", optional = true }
 log = { version = "0.4", optional = true  }
-# TEMP: https://github.com/georust/geo/pull/1065
-# geo-types = { version = "0.7", optional = true  }
-geo-types = { optional = true, git = "https://github.com/gibbz00/geo", branch = "pub_polygon" }
+# TEMP:
+geo-types = { optional = true, git = "https://github.com/gibbz00/geo", branch = "polygon_try_mut" }
 
 [dev-dependencies]
 approx = "0.5"

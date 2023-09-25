@@ -53,10 +53,13 @@ impl Transform for MultiLineString {
 
 impl Transform for Polygon {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
-        self.exterior.transform_coordinates(f)?;
-        self.interiors
-            .iter_mut()
-            .try_for_each(|interior| interior.transform_coordinates(f))
+        self.try_exterior_mut(|exterior| exterior.transform_coordinates(f))?;
+        self.try_interiors_mut(|interiors| {
+            for interior in interiors {
+                interior.transform_coordinates(f)?
+            }
+            Ok(())
+        })
     }
 }
 
