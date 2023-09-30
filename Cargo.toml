@@ -26,7 +26,8 @@ thiserror = "1.0"
 lazy_static = { version = "1", optional = true }
 log = { version = "0.4", optional = true  }
 # TEMP:
-geo-types = { optional = true, git = "https://github.com/gibbz00/geo", branch = "polygon_try_mut" }
+# Relies on unreleased https://github.com/georust/geo/pull/1071 (as of 2023-09-30).
+geo-types = { optional = true, git = "https://github.com/georust/geo" }
 
 [dev-dependencies]
 approx = "0.5"
