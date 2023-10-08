@@ -9,6 +9,10 @@ use crate::geocent::{geocentric_to_geodetic, geodetic_to_geocentric};
 use crate::math::adjlon;
 use crate::math::consts::{EPS_12, FRAC_PI_2};
 use crate::proj::{Axis, Proj, ProjType};
+
+pub trait TransformClosure: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)> {}
+impl<F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>> TransformClosure for F {}
+
 ///
 /// Transform trait
 ///
@@ -24,7 +28,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// Single point transform example:
 ///
 /// ```rust
-/// use proj4rs::transform::{transform, Transform};
+/// use proj4rs::transform::{transform, Transform, TransformClosure};
 /// use proj4rs::errors::Result;
 ///
 /// pub struct Point {
@@ -34,9 +38,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// }
 ///
 /// impl Transform for Point {
-///     fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
-///     where
-///         F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
+///     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()>
 ///     {
 ///         f(self.x, self.y, self.z).map(|(x, y, z)| {
 ///             self.x = x;
@@ -48,9 +50,7 @@ use crate::proj::{Axis, Proj, ProjType};
 /// ```
 ///
 pub trait Transform {
-    fn transform_coordinates<F>(&mut self, f: F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>;
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()>;
 }
 
 // ------------------
@@ -118,7 +118,7 @@ where
         return Ok(());
     }
 
-    points.transform_coordinates(|x, y, z| Datum::transform(src_datum, dst_datum, x, y, z))
+    points.transform_coordinates(&mut |x, y, z| Datum::transform(src_datum, dst_datum, x, y, z))
 }
 // ---------------------------------
 // Projected to geographic (inverse)
@@ -133,8 +133,9 @@ where
             if p.geoc() {
                 let rone_es = p.ellipsoid().rone_es;
                 // Geocentric latitude => geodetic latitude
-                points
-                    .transform_coordinates(|lam, phi, z| Ok((lam, (rone_es * phi.tan()).atan(), z)))
+                points.transform_coordinates(&mut |lam, phi, z| {
+                    Ok((lam, (rone_es * phi.tan()).atan(), z))
+                })
             } else {
                 Ok(())
             }
@@ -150,7 +151,7 @@ where
 
             // Input points are cartesians
             // proj4 source: pj_inv.c
-            points.transform_coordinates(|x, y, z| {
+            points.transform_coordinates(&mut |x, y, z| {
                 // Inverse project
                 let (mut lam, phi, z) = proj.inverse(
                     // descale and de-offset
@@ -180,7 +181,7 @@ where
         ProjType::Latlong => {
             if p.geoc() {
                 let one_es = p.ellipsoid().one_es;
-                points.transform_coordinates(|lam, phi, z| {
+                points.transform_coordinates(&mut |lam, phi, z| {
                     // Geodetic latitude to geocentric latitude
                     Ok(if (phi.abs() - FRAC_PI_2).abs() > EPS_12 {
                         (lam, (one_es * phi.tan()).atan(), z)
@@ -206,7 +207,7 @@ where
 
             // Input points are geographic
             // proj4 source: pj_fwd.c
-            points.transform_coordinates(|lam, phi, z| {
+            points.transform_coordinates(&mut |lam, phi, z| {
                 // Over range check
                 let t = phi.abs() - FRAC_PI_2;
                 if t > EPS_12 || lam.abs() > 10. {
@@ -265,21 +266,20 @@ where
 
     if fac != 1.0 {
         match dir {
-            Forward => points.transform_coordinates(|x, y, z| {
+            Forward => points.transform_coordinates(&mut |x, y, z| {
                 geodetic_to_geocentric(x, y, z, a, es).map(|(x, y, z)| (x * fac, y * fac, z * fac))
             }),
-            Inverse => points.transform_coordinates(|x, y, z| {
+            Inverse => points.transform_coordinates(&mut |x, y, z| {
                 geocentric_to_geodetic(x * fac, y * fac, z * fac, a, es, b)
             }),
         }
     } else {
         match dir {
             Forward => {
-                points.transform_coordinates(|x, y, z| geodetic_to_geocentric(x, y, z, a, es))
+                points.transform_coordinates(&mut |x, y, z| geodetic_to_geocentric(x, y, z, a, es))
             }
-            Inverse => {
-                points.transform_coordinates(|x, y, z| geocentric_to_geodetic(x, y, z, a, es, b))
-            }
+            Inverse => points
+                .transform_coordinates(&mut |x, y, z| geocentric_to_geodetic(x, y, z, a, es, b)),
         }
     }
 }
@@ -297,7 +297,7 @@ where
         if dir == Forward {
             pm = -pm;
         }
-        points.transform_coordinates(|x, y, z| Ok((x + pm, y, z)))
+        points.transform_coordinates(&mut |x, y, z| Ok((x + pm, y, z)))
     }
 }
 // ---------------------
@@ -319,7 +319,7 @@ where
 
 // Normalize axis
 fn normalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<()> {
-    points.transform_coordinates(|x, y, z| {
+    points.transform_coordinates(&mut |x, y, z| {
         let (mut x_out, mut y_out, mut z_out) = (x, y, z);
         axis.iter().enumerate().for_each(|(i, axe)| {
             let value = match i {
@@ -345,7 +345,7 @@ fn normalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<
 
 // Denormalize axis
 fn denormalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<()> {
-    points.transform_coordinates(|x, y, z| {
+    points.transform_coordinates(&mut |x, y, z| {
         let (mut x_out, mut y_out, mut z_out) = (x, y, z);
         axis.iter().enumerate().for_each(|(i, axe)| {
             let value = match axe {
@@ -386,7 +386,7 @@ where
     };
 
     if fac != 1.0 {
-        points.transform_coordinates(|x, y, z| Ok((x, y, z * fac)))
+        points.transform_coordinates(&mut |x, y, z| Ok((x, y, z * fac)))
     } else {
         Ok(())
     }

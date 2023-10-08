@@ -1,19 +1,29 @@
 //!
 //! Transform adaptors
 //!
+#[cfg(feature = "geo-types")]
+pub mod geo_types;
+
 use crate::errors::Result;
 use crate::proj::Proj;
-use crate::transform::{transform, Transform};
+use crate::transform::{transform, Transform, TransformClosure};
 
 //
 // Transform a 3-tuple
 //
 impl Transform for (f64, f64, f64) {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         (self.0, self.1, self.2) = f(self.0, self.1, self.2)?;
+        Ok(())
+    }
+}
+
+//
+// Transform a 2-tuple
+//
+impl Transform for (f64, f64) {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
+        (self.0, self.1) = f(self.0, self.1, 0.).map(|(x, y, _)| (x, y))?;
         Ok(())
     }
 }
@@ -87,12 +97,9 @@ pub fn transform_xy(src: &Proj, dst: &Proj, x: f64, y: f64) -> Result<(f64, f64)
 // Transform an array of 3-tuple:
 //
 impl Transform for [(f64, f64, f64)] {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         self.iter_mut()
-            .try_for_each(|(x, y, z)| f(*x, *y, *z).map(|xyz| (*x, *y, *z) = xyz))
+            .try_for_each(|xyz| xyz.transform_coordinates(f))
     }
 }
 
@@ -100,11 +107,8 @@ impl Transform for [(f64, f64, f64)] {
 // Transform an array of 2-tuple:
 //
 impl Transform for [(f64, f64)] {
-    fn transform_coordinates<F>(&mut self, mut f: F) -> Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> Result<(f64, f64, f64)>,
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         self.iter_mut()
-            .try_for_each(|(x, y)| f(*x, *y, 0.).map(|xyz| (*x, *y, _) = xyz))
+            .try_for_each(|xy| xy.transform_coordinates(f))
     }
 }

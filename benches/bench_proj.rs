@@ -2,11 +2,8 @@
 //! Compare loop vs  try_fold
 //!
 //!
-use proj4rs::errors::{Error, Result};
 use proj4rs::proj::Proj;
-use proj4rs::transform::{transform, Transform};
-
-use std::ops::ControlFlow::*;
+use proj4rs::transform::transform;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
