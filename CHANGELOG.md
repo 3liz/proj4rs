@@ -29,4 +29,3 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
     - https://github.com/3liz/proj4rs/pull/2
 * Added exemple in README
     - https://github.com/3liz/proj4rs/pull/3
-

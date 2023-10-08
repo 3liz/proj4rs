@@ -91,3 +91,22 @@ fn test_transform_array() {
         assert_abs_diff_eq!(*y, 110642.22941193319, epsilon = 1.0e-10);
     });
 }
+
+#[test]
+fn test_utm33_grs80() {
+    let from = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
+    let to = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=33").unwrap();
+
+    let mut v1 = vec![(
+        13.393921852111816_f64.to_radians(), 
+        52.5200080871582_f64.to_radians(), 
+        0.0,
+    )];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v1[0].0, 391027.67777461524, epsilon = 1.0e-10);
+    assert_abs_diff_eq!(v1[0].1, 5820089.724404063, epsilon = 1.0e-10);
+
+
+
