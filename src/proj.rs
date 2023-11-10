@@ -390,6 +390,22 @@ impl Proj {
             Err(Error::UnrecognizedFormat)
         }
     }
+
+    /// Create projection from user string
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use proj4rs::Proj;
+    ///
+    /// let utm = Proj::from_epsg_code(4326).unwrap();
+    /// ```
+    #[cfg(feature = "crs-definitions")]
+    pub fn from_epsg_code(code: u16) -> Result<Self> {
+        crs_definitions::from_code(code)
+            .ok_or(Error::ProjectionNotFound)
+            .and_then(|def| Self::from_proj_string(def.proj4))
+    }
 }
 
 // -------------
