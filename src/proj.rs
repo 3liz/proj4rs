@@ -398,7 +398,12 @@ impl Proj {
     /// ```
     /// use proj4rs::Proj;
     ///
-    /// let utm = Proj::from_epsg_code(4326).unwrap();
+    /// let proj = Proj::from_epsg_code(4326).unwrap();
+    ///
+    /// assert_eq!(
+    ///     proj.projname(),
+    ///     "longlat",
+    /// );
     /// ```
     #[cfg(feature = "crs-definitions")]
     pub fn from_epsg_code(code: u16) -> Result<Self> {
