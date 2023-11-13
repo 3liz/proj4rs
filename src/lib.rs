@@ -59,11 +59,11 @@
 //!
 //! * **geo-types**: [geo-types](<https://docs.rs/geo-types/latest/geo_types/>) support
 //! * **logging**: support for logging with [log](https://docs.rs/log/latest/log/) crate.
-//!   If activated for WASM, it will use the [console-log](https://docs.rs/console_log/latest/console_log/) 
+//!   If activated for WASM, it will use the [console-log](https://docs.rs/console_log/latest/console_log/)
 //!   adaptor.
-//! * **wasm-strict**: used with WASM; Transformation operation will return exception as soon as we 
-//! have invalid coordinates or that the reprojection failed. 
-//! The default is to use a relaxed-mode that return NaN in case of projection failure: this is expected 
+//! * **wasm-strict**: used with WASM; Transformation operation will return exception as soon as we
+//! have invalid coordinates or that the reprojection failed.
+//! The default is to use a relaxed-mode that return NaN in case of projection failure: this is expected
 //!   mostly from js app (at least with OpenLayer).
 //! * **multi-thread**: Support for multi-thread with NAD Grid processing, this is activated by
 //!   default and disabled when compiling for WASM.
@@ -79,7 +79,7 @@
 //!
 //! Note that the proj library provides a great implementation of the standard.
 //!
-//! ## Grid shift supports 
+//! ## Grid shift supports
 //!
 //! Nadgrid support is still experimental.
 //! Currently, only Ntv2 multi grids are supported for native build and WASM.
