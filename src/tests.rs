@@ -98,8 +98,8 @@ fn test_utm33_grs80() {
     let to = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=33").unwrap();
 
     let mut v1 = vec![(
-        13.393921852111816_f64.to_radians(), 
-        52.5200080871582_f64.to_radians(), 
+        13.393921852111816_f64.to_radians(),
+        52.5200080871582_f64.to_radians(),
         0.0,
     )];
 
@@ -107,6 +107,4 @@ fn test_utm33_grs80() {
 
     assert_abs_diff_eq!(v1[0].0, 391027.67777461524, epsilon = 1.0e-10);
     assert_abs_diff_eq!(v1[0].1, 5820089.724404063, epsilon = 1.0e-10);
-
-
-
+}

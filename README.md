@@ -32,6 +32,8 @@ Define the coordinate system with proj strings and use the `transform` function.
 You can easily get the projection string of any coordinate system
 from [EPSG.io](https://epsg.io/).
 
+**Note**: Proj4rs use *radians* as natural angular unit (as does the original proj library)
+
 Example:
 
 ```rust

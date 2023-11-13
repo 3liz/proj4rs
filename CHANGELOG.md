@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Fixed
+
+* Fix `Transform` signature for WASM
+    - https://github.com/3liz/proj4rs/issues/9
+
 ### Added
 
 * `Transform` implementations.

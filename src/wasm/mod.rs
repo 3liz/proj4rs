@@ -116,7 +116,7 @@ impl transform::Transform for Point {
     /// as soon as with have invalid coordinates or
     /// that the reprojection failed
     #[cfg(feature = "wasm-strict")]
-    fn transform_coordinates<F>(&mut self, mut f: F) -> errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> errors::Result<()>
     where
         F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
     {
@@ -130,7 +130,7 @@ impl transform::Transform for Point {
     /// of projection failure
     /// Note: this is what is expected mostly from js app (at least OpenLayer)
     #[cfg(not(feature = "wasm-strict"))]
-    fn transform_coordinates<F>(&mut self, mut f: F) -> errors::Result<()>
+    fn transform_coordinates<F>(&mut self, f: &mut F) -> errors::Result<()>
     where
         F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
     {
