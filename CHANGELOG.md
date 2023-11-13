@@ -9,7 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
-* Fix `Transform` signature for WASM
+* Improve documentation
+* Fix `Transform` trait signature for WASM
     - https://github.com/3liz/proj4rs/issues/9
 
 ### Added

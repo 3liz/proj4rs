@@ -1,5 +1,3 @@
-# Proj4rs
-
 [![Crates.io](https://img.shields.io/crates/d/proj4rs)](https://crates.io/crates/proj4rs)
 [![Documentation](https://img.shields.io/badge/Documentation-Published-green)](https://docs.rs/proj4rs/latest/proj4rs/)
 
@@ -64,7 +62,7 @@ point_3d.0 = point_3d.0.to_degrees();
 point_3d.1 = point_3d.1.to_degrees();
 
 // Output in longitude, latitude, and height.
-println!("{}",point_3d); // 126.98069676435814, 37.58308534678718, 0.x
+println!("{} {}",point_3d.0, point_3d.1); // 126.98069676435814, 37.58308534678718
 ```
 
 ## WKT support
@@ -72,10 +70,14 @@ println!("{}",point_3d); // 126.98069676435814, 37.58308534678718, 0.x
 If you need full support for WKT, please rely on `proj` which provides
 a great implementation of the standards.
 
-If you want WKT support in WASM, please have a look at https://github.com/3liz/proj4wkt-rs
+If you want WKT support in WASM, please have a look at:
+
+- https://github.com/3liz/proj4wkt-rs
+- https://github.com/frewsxcv/crs-definitions
 
 ## Grid shift supports 
 
+Nadgrid support is still experimental.
 Currently, only Ntv2 multi grids are supported for native build and WASM.
 
 ## JavaScript API
