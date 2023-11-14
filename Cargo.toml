@@ -25,9 +25,7 @@ exclude = [
 thiserror = "1.0"
 lazy_static = { version = "1", optional = true }
 log = { version = "0.4", optional = true  }
-# TEMP:
-# Relies on unreleased https://github.com/georust/geo/pull/1071 (as of 2023-09-30).
-geo-types = { optional = true, git = "https://github.com/georust/geo" }
+geo-types = "0.7.12"
 
 [dev-dependencies]
 approx = "0.5"
