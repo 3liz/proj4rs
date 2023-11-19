@@ -7,10 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+## 0.1.2 - 2023-19-11
+
 ### Fixed
 
-* Add ability to create Projs from EPSG codes
-    - https://github.com/3liz/proj4rs/pull/7
 * Fix `geo-type` feature as optional
     - https://github.com/3liz/proj4rs/pull/11
 * Improve documentation
@@ -19,6 +19,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Add ability to create Projs from EPSG codes
+    - https://github.com/3liz/proj4rs/pull/7
 * `Transform` implementations.
     - https://github.com/3liz/proj4rs/pull/6
     - Implement for a 2-tuple.
