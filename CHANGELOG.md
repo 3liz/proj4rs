@@ -9,6 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* Add ability to create Projs from EPSG codes
+    - https://github.com/3liz/proj4rs/pull/7
+* Fix `geo-type` feature as optional
+    - https://github.com/3liz/proj4rs/pull/11
 * Improve documentation
 * Fix `Transform` trait signature for WASM
     - https://github.com/3liz/proj4rs/issues/9
