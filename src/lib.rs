@@ -21,7 +21,7 @@
 //!
 //! Note that angular units are in radians, not degrees !
 //!
-//! Radian is natural unit for trigonometric opérations, like proj, proj4rs use radians
+//! Radian is natural unit for trigonometric operations, like proj, proj4rs use radians
 //! for its operation while degrees are mostly used as end user input/output.
 //!
 //! Example:

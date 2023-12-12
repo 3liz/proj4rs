@@ -1,4 +1,4 @@
-//! Refernce: https://proj.org/en/9.3/operations/conversions/axisswap.html
+//! Refernce: <https://proj.org/en/9.3/operations/conversions/axisswap.html>
 
 use crate::*;
 
