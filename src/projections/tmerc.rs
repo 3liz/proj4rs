@@ -26,7 +26,7 @@ pub(crate) enum Projection {
 use Projection::*;
 
 impl Projection {
-    const ALG_PARAM: &str = "algo";
+    const ALG_PARAM: &'static str = "algo";
 
     pub fn tmerc(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         if p.ellps.is_sphere() || params.check_option("approx")? {
