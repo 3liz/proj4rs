@@ -4,17 +4,22 @@ This example demonstrates how `OpenLayers` can be used with `Proj4rs`. It is bas
 
 To get started, run the following (requires Node 14+):
 
-    cd ol-proj4rs-demo-app
-    npm update
-    npm start
+```bash
+cd ol-proj4rs-demo-app
+npm update
+npm start
+```
 
-Then go to http://localhost:5173 with your browser, you have started start a development server.
+Then go to http://localhost:5173 with your browser, you must have a development server started.
 
 To generate a build ready for production:
 
-    npm run build
+```bash
+npm run build
+```
 
-Then deploy the contents of the `dist` directory to your server.  You can also run `npm run serve` to serve the results of the `dist` directory for preview.
+Then deploy the contents of the `dist` directory to your server.
+You can also run `npm run serve` to serve the results of the `dist` directory for preview.
 
 
 ## Running the demo from Docker container

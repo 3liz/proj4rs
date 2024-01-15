@@ -1,3 +1,9 @@
 /target
 /Cargo.lock
 /.npm
+
+# IDE
+.idea/
+
+# Build
+ol-proj4rs-demo-app/dist

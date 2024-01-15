@@ -102,14 +102,14 @@ Proj.transform(from, to, point);
 
 Install [wasm-pack](https://rustwasm.github.io/wasm-pack/book/)
 
-```
+```bash
 wasm-pack build --target web --no-default-features
 ```
 
 Or if you have installed [cargo-make](https://sagiegurari.github.io/cargo-make/), use the following
 command:
 
-```
+```bash
 cargo make wasm
 ```
 
@@ -120,7 +120,7 @@ There is a [`index.html`] file for testing the WASM module in a navigator.
 For security reasons, you need to run it from a server. 
 You can start a Python server with the following command:
 
-```
+```bash
 python3 -m http.server
 ```
  
