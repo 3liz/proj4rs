@@ -1,0 +1,78 @@
+name: 📖 Documentation
+
+on:
+  push:
+#    tags:
+#      - '*'
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  pages: write
+
+jobs:
+  proj4rs-demo:
+    name: "🟨 Proj4rs demo"
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Cargo build
+        run: cargo build
+
+      - name: Install WASM pack
+        uses: jetli/wasm-pack-action@v0.4.0
+        with:
+          # Optional version of wasm-pack to install(eg. 'v0.9.1', 'latest')
+          version: 'latest'
+
+      - name: WASM Pack
+        run: wasm-pack build --target web --no-default-features
+
+      - name: Install Node
+        uses: actions/setup-node@v4
+
+      - name: Npm update
+        working-directory: ol-proj4rs-demo-app
+        run: npm --loglevel=verbose update
+
+      - name: Copy files from build
+        run: |
+          cp -R js/ ol-proj4rs-demo-app/assets/
+
+      - name: Npm build
+        working-directory: ol-proj4rs-demo-app
+        run: |
+          npm run build
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ol-proj4rs-demo-app/dist
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Summary
+        run: |
+          echo "
+            ### Published ! :rocket:
+          
+            [Visit the doc](https://docs.3liz.org/proj4rs/)
+          " >> $GITHUB_STEP_SUMMARY
