@@ -1,5 +1,6 @@
 [![Crates.io](https://img.shields.io/crates/d/proj4rs)](https://crates.io/crates/proj4rs)
 [![Documentation](https://img.shields.io/badge/Documentation-Published-green)](https://docs.rs/proj4rs/latest/proj4rs/)
+[![Demo](https://img.shields.io/badge/Demo-Published-green)](https://docs.3liz.org/proj4rs/)
 
 ---
 
@@ -8,7 +9,7 @@ from one coordinate system to another.
 This is a pure Rust implementation
 of the [PROJ.4 project](https://proj.org/en/9.2/faq.html#what-happened-to-proj-4).
 
-The documentation is available on [docs.rs](https://docs.rs/proj4rs/).
+The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the demo on [docs.3liz.org](https://docs.3liz.org/proj4rs/).
 
 # Features and Limitations
 
