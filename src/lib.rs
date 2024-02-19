@@ -21,7 +21,7 @@
 //!
 //! Note that angular units are in radians, not degrees !
 //!
-//! Radian is natural unit for trigonometric opérations, like proj, proj4rs use radians
+//! Radian is natural unit for trigonometric operations, like proj, proj4rs use radians
 //! for its operation while degrees are mostly used as end user input/output.
 //!
 //! Example:
@@ -93,17 +93,25 @@ mod ellps;
 mod geocent;
 mod math;
 mod parameters;
+pub(crate) use parameters::ParamList;
 mod parse;
 mod prime_meridians;
 mod projstring;
 mod units;
 
+pub mod conversions;
+pub(crate) use conversions::*;
+
 pub mod adaptors;
 pub mod errors;
+pub(crate) use errors::Error as ProjError;
+pub(crate) use errors::Result as ProjResult;
+
 pub mod nadgrids;
 pub mod proj;
 pub mod projections;
 pub mod transform;
+pub(crate) use transform::Transform;
 
 // Reexport
 pub use proj::Proj;
