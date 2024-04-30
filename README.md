@@ -126,3 +126,13 @@ python3 -m http.server
 ```
  
 The server will automatically serve the `index.html` file in the current directory.
+
+
+## Build for npm
+
+```
+cargo make wasm_bundle
+```
+
+This will create a npm bundler package in pkg-bundler
+

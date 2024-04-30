@@ -15,6 +15,7 @@ script = [
     "wasm-pack build --target web --no-default-features --features=proj4js-compat"
 ]
 
+
 [tasks.wasm_debug]
 script = [
     "wasm-pack build --target web --no-default-features --features=logging --features=proj4js-compat"
@@ -25,4 +26,9 @@ script = [
     "wasm-pack build --target web --no-default-features --features=wasm-strict --features=proj4js-compat"
 ]
 
+# Build for webpack bundle
+[tasks.wasm_bundle]
+script = [
+    "wasm-pack build --target bundler -d pkg-bundle --no-default-features --features=proj4js-compat"
+]
 
