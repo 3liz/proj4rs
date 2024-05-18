@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+## 0.1.3 - 2024-05-18
+
+### Fixed
+
+* fix UB on NodePtr::get
+    - https://github.com/3liz/proj4rs/pull/13
+
+### Changed
+
+* Update Vite config to build WASM demo    
+
 ## 0.1.2 - 2023-19-11
 
 ### Fixed
