@@ -67,6 +67,8 @@
 //!   mostly from js app (at least with OpenLayer).
 //! * **multi-thread**: Support for multi-thread with NAD Grid processing, this is activated by
 //!   default and disabled when compiling for WASM.
+//! * **crs-definitions**: Support for initializing projections from EPSG codes with the 
+//! [crs_definitions](https://docs.rs/crs-definitions/latest/crs_definitions/) crate.
 //!
 //! ## WKT Support
 //!
