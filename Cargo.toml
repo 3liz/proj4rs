@@ -43,13 +43,14 @@ codegen-units = 1
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["multi-thread"]
+default = ["multi-thread", "with-wasm-entrypoint"]
 multi-thread = ["lazy_static"]
 geo-types = ["dep:geo-types"]
 logging = ["log"]
 local_tests = []
 wasm-strict = []
 proj4js-compat = []
+with-wasm-entrypoint = []
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen = "0.2"
