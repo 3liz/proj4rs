@@ -67,7 +67,7 @@
 //!   mostly from js app (at least with OpenLayer).
 //! * **multi-thread**: Support for multi-thread with NAD Grid processing, this is activated by
 //!   default and disabled when compiling for WASM.
-//! * **crs-definitions**: Support for initializing projections from EPSG codes with the 
+//! * **crs-definitions**: Support for initializing projections from EPSG codes with the
 //! [crs_definitions](https://docs.rs/crs-definitions/latest/crs_definitions/) crate.
 //!
 //! ## WKT Support
@@ -116,10 +116,6 @@ mod wasm;
 
 #[cfg(test)]
 mod tests;
-
-#[cfg(target_arch = "wasm32")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 // log for logging (optional).
 #[cfg(feature = "logging")]
