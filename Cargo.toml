@@ -43,7 +43,7 @@ codegen-units = 1
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["multi-thread", "with-wasm-entrypoint"]
+default = ["multi-thread"]
 multi-thread = ["lazy_static"]
 geo-types = ["dep:geo-types"]
 logging = ["log"]

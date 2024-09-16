@@ -18,7 +18,7 @@ script = [
 
 [tasks.wasm_debug]
 script = [
-    "wasm-pack build --target web --no-default-features --features=logging --features=proj4js-compat"
+    "wasm-pack build --target web --no-default-features --features=logging --features=proj4js-compat --features=with-wasm-entrypoint"
 ]
 
 [tasks.wasm_strict]
