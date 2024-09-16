@@ -9,6 +9,7 @@ use wasm_bindgen::prelude::*;
 use crate::log;
 
 // Js entry point
+#[cfg(feature = "with-wasm-entrypoint")]
 #[wasm_bindgen(start)]
 pub fn main() {
     #[cfg(feature = "logging")]
