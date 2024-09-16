@@ -62,13 +62,13 @@
 //!   If activated for WASM, it will use the [console-log](https://docs.rs/console_log/latest/console_log/)
 //!   adaptor.
 //! * **wasm-strict**: used with WASM; Transformation operation will return exception as soon as we
-//! have invalid coordinates or that the reprojection failed.
-//! The default is to use a relaxed-mode that return NaN in case of projection failure: this is expected
+//!   have invalid coordinates or that the reprojection failed.
+//!   The default is to use a relaxed-mode that return NaN in case of projection failure: this is expected
 //!   mostly from js app (at least with OpenLayer).
 //! * **multi-thread**: Support for multi-thread with NAD Grid processing, this is activated by
 //!   default and disabled when compiling for WASM.
 //! * **crs-definitions**: Support for initializing projections from EPSG codes with the
-//! [crs_definitions](https://docs.rs/crs-definitions/latest/crs_definitions/) crate.
+//!   [crs_definitions](https://docs.rs/crs-definitions/latest/crs_definitions/) crate.
 //!
 //! ## WKT Support
 //!
