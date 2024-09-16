@@ -7,6 +7,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+## 0.1.4 - 2024-09-16
+
+### Changed
+
+* Remove wee\_alloc as it's unmaintained
+    - https://github.com/3liz/proj4rs/pull/16
+
 ## 0.1.3 - 2024-05-18
 
 ### Fixed
