@@ -1,0 +1,62 @@
+.code-section {
+    display: grid;
+    margin-bottom: 25px;
+}
+
+pre {
+    background-color: #ffffff;
+    width: 90%;
+    min-width: 600px;
+    text-align: left;
+    margin: auto;
+    margin-bottom: 15px;
+    border: solid rgba(128, 128, 128, 0.47) 1px;
+    border-radius: 5px;
+    padding-left: 20px;
+    font-size: 15px;
+}
+
+pre > h3 {
+    margin: 0 0 -20px;
+    color: rgba(58, 58, 58, 0.89);
+}
+
+.token.keyword {
+    color: #0000ff;
+}
+
+.token.string {
+    color: #A31515;
+}
+
+.token.constant {
+    color: #36acaa;
+}
+
+.change {
+    background-color: rgba(255, 217, 217, 0.59);
+}
+
+@media screen and (min-width: 1271px) {
+    .left {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .right {
+        grid-column: 2;
+        grid-row: 1;
+    }
+}
+
+@media screen and (max-width: 1270px) {
+    .left {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .right {
+        grid-column: 1;
+        grid-row: 2;
+    }
+}

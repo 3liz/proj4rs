@@ -3,19 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Raster Reprojection</title>
-    <link rel="stylesheet" href="node_modules/ol/ol.css">
-    <style>
-      .map {
-        width: 100%;
-        height: 400px;
-      }
-      .reprojection-form {
-        display: grid;
-        grid-template-columns: max-content max-content;
-        grid-gap: 5px;
-        gap: 5px;
-      }
-    </style>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="codeStyle.css">
   </head>
   <body>
     <header>OpenLayers + Proj4rs</header>
@@ -51,6 +40,49 @@
       <label for="render-edges">Render reprojection edges:</label>
       <span><input type="checkbox" id="render-edges" /></span>
     </form>
+    <p class="demo-description">
+      This example shows client-side raster reprojection between various projections. This is the same as the
+      <a href="https://openlayers.org/en/latest/examples/reprojection.html" target="_blank">OpenLayers one</a>
+      but here, it uses the proj4rs library instead of the proj4js one.
+    </p>
+
+    <div class="code-section">
+        <pre class="left" tabindex="0">
+            <h3>proj4 OpenLayers</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
+<span class="token keyword">import</span> TileLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/WebGLTile.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="token keyword">import</span> <span class="token constant">WMTS</span>, {optionsFromCapabilities} <span class="token keyword">from</span> <span class="token string">'ol/source/WMTS.js'</span>;
+<span class="token keyword">import</span> WMTSCapabilities <span class="token keyword">from</span> <span class="token string">'ol/format/WMTSCapabilities.js'</span>;
+<span class="change"><span class="token keyword">import</span> proj4 <span class="token keyword">from</span> <span class="token string">'proj4'</span>;</span>
+<span class="token keyword">import</span> {<span class="token constant">OSM</span>, TileImage, TileWMS} <span class="token keyword">from</span> <span class="token string">'ol/source.js'</span>;
+<span class="token keyword">import</span> {createXYZ} <span class="token keyword">from</span> <span class="token string">'ol/tilegrid.js'</span>;
+<span class="token keyword">import</span> {getCenter, getWidth} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection, transformExtent} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+...</code>
+        </pre>
+        <pre class="right" tabindex="0">
+            <h3>proj4rs</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
+<span class="token keyword">import</span> TileLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/WebGLTile.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="token keyword">import</span> <span class="token constant">WMTS</span>, {optionsFromCapabilities} <span class="token keyword">from</span> <span class="token string">'ol/source/WMTS.js'</span>;
+<span class="token keyword">import</span> WMTSCapabilities <span class="token keyword">from</span> <span class="token string">'ol/format/WMTSCapabilities.js'</span>;
+<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'./assets/js/proj4.js'</span>;</span>
+<span class="token keyword">import</span> {<span class="token constant">OSM</span>, TileImage, TileWMS} <span class="token keyword">from</span> <span class="token string">'ol/source.js'</span>;
+<span class="token keyword">import</span> {createXYZ} <span class="token keyword">from</span> <span class="token string">'ol/tilegrid.js'</span>;
+<span class="token keyword">import</span> {getCenter, getWidth} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection, transformExtent} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+...</code>
+        </pre>
+    </div>
+
     <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
     <script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"></script>
     <script type="module" src="reprojection.js"></script>

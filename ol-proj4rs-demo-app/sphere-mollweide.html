@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Sphere Mollweide</title>
-    <link rel="stylesheet" href="node_modules/ol/ol.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="codeStyle.css">
     <style>
       .map {
         width: 100%;
@@ -14,7 +15,43 @@
   <body>
     <header>OpenLayers + Proj4rs</header>
     <h4 id="title">Sphere Mollweide</h4>
-    <div id="map" class="map"></div>
+    <div id="map" class="map simple"></div>
+    <p class="demo-description">
+      Example of a Sphere Mollweide map with a Graticule layer. This demo is the same as the
+      <a href="https://openlayers.org/en/latest/examples/sphere-mollweide.html" target="_blank">OpenLayers one</a>
+      but here, it uses the proj4rs library instead of the proj4js one.
+    </p>
+    <div class="code-section">
+        <pre class="left" tabindex="0">
+            <h3>proj4 OpenLayers</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> GeoJSON <span class="token keyword">from</span> <span class="token string">'ol/format/GeoJSON.js'</span>;
+<span class="token keyword">import</span> Graticule <span class="token keyword">from</span> <span class="token string">'ol/layer/Graticule.js'</span>;
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> Projection <span class="token keyword">from</span> <span class="token string">'ol/proj/Projection.js'</span>;
+<span class="token keyword">import</span> VectorLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/Vector.js'</span>;
+<span class="token keyword">import</span> VectorSource <span class="token keyword">from</span> <span class="token string">'ol/source/Vector.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="change"><span class="token keyword">import</span> proj4 <span class="token keyword">from</span> <span class="token string">'proj4'</span>;</span>
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+...</code>
+        </pre>
+      <pre class="right" tabindex="0">
+            <h3>proj4rs</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> GeoJSON <span class="token keyword">from</span> <span class="token string">'ol/format/GeoJSON.js'</span>;
+<span class="token keyword">import</span> Graticule <span class="token keyword">from</span> <span class="token string">'ol/layer/Graticule.js'</span>;
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> Projection <span class="token keyword">from</span> <span class="token string">'ol/proj/Projection.js'</span>;
+<span class="token keyword">import</span> VectorLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/Vector.js'</span>;
+<span class="token keyword">import</span> VectorSource <span class="token keyword">from</span> <span class="token string">'ol/source/Vector.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'./assets/js/proj4.js'</span>;</span>
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+...</code>
+        </pre>
+    </div>
+
     <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
     <script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"></script>
     <script type="module" src="sphere-mollweide.js"></script>
