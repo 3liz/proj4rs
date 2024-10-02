@@ -9,6 +9,7 @@
 html, body {
   font-family: "Roboto Light", sans-serif;
   text-align: center;
+  margin: 0;
 }
 
 header {
@@ -159,4 +160,69 @@ container > div {
 .demo-description {
   width: 95%;
   margin: 25px auto;
+}
+
+/* Nav bar */
+
+nav {
+  background-color: white;
+  border-radius: 0 7px 7px 0;
+  position: fixed;
+  width: 40px;
+  height: 250px;
+  top: 15vh;
+  display: flex;
+  flex-direction: column;
+  text-indent: -460%;
+  transition: ease 200ms;
+}
+
+nav > a:first-child {
+  border-radius: 0 10px 0 0;
+  border-top: solid 2px #000000;
+  font-weight: bold;
+}
+
+nav > a:last-child {
+  border-radius: 0 0 10px 0;
+  border-bottom: solid 2px #000000;
+}
+
+nav:hover {
+  width: 200px;
+  text-indent: 0;
+  .navLabel {
+    width: 200px;
+    color: black;
+  }
+  #navLabelActive {
+    color: black;
+  }
+}
+
+.navLabel {
+  border-right: solid 3px #000000;
+  color: black;
+  width: 40px;
+  height: 50px;
+  transition: ease 200ms;
+  text-decoration: none;
+  text-align: center;
+  line-height: 50px;
+}
+
+.navLabel:hover {
+  background-color: rgb(237, 237, 237);
+}
+
+.navLabel:active {
+  background-color: rgb(220, 220, 220);
+}
+
+#navLabelActive {
+  background-color: rgb(220, 220, 220);
+}
+
+#navLabelActive:hover {
+  background-color: rgb(237, 237, 237);
 }
