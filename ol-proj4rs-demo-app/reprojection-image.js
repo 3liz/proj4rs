@@ -30,7 +30,7 @@ const map = new Map({
   target: 'map',
   view: new View({
     center: transform(getCenter(imageExtent), 'EPSG:27700', 'EPSG:3857'),
-    zoom: 4,
+    zoom: 5,
   }),
 });
 

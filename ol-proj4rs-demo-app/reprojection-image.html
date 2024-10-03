@@ -3,7 +3,8 @@
   <head>
     <meta charset="UTF-8">
     <title>Image Reprojection</title>
-    <link rel="stylesheet" href="node_modules/ol/ol.css">
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="codeStyle.css">
     <style>
       .map {
         width: 100%;
@@ -15,10 +16,54 @@
     <header>OpenLayers + Proj4rs</header>
     <h4 id="title">Image Reprojection</h4>
     <div id="map" class="map"></div>
-    <div>
+    <div class="reprojection-form">
       <input type="checkbox" id="interpolate" checked />
       <label for="interpolate">Interpolate</label>
     </div>
+    <p class="demo-description">
+      This example shows client-side reprojection of single image source. This demo is the same as the
+      <a href="https://openlayers.org/en/latest/examples/reprojection-image.html" target="_blank">OpenLayers one</a> but here, it uses
+      the proj4rs library instead of the proj4js one.
+    </p>
+    <div class="code-section">
+        <pre class="left" tabindex="0">
+            <h3>proj4 OpenLayers</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> <span class="token constant">OSM</span> <span class="token keyword">from</span> <span class="token string">'ol/source/OSM.js'</span>;
+<span class="token keyword">import</span> Static <span class="token keyword">from</span> <span class="token string">'ol/source/ImageStatic.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="change"><span class="token keyword">import</span> proj4 <span class="token keyword">from</span> <span class="token string">'proj4'</span>;</span>
+<span class="token keyword">import</span> {Image <span class="token keyword">as</span>, Tile <span class="token keyword">as</span> TileLayer} <span class="token keyword">from</span> <span class="token string">'ol/layer.js'</span>;
+<span class="token keyword">import</span> {getCenter} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+<span class="token keyword">import</span> {transform} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+...</code>
+        </pre>
+      <pre class="right" tabindex="0">
+            <h3>proj4rs</h3>
+            <code class="language-js">
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
+<span class="token keyword">import</span> <span class="token constant">OSM</span> <span class="token keyword">from</span> <span class="token string">'ol/source/OSM.js'</span>;
+<span class="token keyword">import</span> Static <span class="token keyword">from</span> <span class="token string">'ol/source/ImageStatic.js'</span>;
+<span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
+<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'./assets/js/proj4.js'</span>;</span>
+<span class="token keyword">import</span> {Image <span class="token keyword">as</span>, Tile <span class="token keyword">as</span> TileLayer} <span class="token keyword">from</span> <span class="token string">'ol/layer.js'</span>;
+<span class="token keyword">import</span> {getCenter} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+<span class="token keyword">import</span> {transform} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+...</code>
+        </pre>
+    </div>
+
+    <nav>
+        <a class="navLabel" href="index.html">Home</a><br>
+        <a class="navLabel" href="wms-image-custom-proj.html">Single Image WMS</a><br>
+        <a id="navLabelActive" class="navLabel" href="reprojection-image.html">Image reprojection</a><br>
+        <a class="navLabel" href="reprojection.html">Raster reprojection</a><br>
+        <a class="navLabel" href="sphere-mollweide.html">Sphere Mollweide</a>
+    </nav>
+
     <!-- Pointer events polyfill for old browsers, see https://caniuse.com/#feat=pointer -->
     <script src="https://cdn.jsdelivr.net/npm/elm-pep@1.0.6/dist/elm-pep.js"></script>
     <script type="module" src="reprojection-image.js"></script>

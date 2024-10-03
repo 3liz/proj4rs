@@ -1,12 +1,228 @@
 @import "node_modules/ol/ol.css";
 
-html, body {
-  margin: 0;
-  height: 100%;
+/* Main page */
+
+:root {
+  --main-transition: ease 200ms;
 }
+
+html, body {
+  font-family: "Roboto Light", sans-serif;
+  text-align: center;
+  margin: 0;
+}
+
+header {
+  font-weight: bold;
+  font-size: 28px;
+}
+
+h4 {
+  font-size: 23px;
+}
+
+container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+container > div {
+  width: 370px;
+  height: 210px;
+  margin: 5px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.example {
+  -webkit-user-drag: none;
+  background-color: #ffffff;
+  color: black;
+  width: 90%;
+  height: 90%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-decoration: none;
+  border-radius: 23px;
+  box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.2);
+  transition: var(--main-transition);
+}
+
+.example:hover {
+  box-shadow: 0px 0px 16px 0px rgba(0,0,0,0.35);
+  transition: var(--main-transition);
+  width: 95%;
+  height: 95%;
+
+  strong {
+    font-size: 135%;
+    transition: var(--main-transition);
+  }
+
+  small {
+    font-size: 84%;
+    transition: var(--main-transition);
+  }
+
+  p {
+    font-size: 100%;
+    transition: var(--main-transition);
+  }
+}
+
+.example:active {
+  background-color: rgba(246, 246, 246, 0.36);
+}
+
+.example > strong {
+  width: 90%;
+  font-size: 125%;
+  transition: var(--main-transition);
+}
+
+.example > small {
+  width: 90%;
+  font-size: 78%;
+  font-style: italic;
+  transition: var(--main-transition);
+}
+
+.example > p {
+  width: 90%;
+  font-size: 95%;
+  transition: var(--main-transition);
+}
+
+/* Demos */
+
 #map {
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  width: 100%;
+  margin: 0 12.5%;
+  width: 75%;
+  height: 650px;
+  min-width: 580px;
+  border: #3a3a3a solid 2px;
+  border-radius: 10px 10px 0 0;
+  border-bottom: none;
+}
+
+#map.simple {
+  border-radius: 10px;
+  border-bottom: #3a3a3a solid 2px;;
+  .ol-layer > canvas {
+    border-radius: 8px;
+  }
+}
+
+.ol-layer > canvas {
+  border-radius: 8px 8px 0 0;
+}
+
+.reprojection-form {
+  background: linear-gradient(#f8f8f8, #ffffff);
+  margin: 0 12.5%;
+  width: 75%;
+  min-width: 580px;
+  padding: 15px 0;
+  border: #3a3a3a solid 2px;
+  display: grid;
+  grid-template-columns: max-content max-content;
+  grid-gap: 5px;
+  column-gap: 20px;
+  row-gap: 25px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 0 10px 10px;
+}
+
+.reprojection-form > select {
+  background-color: white;
+  border: none;
+  height: 30px;
+  padding: 0 15px;
+  border-radius: 15px;
+  box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.2);
+  transition: ease 80ms;
+}
+
+.reprojection-form > select:hover {
+  box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.35);
+  transition: ease 80ms;
+}
+
+.reprojection-form > select:active {
+  box-shadow: inset 0px 0px 5px 0px rgba(0,0,0,0.6);
+}
+
+.demo-description {
+  width: 95%;
+  margin: 25px auto;
+}
+
+/* Nav bar */
+
+nav {
+  background-color: white;
+  border-radius: 0 7px 7px 0;
+  position: fixed;
+  width: 40px;
+  height: 250px;
+  top: 15vh;
+  display: flex;
+  flex-direction: column;
+  text-indent: -460%;
+  transition: ease 200ms;
+}
+
+nav > a:first-child {
+  border-radius: 0 10px 0 0;
+  border-top: solid 2px #000000;
+  font-weight: bold;
+}
+
+nav > a:last-child {
+  border-radius: 0 0 10px 0;
+  border-bottom: solid 2px #000000;
+}
+
+nav:hover {
+  width: 200px;
+  text-indent: 0;
+  .navLabel {
+    width: 200px;
+    color: black;
+  }
+  #navLabelActive {
+    color: black;
+  }
+}
+
+.navLabel {
+  border-right: solid 3px #000000;
+  color: black;
+  width: 40px;
+  height: 50px;
+  transition: ease 200ms;
+  text-decoration: none;
+  text-align: center;
+  line-height: 50px;
+}
+
+.navLabel:hover {
+  background-color: rgb(237, 237, 237);
+}
+
+.navLabel:active {
+  background-color: rgb(220, 220, 220);
+}
+
+#navLabelActive {
+  background-color: rgb(220, 220, 220);
+}
+
+#navLabelActive:hover {
+  background-color: rgb(237, 237, 237);
 }
