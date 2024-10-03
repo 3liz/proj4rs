@@ -7,12 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
-## 0.1.5 - 2024-10-03
-
-### Removed
-
-* Remove debug in console
-
 ## 0.1.4 - 2024-09-16
 
 ### Changed
