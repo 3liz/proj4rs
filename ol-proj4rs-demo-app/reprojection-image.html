@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Image Reprojection</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="codeStyle.css">
     <style>
@@ -47,7 +48,7 @@
 <span class="token keyword">import</span> <span class="token constant">OSM</span> <span class="token keyword">from</span> <span class="token string">'ol/source/OSM.js'</span>;
 <span class="token keyword">import</span> Static <span class="token keyword">from</span> <span class="token string">'ol/source/ImageStatic.js'</span>;
 <span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
-<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'./assets/js/proj4.js'</span>;</span>
+<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'proj4rs/proj4.js'</span>;</span>
 <span class="token keyword">import</span> {Image <span class="token keyword">as</span>, Tile <span class="token keyword">as</span> TileLayer} <span class="token keyword">from</span> <span class="token string">'ol/layer.js'</span>;
 <span class="token keyword">import</span> {getCenter} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
 <span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;

@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <title>Raster Reprojection</title>
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="codeStyle.css">
   </head>
@@ -73,7 +74,7 @@
 <span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
 <span class="token keyword">import</span> <span class="token constant">WMTS</span>, {optionsFromCapabilities} <span class="token keyword">from</span> <span class="token string">'ol/source/WMTS.js'</span>;
 <span class="token keyword">import</span> WMTSCapabilities <span class="token keyword">from</span> <span class="token string">'ol/format/WMTSCapabilities.js'</span>;
-<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'./assets/js/proj4.js'</span>;</span>
+<span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'proj4rs/proj4.js'</span>;</span>
 <span class="token keyword">import</span> {<span class="token constant">OSM</span>, TileImage, TileWMS} <span class="token keyword">from</span> <span class="token string">'ol/source.js'</span>;
 <span class="token keyword">import</span> {createXYZ} <span class="token keyword">from</span> <span class="token string">'ol/tilegrid.js'</span>;
 <span class="token keyword">import</span> {getCenter, getWidth} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
