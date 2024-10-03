@@ -15,6 +15,7 @@ html, body {
 header {
   font-weight: bold;
   font-size: 28px;
+  padding-top: 20px;
 }
 
 h4 {
