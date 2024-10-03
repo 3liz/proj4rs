@@ -2,3 +2,4 @@ node_modules
 dist
 assets/js/*
 assets/pkg/*
+package-lock.json
