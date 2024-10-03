@@ -53,7 +53,6 @@ function defs(name) {
 
 // Transform array or object to Proj point
 function toPoint(coords) {
-    console.debug(coords);
     if (Array.isArray(coords) && coords.length>1) {
         return new Proj.Point(coords[0], coords[1], (coords.length > 2 ? coords[2] : 0.0));
     } else if (typeof coords === 'object' &&  coords.x !== undefined && coords.y !== undefined) {
@@ -179,16 +178,10 @@ function proj4(fromProj, toProj, coords) {
     } else {
       obj = {
         forward: function (coords) {
-          let rv = transformer(fromProj, toProj, coords);
-          console.debug("forward", rv);
-          //return transformer(fromProj, toProj, coords);
-          return rv;
+          return transformer(fromProj, toProj, coords);
         },
         inverse: function (coords) {
-          let rv = transformer(toProj, fromProj, coords);
-          console.debug("inverse", rv);
-          //return transformer(toProj, fromProj, coords);
-          return rv;
+          return transformer(toProj, fromProj, coords);
         }
       };
       if (single) {
