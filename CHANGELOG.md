@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Fixed 
+
+* Fix wrong calculation in laea projection
+    - https://github.com/3liz/proj4rs/issues/18
+
 ## 0.1.4 - 2024-09-16
 
 ### Changed

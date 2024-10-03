@@ -166,7 +166,7 @@ impl EProj {
                 b = (2. / b).sqrt();
                 (
                     xmf * b * cosb * sinlam,
-                    ymf * b * cosb1 * sinb - sinb1 * cosb * coslam,
+                    ymf * b * (cosb1 * sinb - sinb1 * cosb * coslam),
                 )
             }
             EQUIT { xmf, ymf, .. } => {
@@ -451,5 +451,29 @@ mod tests {
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
+    }
+
+    #[test]
+    fn test_epsg3035() {
+        // cf https://github.com/3liz/proj4rs/issues/18   
+        
+        let p = Proj::from_proj_string(
+            "+proj=laea +lat_0=52 +lon_0=10 +x_0=4321000 +y_0=3210000 +ellps=GRS80"
+        ).unwrap();
+
+        println!("{:#?}", p.projection());
+
+        let inputs = [
+            (
+                (15.4213696, 47.0766716, 0.),
+                (4732659.007426266, 2677630.7269610995, 0.),
+            ),
+        ];
+
+        test_proj_forward(&p, &inputs, EPS_10);
+        test_proj_inverse(&p, &inputs, 1.0e-7);
+ 
+
+ 
     }
 }
