@@ -63,13 +63,16 @@ jobs:
           path: ol-proj4rs-demo-app/dist
 
       - name: Setup Pages
+        if: github.ref == 'refs/heads/main'
         uses: actions/configure-pages@v4
 
       - name: Deploy to GitHub Pages
+        if: github.ref == 'refs/heads/main'
         id: deployment
         uses: actions/deploy-pages@v4
 
       - name: Summary
+        if: github.ref == 'refs/heads/main'
         run: |
           echo "
             ### Published ! :rocket:
