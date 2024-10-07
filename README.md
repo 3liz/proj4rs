@@ -101,4 +101,4 @@ Proj.transform(from, to, point);
 
 ## Contributing
 
-You can contribute to this library by going on the [proj4rs](https://github.com/3liz/proj4rs/) repository
+You can contribute to this library by going on the [proj4rs](./CONTRIBUTING.md) repository

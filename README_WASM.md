@@ -1,6 +1,8 @@
 
 The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the demo on [docs.3liz.org](https://docs.3liz.org/proj4rs/).
 
+# Build locally a package
+
 ## Compiling for WASM
 
 Install [wasm-pack](https://rustwasm.github.io/wasm-pack/book/)
@@ -18,7 +20,7 @@ cargo make wasm
 
 ### Running the WASM example
 
-There is a [`index.html`] file for testing the WASM module in a navigator.
+There is a `index.html` file for testing the WASM module in a navigator.
 
 For security reasons, you need to run it from a server.
 You can start a Python server with the following command:
@@ -32,7 +34,7 @@ The server will automatically serve the `index.html` file in the current directo
 
 ## Build for npm
 
-```
+```bash
 cargo make wasm_bundle
 ```
 

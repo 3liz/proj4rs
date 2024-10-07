@@ -1,7 +1,7 @@
 
 The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the demo on [docs.3liz.org](https://docs.3liz.org/proj4rs/).
 
-## Contributing
+# Contributing
 
 ### Modify
 
