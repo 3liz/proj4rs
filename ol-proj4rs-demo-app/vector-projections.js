@@ -1,141 +1,14 @@
 import Map from 'ol/Map.js';
-import TileGrid from 'ol/tilegrid/TileGrid.js';
-import TileLayer from 'ol/layer/Tile.js';
 import View from 'ol/View.js';
-import WMTS, {optionsFromCapabilities} from 'ol/source/WMTS.js';
-import WMTSCapabilities from 'ol/format/WMTSCapabilities.js';
-import {proj4} from 'proj4rs/proj4.js';
-import {OSM, TileImage, TileWMS} from 'ol/source.js';
-import {createXYZ} from 'ol/tilegrid.js';
-import {getCenter, getWidth} from 'ol/extent.js';
-import {get as getProjection, transformExtent} from 'ol/proj.js';
+import {proj4} from './assets/js/proj4.js';
+import {getCenter} from 'ol/extent.js';
+import {get as getProjection} from 'ol/proj.js';
 import {register} from 'ol/proj/proj4.js';
-
-/*
-const layers = {};
-
-layers['osm'] = new TileLayer({
-  source: new OSM(),
-});
-
-layers['wms4326'] = new TileLayer({
-  source: new TileWMS({
-    url: 'https://ahocevar.com/geoserver/gwc/service/wms',
-    crossOrigin: '',
-    params: {
-      'LAYERS': 'ne:NE1_HR_LC_SR_W_DR',
-      'TILED': true,
-      'VERSION': '1.1.1',
-    },
-    projection: 'EPSG:4326',
-    // Source tile grid (before reprojection)
-    tileGrid: createXYZ({
-      extent: [-180, -90, 180, 90],
-      maxResolution: 360 / 512,
-      maxZoom: 10,
-    }),
-    // Accept a reprojection error of 2 pixels
-    reprojectionErrorThreshold: 2,
-  }),
-});
-
-layers['wms21781'] = new TileLayer({
-  source: new TileWMS({
-    attributions:
-      '© <a href="https://shop.swisstopo.admin.ch/en/products/maps/national/lk1000"' +
-      'target="_blank">Pixelmap 1:1000000 / geo.admin.ch</a>',
-    crossOrigin: 'anonymous',
-    params: {
-      'LAYERS': 'ch.swisstopo.pixelkarte-farbe-pk1000.noscale',
-      'FORMAT': 'image/jpeg',
-    },
-    url: 'https://wms.geo.admin.ch/',
-    projection: 'EPSG:21781',
-  }),
-});
-
-const parser = new WMTSCapabilities();
-
-layers['wmts3413'] = new TileLayer();
-const urlA =
-  'https://map1.vis.earthdata.nasa.gov/wmts-arctic/' +
-  'wmts.cgi?SERVICE=WMTS&request=GetCapabilities';
-fetch(urlA)
-  .then(function (response) {
-    return response.text();
-  })
-  .then(function (text) {
-    const result = parser.read(text);
-    const options = optionsFromCapabilities(result, {
-      layer: 'OSM_Land_Mask',
-      matrixSet: 'EPSG3413_250m',
-    });
-    options.crossOrigin = '';
-    options.projection = 'EPSG:3413';
-    options.wrapX = false;
-    layers['wmts3413'].setSource(new WMTS(options));
-  });
-
-layers['bng'] = new TileLayer();
-const urlB =
-  'https://tiles.arcgis.com/tiles/qHLhLQrcvEnxjtPr/arcgis/rest/services/OS_Open_Raster/MapServer/WMTS';
-fetch(urlB)
-  .then(function (response) {
-    return response.text();
-  })
-  .then(function (text) {
-    const result = parser.read(text);
-    const options = optionsFromCapabilities(result, {
-      layer: 'OS_Open_Raster',
-    });
-    options.attributions =
-      'Contains OS data © Crown Copyright and database right ' +
-      new Date().getFullYear();
-    options.crossOrigin = '';
-    options.projection = 'EPSG:27700';
-    options.wrapX = false;
-    layers['bng'].setSource(new WMTS(options));
-  });
-
-const startResolution = getWidth(getProjection('EPSG:3857').getExtent()) / 256;
-const resolutions = new Array(22);
-for (let i = 0, ii = resolutions.length; i < ii; ++i) {
-  resolutions[i] = startResolution / Math.pow(2, i);
-}
-
-layers['states'] = new TileLayer({
-  source: new TileWMS({
-    url: 'https://ahocevar.com/geoserver/wms',
-    crossOrigin: '',
-    params: {'LAYERS': 'topp:states'},
-    serverType: 'geoserver',
-    tileGrid: new TileGrid({
-      extent: [-13884991, 2870341, -7455066, 6338219],
-      resolutions: resolutions,
-      tileSize: [512, 256],
-    }),
-    projection: 'EPSG:3857',
-  }),
-});
-
-const map = new Map({
-  layers: [layers['osm'], layers['bng']],
-  target: 'map',
-  view: new View({
-    projection: 'EPSG:3857',
-    center: [0, 0],
-    zoom: 2,
-  }),
-});
- */
-
 import GeoJSON from 'ol/format/GeoJSON.js';
 import Graticule from 'ol/layer/Graticule.js';
-import Projection from 'ol/proj/Projection.js';
 import VectorLayer from 'ol/layer/Vector.js';
 import VectorSource from 'ol/source/Vector.js';
 import {Fill, Style} from 'ol/style.js';
-
 
 proj4.defs(
   'EPSG:27700',
@@ -181,7 +54,7 @@ proj23032.setWorldExtent([-121, 20, 130, 75]);
 
 const proj5479 = getProjection('EPSG:5479');
 proj5479.setExtent([6825737.53, 4189159.8, 9633741.96, 5782472.71]);
-proj5479.setWorldExtent([0,0,0,0]);
+proj5479.setWorldExtent([0, 0, 0, 0]);
 
 const proj3413 = getProjection('EPSG:3413');
 proj3413.setExtent([-4194304, -4194304, 4194304, 4194304]);
@@ -195,18 +68,7 @@ const proj54009 = getProjection('ESRI:54009');
 proj54009.setExtent([-18019909.21177587, -9009954.605703328, 18019909.21177587, 9009954.605703328]);
 proj54009.setWorldExtent([-179, -89.99, 179, 89.99]);
 
-// Configure the Sphere Mollweide projection object with an extent,
-// and a world extent. These are required for the Graticule.
-/*const sphereMollweideProjection = new Projection({
-  code: 'ESRI:54009',
-  extent: [
-    -18019909.21177587, -9009954.605703328, 18019909.21177587,
-    9009954.605703328,
-  ],
-  worldExtent: [-179, -89.99, 179, 89.99],
-});
-
- */
+const viewProjSelect = document.getElementById('view-projection');
 
 const style = new Style({
   fill: new Fill({
@@ -234,28 +96,41 @@ const map = new Map({
   ],
   target: 'map',
   view: new View({
-    center: [0, 0],
-    projection: 'EPSG:3857',
-    zoom: 2,
+    projection: getProjection(viewProjSelect.value),
+    center: getCenter(getProjection(viewProjSelect.value).getExtent() || [0, 0, 0, 0]),
+    zoom: 0,
+    extent: getProjection(viewProjSelect.value).getExtent() || undefined,
   }),
 });
 
-const viewProjSelect = document.getElementById('view-projection');
-
 function updateViewProjection() {
   const newProj = getProjection(viewProjSelect.value);
-  console.log(newProj)
   const newProjExtent = newProj.getExtent();
-  console.log(newProjExtent)
   const newView = new View({
     projection: newProj,
     center: getCenter(newProjExtent || [0, 0, 0, 0]),
     zoom: 0,
     extent: newProjExtent || undefined,
   });
-  map.setView(newView);
+  updateMapVar(newView)
+}
 
-  console.log(map.getLayers().getArray()[0])
+function updateMapVar(view) {
+  map.setView(view);
+
+  let vectorMap = new VectorLayer({
+    source: new VectorSource({
+      url: 'https://openlayers.org/data/vector/ecoregions.json',
+      format: new GeoJSON(),
+    }),
+    style: function (feature) {
+      const color = feature.get('COLOR_BIO') || '#eeeeee';
+      style.getFill().setColor(color);
+      return style;
+    },
+  })
+
+  map.setLayers([vectorMap, new Graticule()]);
 }
 
 /**
@@ -264,5 +139,3 @@ function updateViewProjection() {
 viewProjSelect.onchange = function () {
   updateViewProjection();
 };
-
-updateViewProjection();

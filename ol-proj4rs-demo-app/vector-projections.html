@@ -34,35 +34,33 @@
         <pre class="left" tabindex="0">
             <h3>proj4 OpenLayers</h3>
             <code class="language-js">
-<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
-<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
-<span class="token keyword">import</span> TileLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/WebGLTile.js'</span>;
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
 <span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
-<span class="token keyword">import</span> <span class="token constant">WMTS</span>, {optionsFromCapabilities} <span class="token keyword">from</span> <span class="token string">'ol/source/WMTS.js'</span>;
-<span class="token keyword">import</span> WMTSCapabilities <span class="token keyword">from</span> <span class="token string">'ol/format/WMTSCapabilities.js'</span>;
 <span class="change"><span class="token keyword">import</span> proj4 <span class="token keyword">from</span> <span class="token string">'proj4'</span>;</span>
-<span class="token keyword">import</span> {<span class="token constant">OSM</span>, TileImage, TileWMS} <span class="token keyword">from</span> <span class="token string">'ol/source.js'</span>;
-<span class="token keyword">import</span> {createXYZ} <span class="token keyword">from</span> <span class="token string">'ol/tilegrid.js'</span>;
-<span class="token keyword">import</span> {getCenter, getWidth} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
-<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection, transformExtent} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+<span class="token keyword">import</span> {getCenter} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
 <span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+<span class="token keyword">import</span> GeoJSON <span class="token keyword">from</span> <span class="token string">'ol/format/GeoJSON.js'</span>;
+<span class="token keyword">import</span> Graticule <span class="token keyword">from</span> <span class="token string">'ol/layer/Graticule.js'</span>;
+<span class="token keyword">import</span> VectorLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/Vector.js'</span>;
+<span class="token keyword">import</span> VectorSource <span class="token keyword">from</span> <span class="token string">'ol/source/Vector.js'</span>;
+<span class="token keyword">import</span> {Fill, Style} <span class="token keyword">from</span> <span class="token string">'ol/style.js'</span>;
 ...</code>
         </pre>
     <pre class="right" tabindex="0">
             <h3>proj4rs</h3>
             <code class="language-js">
-<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;
-<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
-<span class="token keyword">import</span> TileLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/WebGLTile.js'</span>;
+<span class="token keyword">import</span> Map <span class="token keyword">from</span> <span class="token string">'ol/Map.js'</span>;<span class="token keyword">import</span> TileGrid <span class="token keyword">from</span> <span class="token string">'ol/tilegrid/TileGrid.js'</span>;
 <span class="token keyword">import</span> View <span class="token keyword">from</span> <span class="token string">'ol/View.js'</span>;
-<span class="token keyword">import</span> <span class="token constant">WMTS</span>, {optionsFromCapabilities} <span class="token keyword">from</span> <span class="token string">'ol/source/WMTS.js'</span>;
-<span class="token keyword">import</span> WMTSCapabilities <span class="token keyword">from</span> <span class="token string">'ol/format/WMTSCapabilities.js'</span>;
 <span class="change"><span class="token keyword">import</span> {proj4} <span class="token keyword">from</span> <span class="token string">'proj4rs/proj4.js'</span>;</span>
-<span class="token keyword">import</span> {<span class="token constant">OSM</span>, TileImage, TileWMS} <span class="token keyword">from</span> <span class="token string">'ol/source.js'</span>;
-<span class="token keyword">import</span> {createXYZ} <span class="token keyword">from</span> <span class="token string">'ol/tilegrid.js'</span>;
-<span class="token keyword">import</span> {getCenter, getWidth} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
-<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection, transformExtent} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
+<span class="token keyword">import</span> {getCenter} <span class="token keyword">from</span> <span class="token string">'ol/extent.js'</span>;
+<span class="token keyword">import</span> {<span class="token keyword">get</span> <span class="token keyword">as</span> getProjection} <span class="token keyword">from</span> <span class="token string">'ol/proj.js'</span>;
 <span class="token keyword">import</span> {register} <span class="token keyword">from</span> <span class="token string">'ol/proj/proj4.js'</span>;
+<span class="token keyword">import</span> GeoJSON <span class="token keyword">from</span> <span class="token string">'ol/format/GeoJSON.js'</span>;
+<span class="token keyword">import</span> Graticule <span class="token keyword">from</span> <span class="token string">'ol/layer/Graticule.js'</span>;
+<span class="token keyword">import</span> VectorLayer <span class="token keyword">from</span> <span class="token string">'ol/layer/Vector.js'</span>;
+<span class="token keyword">import</span> VectorSource <span class="token keyword">from</span> <span class="token string">'ol/source/Vector.js'</span>;
+<span class="token keyword">import</span> {Fill, Style} <span class="token keyword">from</span> <span class="token string">'ol/style.js'</span>;
 ...</code>
         </pre>
 </div>
