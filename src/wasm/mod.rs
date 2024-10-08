@@ -154,7 +154,7 @@ impl transform::Transform for Point {
 
 #[wasm_bindgen]
 pub fn transform(src: &Projection, dst: &Projection, point: &mut Point) -> Result<(), JsError> {
-    log::debug!("transform: {}, {}, {}", point.x, point.y, point.z);
+    // log::debug!("transform: {}, {}, {}", point.x, point.y, point.z);
 
     if point.x.is_nan() || point.y.is_nan() {
         return Err(JsError::from(errors::Error::NanCoordinateValue));
