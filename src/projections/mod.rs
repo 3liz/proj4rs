@@ -12,7 +12,7 @@
 //
 // Most important projections:
 //
-// lcc, merc, tmerc, utm (etmerc) et aea
+// lcc, geos, merc, tmerc, utm (etmerc) et aea
 // stere et sterea pour for polar regions.
 //
 
@@ -134,7 +134,7 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 20;
+const NUM_PROJECTIONS: usize = 21;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
@@ -167,6 +167,7 @@ pub mod geocent;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
+pub mod geos;
 pub mod merc;
 pub mod moll;
 pub mod somerc;
@@ -178,6 +179,7 @@ pub mod tmerc;
 declare_projections! [
     (latlong, longlat),
     (lcc),
+    (geos),
     (etmerc, utm),
     (tmerc),
     (aea, leac),
