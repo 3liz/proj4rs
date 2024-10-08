@@ -10,6 +10,7 @@ export default {
         'reprojection': 'reprojection.html',
         'sphere-mollweide': 'sphere-mollweide.html',
         'wms-image-custom-proj': 'wms-image-custom-proj.html',
+        'vector-projections': 'vector-projections.html',
       },
     },
   },
