@@ -1,86 +1,21 @@
-[package]
-name = "proj4rs"
-version = "0.1.5"
-edition = "2021"
-rust-version = "1.66"
-description = "Rust adaptation of Proj4"
-readme = "./README.md"
+[workspace]
+members = [
+    "proj4rs",
+    "proj4rs-clib",
+]
+resolver = "2"
+
+[workspace.package]
 keywords = ["gis", "proj", "projection", "geography", "geospatial"]
 authors = ["David Marteau <dmarteau@3liz.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/3liz/proj4rs/"
 repository = "https://github.com/3liz/proj4rs/"
-documentation = "https://docs.rs/proj4rs/"
-exclude = [
-    "js/*",
-    "Makefile.toml",
-    "ol-proj4rs-demo-app",
-    "fixtures",
-    ".docker",
-    "PROJ4_General_Parameters.pdf",
-    "index.html",
-]
-
-[dependencies]
-thiserror = "1.0"
-crs-definitions = { version = "0.3", optional = true, default-features = false, features = ["proj4"] }
-geo-types = { version = "0.7.12", optional = true }
-lazy_static = { version = "1", optional = true }
-log = { version = "0.4", optional = true }
-libc = { version = "0.2", optional = true }
-
-[dev-dependencies]
-approx = "0.5"
-clap = { version = "4", features = ["derive"] }
-criterion = { version = "0.5" }
-env_logger = "0.10"
-log = "0.4"
 
 [profile.release]
 lto = true
 codegen-units = 1
 strip = "debuginfo"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
 
-[features]
-default = ["multi-thread"]
-multi-thread = ["lazy_static"]
-geo-types = ["dep:geo-types"]
-logging = ["log"]
-local_tests = []
-wasm-strict = []
-proj4js-compat = []
-with-wasm-entrypoint = []
-cbinding = ["libc"]
-
-[target.wasm32-unknown-unknown.dependencies]
-wasm-bindgen = "0.2"
-js-sys = "0.3"
-web-sys = { version = "0.3", features = ["console"] }
-console_log = "1.0"
-
-[[bench]]
-name = "bench_proj"
-harness = false
-
-[[example]]
-name = "rsproj"
-
-[package.metadata.doc.rs]
-all-features = true
-
-
-[package.metadata.deb]
-maintainer = "David Marteau <david.marteau@3liz.com>"
-copyright = "2024, 3liz"
-extended-description = """Projection library inspired from proj"""
-depends = "$auto"
-section = "development"
-priority = "optional"
-assets = [ 
-    ["target/release/libproj4rs.so", "usr/lib/", "755"],
-    ["target/cbindgen/proj4rs.h", "usr/include/", "644"]
-]
 

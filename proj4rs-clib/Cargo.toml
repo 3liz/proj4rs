@@ -1,0 +1,44 @@
+[package]
+name = "proj4rs-clib"
+version = "0.1.0"
+edition = "2021"
+keywords = ["gis", "proj", "projection", "geography", "geospatial"]
+authors = ["David Marteau <dmarteau@3liz.com>"]
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/3liz/proj4rs/"
+repository = "https://github.com/3liz/proj4rs/"
+description = "C bindings for proj4rs"
+exclude=[
+    "Makefile.toml",
+]
+
+[lib]
+name = "proj4rs_c"
+crate-type = ["cdylib"]
+
+[dependencies]
+proj4rs = { path = "../proj4rs" }
+libc = { version = "0.2" }
+
+[features]
+default = ["crs-definitions"]
+crs-definitions = ["proj4rs/crs-definitions"]
+
+# XXX Defined in workspace
+#[profile.release]
+#lto = true
+#codegen-units = 1
+#strip = "debuginfo"
+
+[package.metadata.deb]
+maintainer = "David Marteau <david.marteau@3liz.com>"
+copyright = "2024, 3liz"
+extended-description = """Projection library inspired from proj"""
+depends = "$auto"
+section = "development"
+priority = "optional"
+assets = [ 
+    ["../target/release/libproj4rs_c.so", "usr/lib/", "755"],
+    ["../target/cbindgen/proj4rs.h", "usr/include/", "644"]
+]
+

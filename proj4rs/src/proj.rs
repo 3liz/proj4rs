@@ -23,7 +23,7 @@ use std::str::FromStr;
 ///
 /// - The first value represent the direction `x` axis: 'e' (East) or 'w' (West)
 /// - The second value represent the direction of the `y` axis: 'n' (North) or 's' (South)
-/// - The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down) 
+/// - The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down)
 pub type Axis = [u8; 3];
 
 const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];

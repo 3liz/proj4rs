@@ -3,7 +3,7 @@ use std::cell::RefCell;
 use std::ffi::{CStr, CString};
 use std::ptr;
 
-use crate::{
+use proj4rs::{
     errors, proj,
     transform::{transform, Transform, TransformClosure},
 };
@@ -85,7 +85,6 @@ pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *const Proj4rs {
     }
 }
 
-
 /// Delete projection object
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
@@ -132,11 +131,11 @@ pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
 /// Return the projection axes
 ///
 /// The value returned is a pointer to 3-value byte array
-/// 
+///
 /// The first value represent the direction `x` axis: 'e' (East) or 'w' (West)
 /// The second value represent the direction of the `y` axis: 'n' (North) or 's' (South)
-/// The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down) 
-/// 
+/// The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down)
+///
 /// Example:  
 /// ```C
 /// axes = proj4rs_proj_axis(Proj4rs);
@@ -144,7 +143,7 @@ pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
 ///    printf("Axis are normalized\n")
 /// }
 /// ```
-/// 
+///
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
     if !c_ptr.is_null() {
@@ -235,7 +234,7 @@ pub extern "C" fn proj4rs_transform(
             to_radians(x, y, len, stride);
         }
     }
-    if let Err(err) = transform(&src.inner, &dst.inner, &mut (x, y, z, len, stride)) {
+    if let Err(err) = transform(&src.inner, &dst.inner, &mut Coords(x, y, z, len, stride)) {
         set_last_error(err);
         ERR
     } else {
@@ -248,12 +247,14 @@ pub extern "C" fn proj4rs_transform(
     }
 }
 
-impl Transform for (*mut f64, *mut f64, *mut f64, isize, isize) {
+struct Coords(*mut f64, *mut f64, *mut f64, isize, isize);
+
+impl Transform for Coords {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
     where
         F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
     {
-        let (mut xx, mut yy, mut zz, mut len, stride) = *self;
+        let (mut xx, mut yy, mut zz, mut len, stride) = (self.0, self.1, self.2, self.3, self.4);
 
         if !zz.is_null() {
             loop {

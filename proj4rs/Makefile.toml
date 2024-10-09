@@ -10,38 +10,9 @@ dependencies = [
 command = "cargo"
 args = ["build"]
 
-# 
-# clib build
-#
-
-[tasks.clib]
+[tasks.release]
 command = "cargo"
-args = ["build", "--features=cbinding"]
-
-[tasks."clib-release"]
-command = "cargo"
-args = ["build", "--features=cbinding", "--release"]
-
-[tasks."clib-bindgen"]
-command = "cbindgen"
-args = [
-    "--config", "cbindgen.toml",
-    "--crate",  "proj4rs",
-    "--output", "target/cbindgen/proj4rs.h",
-    "--quiet",
-]
-
-[tasks.deb]
-command = "cargo"
-args = [
-    "deb",
-    "--profile", "release",
-    "--no-separate-debug-symbols",
-    "--no-strip",
-    "--no-build",
-]
-dependencies = ["clib-release", "clib-bindgen"]
-
+args = ["build", "--release"]
 
 [tasks.doc]
 command = "cargo"

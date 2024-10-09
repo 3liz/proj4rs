@@ -1,0 +1,38 @@
+[tasks.default]
+alias = "defaults"
+
+[tasks.defaults]
+dependencies = [
+    "build"
+]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks."build-release"]
+command = "cargo"
+args = ["build", "--release"]
+
+[tasks.cbindgen]
+command = "cbindgen"
+args = [
+    "--config", "cbindgen.toml",
+    "--crate",  "proj4rs-clib",
+    "--output", "../target/cbindgen/proj4rs.h",
+    "--quiet",
+]
+
+[tasks.deb]
+command = "cargo"
+args = [
+    "deb",
+    "--profile", "release",
+    "--no-separate-debug-symbols",
+    "--no-strip",
+    "--no-build",
+]
+dependencies = ["build-release", "cbindgen"]
+
+[tasks.release]
+dependencies = ["deb"]
