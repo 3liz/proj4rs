@@ -114,6 +114,10 @@ pub use proj::Proj;
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 mod wasm;
 
+// C bindings
+#[cfg(feature = "cbinding")]
+mod cbinding;
+
 #[cfg(test)]
 mod tests;
 

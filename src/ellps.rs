@@ -73,9 +73,12 @@ enum Shape {
 #[derive(Clone, Debug)]
 pub struct Ellipsoid {
     // The linear parameters
-    pub a: f64,  // semimajor axis (radius if eccentricity==0)
-    pub b: f64,  // semiminor axis
+    pub a: f64, // semimajor axis (radius if eccentricity==0)
+    pub b: f64, // semiminor axis
+
     pub ra: f64, // 1/a
+    //
+    #[allow(dead_code)]
     pub rb: f64, // 1/b
 
     // The eccentricities
@@ -93,6 +96,7 @@ pub struct Ellipsoid {
     pub f: f64, // first  flattening
     //pub f2: f64,  // second flattening
     //pub n: f64,   // third  flattening
+    #[allow(dead_code)]
     pub rf: f64, // 1/f
 
                  /*

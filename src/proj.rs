@@ -16,6 +16,14 @@ use crate::{ellipsoids, prime_meridians, projstring, units};
 
 use std::fmt;
 
+#[cfg(feature = "crs-definitions")]
+use std::str::FromStr;
+
+/// Projection axis
+///
+/// - The first value represent the direction `x` axis: 'e' (East) or 'w' (West)
+/// - The second value represent the direction of the `y` axis: 'n' (North) or 's' (South)
+/// - The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down) 
 pub type Axis = [u8; 3];
 
 const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
@@ -379,7 +387,15 @@ impl Proj {
         Self::init(projstring::parse(s)?)
     }
 
+    ///
     /// Create projection from user string
+    ///
+    /// Accepts:
+    ///
+    /// * projstring
+    /// * "WGS84" - equivalent to "+proj=longlat +ellps=WGS84"
+    ///
+    #[cfg(not(feature = "crs-definitions"))]
     pub fn from_user_string(s: &str) -> Result<Self> {
         let s = s.trim();
         if s.starts_with('+') {
@@ -391,7 +407,34 @@ impl Proj {
         }
     }
 
+    ///
     /// Create projection from user string
+    ///
+    /// Accept:
+    ///
+    /// * projstring
+    /// * "WGS84" shortcut - which is  equivalent to "+proj=longlat +ellps=WGS84"
+    /// * EPSG code - example:  "EPSG:4326" - requires feature *crs-definitions*
+    ///
+    #[cfg(feature = "crs-definitions")]
+    pub fn from_user_string(s: &str) -> Result<Self> {
+        let s = s.trim();
+        if s.starts_with('+') {
+            Self::from_proj_string(s)
+        } else if s.eq_ignore_ascii_case("WGS84") {
+            Self::from_proj_string("+proj=longlat +ellps=WGS84")
+        } else if let Some(("EPSG", code)) = s.split_once(':') {
+            u16::from_str(code)
+                .map_err(|_| Error::UnrecognizedFormat)
+                .and_then(Self::from_epsg_code)
+        } else {
+            Err(Error::UnrecognizedFormat)
+        }
+    }
+
+    /// Create projection from EPSG code
+    ///
+    /// Requires feature *crs-defnitions*
     ///
     /// # Examples
     ///

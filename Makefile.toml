@@ -10,25 +10,87 @@ dependencies = [
 command = "cargo"
 args = ["build"]
 
+# 
+# clib build
+#
+
+[tasks.clib]
+command = "cargo"
+args = ["build", "--features=cbinding"]
+
+[tasks."clib-release"]
+command = "cargo"
+args = ["build", "--features=cbinding", "--release"]
+
+[tasks."clib-bindgen"]
+command = "cbindgen"
+args = [
+    "--config", "cbindgen.toml",
+    "--crate",  "proj4rs",
+    "--output", "target/cbindgen/proj4rs.h",
+    "--quiet",
+]
+
+[tasks.deb]
+command = "cargo"
+args = [
+    "deb",
+    "--profile", "release",
+    "--no-separate-debug-symbols",
+    "--no-strip",
+    "--no-build",
+]
+dependencies = ["clib-release", "clib-bindgen"]
+
+
+[tasks.doc]
+command = "cargo"
+args = ["doc", "--all-features", "--no-deps"]
+
+#
+# WASM
+#
+
 [tasks.wasm]
-script = [
-    "wasm-pack build --target web --no-default-features --features=proj4js-compat"
+command = "wasm-pack"
+args = [
+    "build",
+    "--target=web",
+    "--no-default-features",
+    "--features=proj4js-compat",
 ]
 
 
 [tasks.wasm_debug]
-script = [
-    "wasm-pack build --target web --no-default-features --features=logging --features=proj4js-compat --features=with-wasm-entrypoint"
+command = "wasm-pack"
+args = [
+    "build", 
+    "--target=web",
+    "--no-default-features",
+    "--features=logging",
+    "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
 ]
 
 [tasks.wasm_strict]
-script = [
-    "wasm-pack build --target web --no-default-features --features=wasm-strict --features=proj4js-compat"
+command = "wasm-pack"
+args = [
+    "build",
+    "--target=web",
+    "--no-default-features",
+    "--features=wasm-strict",
+    "--features=proj4js-compat",
 ]
+
 
 # Build for webpack bundle
 [tasks.wasm_bundle]
-script = [
-    "wasm-pack build --target bundler -d pkg-bundle --no-default-features --features=proj4js-compat"
+command = "wasm-pack"
+args = [
+    "build",
+    "--target=bundler",
+    "-d", "pkg-bundle",
+    "--no-default-features",
+    "--features=proj4js-compat",
 ]
 
