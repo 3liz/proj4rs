@@ -21,7 +21,6 @@ proj4rs = { path = "../proj4rs" }
 libc = { version = "0.2" }
 
 [features]
-default = ["crs-definitions"]
 crs-definitions = ["proj4rs/crs-definitions"]
 
 # XXX Defined in workspace

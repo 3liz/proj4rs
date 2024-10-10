@@ -2,6 +2,7 @@
 members = [
     "proj4rs",
     "proj4rs-clib",
+    "proj4rs-php",
 ]
 resolver = "2"
 
@@ -11,6 +12,8 @@ authors = ["David Marteau <dmarteau@3liz.com>"]
 license = "MIT OR Apache-2.0"
 homepage = "https://github.com/3liz/proj4rs/"
 repository = "https://github.com/3liz/proj4rs/"
+categories = ["science::geo"]
+
 
 [profile.release]
 lto = true
