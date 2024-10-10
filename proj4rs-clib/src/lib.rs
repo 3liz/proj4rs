@@ -67,7 +67,7 @@ pub struct Proj4rs {
 /// * An EPSG code
 ///
 #[no_mangle]
-pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *const Proj4rs {
+pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
     let cstr_defn = unsafe { CStr::from_ptr(c_defn) };
     match cstr_defn
         .to_str()
@@ -80,7 +80,7 @@ pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *const Proj4rs {
         Ok(p) => Box::into_raw(Box::new(p)),
         Err(err) => {
             set_last_error(err);
-            ptr::null()
+            ptr::null_mut()
         }
     }
 }
@@ -234,6 +234,7 @@ pub extern "C" fn proj4rs_transform(
             to_radians(x, y, len, stride);
         }
     }
+    
     if let Err(err) = transform(&src.inner, &dst.inner, &mut Coords(x, y, z, len, stride)) {
         set_last_error(err);
         ERR
@@ -256,7 +257,7 @@ impl Transform for Coords {
     {
         let (mut xx, mut yy, mut zz, mut len, stride) = (self.0, self.1, self.2, self.3, self.4);
 
-        if !zz.is_null() {
+        if zz.is_null() {
             loop {
                 unsafe {
                     f(*xx, *yy, 0.).map_or_else(

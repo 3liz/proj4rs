@@ -1,0 +1,11 @@
+prefix=@PREFIX@
+exec_prefix=${prefix}
+libdir=@LIBDIR@
+includedir=@INCLUDE_DIR@/
+
+Name: proj4rs_c
+Version: @VERSION@
+Description: Proj4rs binding library
+Requires:
+Libs: -L${libdir} -lproj4rs_c
+Cflags: -I${includedir}
