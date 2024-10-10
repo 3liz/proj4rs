@@ -2,7 +2,6 @@
 name = "proj4rs"
 version = "0.1.5"
 edition = "2021"
-rust-version = "1.66"
 description = "Rust adaptation of Proj4"
 readme = "../README.md"
 keywords.workspace = true
@@ -10,6 +9,7 @@ authors.workspace = true
 license.workspace = true
 homepage.workspace = true
 repository.workspace = true
+categories.workspace = true
 documentation = "https://docs.rs/proj4rs/"
 exclude = [
     "js/*",
@@ -32,7 +32,7 @@ log = { version = "0.4", optional = true }
 approx = "0.5"
 clap = { version = "4", features = ["derive"] }
 criterion = { version = "0.5" }
-env_logger = "0.10"
+env_logger = "0.11"
 log = "0.4"
 
 # XXX Defined in workspace

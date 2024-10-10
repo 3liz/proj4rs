@@ -7,14 +7,17 @@ dependencies = [
 ]
 
 [tasks.build]
+description = "Dev build"
 command = "cargo"
 args = ["build"]
 
 [tasks.release]
+description = "Release build"
 command = "cargo"
 args = ["build", "--release"]
 
 [tasks.doc]
+description = "Build documentation"
 command = "cargo"
 args = ["doc", "--all-features", "--no-deps"]
 
@@ -23,6 +26,7 @@ args = ["doc", "--all-features", "--no-deps"]
 #
 
 [tasks.wasm]
+description = "Build wasm module (web target)"
 command = "wasm-pack"
 args = [
     "build",
@@ -33,6 +37,7 @@ args = [
 
 
 [tasks.wasm_debug]
+description = "Build wasm module with logging feature (web target)"
 command = "wasm-pack"
 args = [
     "build", 
@@ -44,6 +49,7 @@ args = [
 ]
 
 [tasks.wasm_strict]
+description = "Build wasm module in strict-mode (web target)"
 command = "wasm-pack"
 args = [
     "build",
@@ -54,8 +60,8 @@ args = [
 ]
 
 
-# Build for webpack bundle
 [tasks.wasm_bundle]
+description = "Build wasm package as nodejs bundle
 command = "wasm-pack"
 args = [
     "build",
