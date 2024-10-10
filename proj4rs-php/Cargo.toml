@@ -1,0 +1,23 @@
+[package]
+name = "proj4rs-php"
+version = "0.1.0"
+edition = "2021"
+keywords.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+categories.workspace = true
+
+[lib]
+name = "proj4rs_php"
+crate-type = ["cdylib"]
+
+[dependencies]
+proj4rs = { path = "../proj4rs" }
+ext-php-rs = "*"
+log = { version = "0.4", optional = true }
+
+[features]
+crs-definitions = ["proj4rs/crs-definitions"]
+logging = ["log", "proj4rs/logging" ]

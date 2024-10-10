@@ -1,0 +1,15 @@
+# Projections defined in proj4rs
+[
+    (latlong, longlat),
+    (lcc),
+    (etmerc, utm),
+    (tmerc),
+    (aea, leac),
+    (stere, ups),
+    (sterea),
+    (merc, webmerc),
+    (geocent, cart),
+    (somerc),
+    (laea),
+    (moll, wag4, wag5),
+]
