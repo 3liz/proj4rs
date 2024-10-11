@@ -29,9 +29,6 @@ jobs:
         with:
           toolchain: stable
 
-      - name: Cargo build
-        run: cargo build
-
       - name: Install WASM pack
         uses: jetli/wasm-pack-action@v0.4.0
         with:
