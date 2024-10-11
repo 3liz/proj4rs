@@ -14,8 +14,8 @@ name = "proj4rs_php"
 crate-type = ["cdylib"]
 
 [dependencies]
-proj4rs = "*"
-ext-php-rs = "*"
+proj4rs = "~0.1"
+ext-php-rs = "0.12"
 log = { version = "0.4", optional = true }
 
 [features]

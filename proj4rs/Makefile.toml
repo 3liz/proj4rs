@@ -78,3 +78,17 @@ args = [
     "--features=proj4js-compat",
 ]
 
+[tasks.wasm_node]
+description = "Build wasm package as nodejs bundle"
+command = "wasm-pack"
+args = [
+    "build",
+    "--out-dir=../js/pkg-node",
+    "--release",
+    "--target=nodejs",
+    "--no-default-features",
+    "--features=logging",
+    "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
+]
+

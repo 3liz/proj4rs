@@ -3,7 +3,7 @@
 //!
 mod nadgrids;
 
-use crate::{errors, proj, transform};
+use crate::{errors, proj, transform, transform::TransformClosure};
 use wasm_bindgen::prelude::*;
 
 use crate::log;
@@ -14,6 +14,8 @@ use crate::log;
 pub fn main() {
     #[cfg(feature = "logging")]
     console_log::init_with_level(log::Level::Trace).unwrap();
+    
+    log::info!("Initialized proj4rs wasm module.")
 }
 
 // ----------------------------
@@ -74,9 +76,9 @@ impl Projection {
 // ---------------------------
 #[wasm_bindgen]
 pub struct Point {
-    x: f64,
-    y: f64,
-    z: f64,
+    pub x: f64,
+    pub y: f64,
+    pub z: f64,
 }
 
 #[wasm_bindgen]
@@ -85,31 +87,6 @@ impl Point {
     pub fn new(x: f64, y: f64, z: f64) -> Point {
         Self { x, y, z }
     }
-
-    #[wasm_bindgen(getter)]
-    pub fn x(&self) -> f64 {
-        self.x
-    }
-    #[wasm_bindgen(setter)]
-    pub fn set_x(&mut self, x: f64) {
-        self.x = x;
-    }
-    #[wasm_bindgen(getter)]
-    pub fn y(&self) -> f64 {
-        self.y
-    }
-    #[wasm_bindgen(setter)]
-    pub fn set_y(&mut self, y: f64) {
-        self.y = y;
-    }
-    #[wasm_bindgen(getter)]
-    pub fn z(&self) -> f64 {
-        self.z
-    }
-    #[wasm_bindgen(setter)]
-    pub fn set_z(&mut self, z: f64) {
-        self.z = z;
-    }
 }
 
 impl transform::Transform for Point {
@@ -117,9 +94,7 @@ impl transform::Transform for Point {
     /// as soon as with have invalid coordinates or
     /// that the reprojection failed
     #[cfg(feature = "wasm-strict")]
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> errors::Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
     {
         f(self.x, self.y, self.z).map(|(x, y, z)| {
             self.x = x;
@@ -131,9 +106,7 @@ impl transform::Transform for Point {
     /// of projection failure
     /// Note: this is what is expected mostly from js app (at least OpenLayer)
     #[cfg(not(feature = "wasm-strict"))]
-    fn transform_coordinates<F>(&mut self, f: &mut F) -> errors::Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
     {
         f(self.x, self.y, self.z)
             .map(|(x, y, z)| {

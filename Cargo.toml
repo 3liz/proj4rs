@@ -2,7 +2,7 @@
 members = [
     "proj4rs",
     "proj4rs-clib",
-    "proj4rs-php",
+    "proj4rs-php", 
 ]
 resolver = "2"
 
@@ -23,6 +23,6 @@ strip = "debuginfo"
 
 [patch.crates-io]
 # Use local crates
-proj4rs = { path = "proj4rs" }
+proj4rs = { path = "./proj4rs" }
 
 
