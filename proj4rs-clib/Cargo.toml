@@ -17,7 +17,7 @@ name = "proj4rs_c"
 crate-type = ["cdylib"]
 
 [dependencies]
-proj4rs = { path = "../proj4rs" }
+proj4rs = "*"
 libc = { version = "0.2" }
 
 [features]

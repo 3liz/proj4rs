@@ -21,4 +21,8 @@ codegen-units = 1
 strip = "debuginfo"
 
 
+[patch.crates-io]
+# Use local crates
+proj4rs = { path = "proj4rs" }
+
 
