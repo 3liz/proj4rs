@@ -39,28 +39,25 @@ jobs:
           version: 'latest'
 
       - name: WASM Pack
-        run: wasm-pack build --target web --no-default-features
+        working-directory: proj4rs
+        run: wasm-pack build --target web --release --out-dir=../js/pkg --no-default-features --features=proj4js-compat
 
       - name: Install Node
         uses: actions/setup-node@v4
 
       - name: Npm update
-        working-directory: ol-proj4rs-demo-app
+        working-directory: js/ol-proj4rs-demo-app
         run: npm --loglevel=verbose update
 
-      - name: Copy files from build
-        run: |
-          cp -R js/ ol-proj4rs-demo-app/assets/
-
       - name: Npm build
-        working-directory: ol-proj4rs-demo-app
+        working-directory: js/ol-proj4rs-demo-app
         run: |
           npm run build
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ol-proj4rs-demo-app/dist
+          path: js/ol-proj4rs-demo-app/dist
 
       - name: Setup Pages
         if: github.ref == 'refs/heads/main'
