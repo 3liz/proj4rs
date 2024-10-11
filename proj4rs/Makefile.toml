@@ -30,6 +30,8 @@ description = "Build wasm module (web target)"
 command = "wasm-pack"
 args = [
     "build",
+    "--out-dir=../js/pkg",
+    "--release",
     "--target=web",
     "--no-default-features",
     "--features=proj4js-compat",
@@ -41,6 +43,8 @@ description = "Build wasm module with logging feature (web target)"
 command = "wasm-pack"
 args = [
     "build", 
+    "--out-dir=../js/pkg",
+    "--dev",
     "--target=web",
     "--no-default-features",
     "--features=logging",
@@ -53,6 +57,8 @@ description = "Build wasm module in strict-mode (web target)"
 command = "wasm-pack"
 args = [
     "build",
+    "--out-dir=../js/pkg",
+    "--release",
     "--target=web",
     "--no-default-features",
     "--features=wasm-strict",
@@ -61,12 +67,13 @@ args = [
 
 
 [tasks.wasm_bundle]
-description = "Build wasm package as nodejs bundle
+description = "Build wasm package as nodejs bundle"
 command = "wasm-pack"
 args = [
     "build",
+    "--out-dir=../js/pkg-bundle",
+    "--release",
     "--target=bundler",
-    "-d", "pkg-bundle",
     "--no-default-features",
     "--features=proj4js-compat",
 ]

@@ -6,7 +6,7 @@
 //
 
 // Initialize the proj4rs module
-import init, * as Proj from "../pkg/proj4rs.js";
+import init, * as Proj from "./pkg/proj4rs.js";
 await init();
 
 /// Used as factory for creating projection alias
