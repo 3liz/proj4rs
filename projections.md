@@ -14,6 +14,7 @@
     (somerc),
     (laea),
     (moll, wag4, wag5),
+    (geos),
 ]
 ```
 
@@ -29,9 +30,9 @@
 - [-] eqearth
 - [-] equi
 - [+] etmerc
-- [-] gauss
+- [-] gauss - not in proj
 - [+] geocent
-- [-] geos
+- [+] geos
 - [-] gnom
 - [-] gstmerc
 - [-] krovac

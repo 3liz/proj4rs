@@ -14,7 +14,7 @@ use crate::log;
 pub fn main() {
     #[cfg(feature = "logging")]
     console_log::init_with_level(log::Level::Trace).unwrap();
-    
+
     log::info!("Initialized proj4rs wasm module.")
 }
 
@@ -94,8 +94,7 @@ impl transform::Transform for Point {
     /// as soon as with have invalid coordinates or
     /// that the reprojection failed
     #[cfg(feature = "wasm-strict")]
-    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()> {
         f(self.x, self.y, self.z).map(|(x, y, z)| {
             self.x = x;
             self.y = y;
@@ -106,8 +105,7 @@ impl transform::Transform for Point {
     /// of projection failure
     /// Note: this is what is expected mostly from js app (at least OpenLayer)
     #[cfg(not(feature = "wasm-strict"))]
-    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
-    {
+    fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()> {
         f(self.x, self.y, self.z)
             .map(|(x, y, z)| {
                 self.x = x;

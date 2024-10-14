@@ -134,7 +134,7 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 20;
+const NUM_PROJECTIONS: usize = 21;
 
 macro_rules! declare_projections {
     ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
@@ -164,6 +164,7 @@ pub mod aea;
 pub mod estmerc;
 pub mod etmerc;
 pub mod geocent;
+pub mod geos;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
@@ -188,6 +189,7 @@ declare_projections! [
     (somerc),
     (laea),
     (moll, wag4, wag5),
+    (geos),
 ];
 
 ///
