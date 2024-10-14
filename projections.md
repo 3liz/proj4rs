@@ -15,6 +15,7 @@
     (laea),
     (moll, wag4, wag5),
     (geos),
+    (eqc),
 ]
 ```
 
@@ -25,7 +26,7 @@
 - [-] bonne
 - [-] cass
 - [-] cea
-- [-] eqc
+- [+] eqc
 - [-] eqdc
 - [-] eqearth
 - [-] equi
