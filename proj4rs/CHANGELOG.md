@@ -7,6 +7,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Added
+
+* Added 'eqc' projection
+* Added 'geos' projection 
+    - Partially from work from https://github.com/3liz/proj4rs/pull/20
+
 ## 0.1.5 - 2024-10-03
 
 ### Fixed 
