@@ -31,7 +31,7 @@
 - [-] eqearth
 - [-] equi
 - [+] etmerc
-- [-] gauss - not in proj
+- [-] gauss
 - [+] geocent
 - [+] geos
 - [-] gnom

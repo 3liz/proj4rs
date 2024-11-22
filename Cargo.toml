@@ -1,5 +1,6 @@
 [workspace]
-members = [
+members = [ 
+    "geodesic",
     "proj4rs",
     "proj4rs-clib",
     "proj4rs-php", 
