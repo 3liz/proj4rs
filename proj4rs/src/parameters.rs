@@ -33,15 +33,16 @@ impl<'a> TryFrom<&Parameter<'a>> for &'a str {
     type Error = Error;
 
     fn try_from(p: &Parameter<'a>) -> Result<&'a str> {
-        p.value.ok_or(Error::NoValueParameter)
+        p.value
+            .ok_or_else(|| Error::NoValueParameter(p.name.into()))
     }
 }
 
 impl Parameter<'_> {
     fn try_value<F: FromStr>(&self) -> Result<F> {
         match self.value.map(F::from_str) {
-            None => Err(Error::NoValueParameter),
-            Some(result) => result.map_err(|_err| Error::ParameterValueError),
+            None => Err(Error::NoValueParameter(self.name.into())),
+            Some(result) => result.map_err(|_err| Error::ParameterValueError(self.name.into())),
         }
     }
 
@@ -65,7 +66,7 @@ impl Parameter<'_> {
         self.value
             .map(bool::from_str)
             .unwrap_or(Ok(true))
-            .map_err(|_err| Error::ParameterValueError)
+            .map_err(|_err| Error::ParameterValueError(self.name.into()))
     }
 }
 

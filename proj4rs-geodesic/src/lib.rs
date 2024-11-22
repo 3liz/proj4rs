@@ -8,7 +8,7 @@
 //! Example
 //!
 //! ```rust
-//! use geodesic::Geodesic;
+//! use proj4rs_geodesic::Geodesic;
 //! let g = Geodesic::wgs84();
 //! let (lat1, lon1) = (37.87622, -122.23558); // Berkeley, California
 //! let (lat2, lon2) = (-9.4047, 147.1597);    // Port Moresby, New Guinea
@@ -34,6 +34,7 @@ static GEOD_INIT: sync::OnceLock<bool> = sync::OnceLock::new();
 
 /// Ellipsoid on which Geodesic Calculations are computed
 #[repr(C)]
+#[derive(Clone)]
 pub struct Geodesic {
     /// Semi-major axis
     a: f64,
@@ -92,7 +93,7 @@ impl Geodesic {
     /// Create new Ellipsoid with semi-major axis `a` in meters and a flattening `f`
     ///
     /// ```rust
-    /// use geodesic::Geodesic;
+    /// use proj4rs_geodesic::Geodesic;
     /// let g = Geodesic::new(6_378_145.0, 1.0/298.25);
     /// println!("{}", g);
     /// // Geodesic { a: 6378145, f: 0.003352891869237217 }
@@ -141,7 +142,7 @@ impl Geodesic {
     ///
     /// ```rust
     /// // Example, determine the distance between JFK and Singapore Changi Airport:
-    /// use geodesic::Geodesic;
+    /// use proj4rs_geodesic::Geodesic;
     /// let g = Geodesic::wgs84();
     /// let (jfk_lat, jfk_lon) = (40.64, -73.78);
     /// let (sin_lat, sin_lon) = (1.36, 103.99);
@@ -192,7 +193,7 @@ impl Geodesic {
     ///
     /// ```rust
     /// // Example, determine the point 10000 km NE of JFK:
-    /// use geodesic::Geodesic;
+    /// use proj4rs_geodesic::Geodesic;
     /// let g = Geodesic::wgs84();
     /// let (lat,lon,az) = g.direct(40.64, -73.78, 45.0, 10e6);
     /// assert_eq!(lat, 32.621100463725796);

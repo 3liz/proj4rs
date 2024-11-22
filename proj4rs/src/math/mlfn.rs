@@ -36,7 +36,7 @@ pub(crate) fn enfn(es: f64) -> Enfn {
         es * (C22 - es * (C04 + es * (C06 + es * C08))),
         t * (C44 - es * (C46 + es * C48)),
         t * es * (C66 - es * C68),
-        t * t * es * C88,
+        t * es * es * C88,
     )
 }
 

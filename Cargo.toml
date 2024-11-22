@@ -1,6 +1,6 @@
 [workspace]
 members = [ 
-    "geodesic",
+    "proj4rs-geodesic",
     "proj4rs",
     "proj4rs-clib",
     "proj4rs-php", 
@@ -24,5 +24,6 @@ incremental = false
 [patch.crates-io]
 # Use local crates
 proj4rs = { path = "./proj4rs" }
+proj4rs-geodesic = { path = "./proj4rs-geodesic" }
 
 

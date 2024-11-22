@@ -38,11 +38,11 @@ impl ProjDelegate {
     pub fn forward(&self, u: f64, v: f64, w: f64) -> Result<(f64, f64, f64)> {
         self.2(&self.0, u, v, w)
     }
-
+    #[inline(always)]
     pub fn has_inverse(&self) -> bool {
         self.3
     }
-
+    #[inline(always)]
     pub fn has_forward(&self) -> bool {
         self.4
     }
@@ -134,25 +134,12 @@ macro_rules! projection {
 use downcast;
 use projection;
 
-const NUM_PROJECTIONS: usize = 22;
-
-macro_rules! declare_projections {
-    ($(($name:ident $(,)? $($init:ident),*)),+ $(,)?) => {
-        const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
-        $(
-            ProjInit(stringify!($name), $name::stub::$name),
-            $(
-                ProjInit(stringify!($init), $name::stub::$init),
-            )*
-        )+
-        ];
-        #[allow(non_camel_case_types)]
-        #[derive(Debug, Clone)]
-        pub(crate) enum ProjParams {
-            $(
-                $name($name::Projection),
-            )+
-        }
+macro_rules! declare_proj {
+    ($name:ident) => {
+        ProjInit(stringify!($name), $name::stub::$name)
+    };
+    ($name:ident, $init:ident) => {
+        ProjInit(stringify!($init), $name::stub::$init)
     };
 }
 
@@ -176,23 +163,69 @@ pub mod stere;
 pub mod sterea;
 pub mod tmerc;
 
+#[cfg(feature = "aeqd")]
+pub mod aeqd;
+
+#[allow(unused_mut)]
+const fn num_projections() -> usize {
+    let mut num = 22;
+    #[cfg(feature = "aeqd")]
+    {
+        num += 1;
+    }
+    num
+}
+
+const NUM_PROJECTIONS: usize = num_projections();
+
 #[rustfmt::skip]
-declare_projections! [
-    (latlong, longlat),
-    (lcc),
-    (etmerc, utm),
-    (tmerc),
-    (aea, leac),
-    (stere, ups),
-    (sterea),
-    (merc, webmerc),
-    (geocent, cart),
-    (somerc),
-    (laea),
-    (moll, wag4, wag5),
-    (geos),
-    (eqc),
+const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
+    declare_proj!(latlong),
+    declare_proj!(latlong, longlat),
+    declare_proj!(lcc),
+    declare_proj!(etmerc),
+    declare_proj!(etmerc, utm),
+    declare_proj!(tmerc),
+    declare_proj!(aea),
+    declare_proj!(aea, leac),
+    declare_proj!(stere),
+    declare_proj!(stere, ups),
+    declare_proj!(sterea),
+    declare_proj!(merc),
+    declare_proj!(merc, webmerc),
+    declare_proj!(geocent),
+    declare_proj!(geocent, cart),
+    declare_proj!(somerc),
+    declare_proj!(laea),
+    declare_proj!(moll),
+    declare_proj!(moll, wag4),
+    declare_proj!(moll, wag5),
+    declare_proj!(geos),
+    declare_proj!(eqc),
+    #[cfg(feature = "aeqd")]
+    declare_proj!(aeqd),
 ];
+
+#[allow(non_camel_case_types)]
+#[derive(Debug, Clone)]
+pub(crate) enum ProjParams {
+    latlong(latlong::Projection),
+    lcc(lcc::Projection),
+    etmerc(etmerc::Projection),
+    tmerc(tmerc::Projection),
+    aea(aea::Projection),
+    stere(stere::Projection),
+    sterea(sterea::Projection),
+    merc(merc::Projection),
+    geocent(geocent::Projection),
+    somerc(somerc::Projection),
+    laea(laea::Projection),
+    moll(moll::Projection),
+    geos(geos::Projection),
+    eqc(eqc::Projection),
+    #[cfg(feature = "aeqd")]
+    aeqd(aeqd::Projection),
+}
 
 ///
 /// Return the projection definition

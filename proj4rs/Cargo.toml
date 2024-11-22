@@ -27,6 +27,7 @@ crs-definitions = { version = "0.3", optional = true, default-features = false, 
 geo-types = { version = "0.7.12", optional = true }
 lazy_static = { version = "1", optional = true }
 log = { version = "0.4", optional = true }
+proj4rs-geodesic = { version = "~0.1", optional = true }
 
 [dev-dependencies]
 approx = "0.5"
@@ -52,6 +53,7 @@ local_tests = []
 wasm-strict = []
 proj4js-compat = []
 with-wasm-entrypoint = []
+aeqd = ["proj4rs-geodesic"]
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen = "0.2"

@@ -26,8 +26,8 @@
 #include <stdbool.h>
 #include "geodesic.h"
 #if defined(__wasm32__)
-/* Just for making compilation suceed 
- * As long as we do ne solve the problem of 
+/* Just for making compilation succeed 
+ * As long as we do not solve the problem of 
  * linking with a math library that work in JS WASM context
  * - as wasm-pack builder do - do not expect using this
  * library in wasm.

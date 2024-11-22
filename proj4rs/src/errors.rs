@@ -6,10 +6,10 @@
 pub enum Error {
     #[error("{0}")]
     InputStringError(&'static str),
-    #[error("No value for parameter")]
-    NoValueParameter,
+    #[error("Missing value for parameter {0}")]
+    NoValueParameter(String),
     #[error("Cannot retrieve value for parameter")]
-    ParameterValueError,
+    ParameterValueError(String),
     #[error("Missing projection name")]
     MissingProjectionError,
     #[error("Unrecognized datum")]

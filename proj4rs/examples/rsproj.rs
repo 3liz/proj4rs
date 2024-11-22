@@ -51,8 +51,7 @@ fn main() -> Result<()> {
     let stdin = io::stdin().lock();
 
     fn from_parse_err(err: std::num::ParseFloatError) -> Error {
-        eprintln!("{err:?}");
-        Error::ParameterValueError
+        Error::ParameterValueError(format!("{err:?}"))
     }
 
     for line in stdin.lines() {

@@ -277,7 +277,6 @@ impl Sph {
 
 #[cfg(test)]
 mod tests {
-    use crate::math::consts::{EPS_10, EPS_7};
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
 

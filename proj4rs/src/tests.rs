@@ -14,6 +14,7 @@ pub fn setup() {
 }
 
 pub(crate) mod utils {
+    use crate::math::adjlon;
     use crate::proj::{Proj, ProjData};
     use approx::assert_abs_diff_eq;
 
@@ -45,7 +46,12 @@ pub(crate) mod utils {
         let d = p.data();
         inputs.iter().for_each(|(input, expect)| {
             let (lam, phi, z) = to_rad(*input);
-            let out = scale(d, p.projection().forward(lam - d.lam0, phi, z).unwrap());
+            let out = scale(
+                d,
+                p.projection()
+                    .forward(adjlon(lam - d.lam0), phi, z)
+                    .unwrap(),
+            );
             println!("{:?}", out);
             assert_abs_diff_eq!(out.0, expect.0, epsilon = prec);
             assert_abs_diff_eq!(out.1, expect.1, epsilon = prec);
@@ -62,7 +68,7 @@ pub(crate) mod utils {
         inputs.iter().for_each(|(expect, input)| {
             let (x, y, z) = descale(d, *input);
             let (lam, phi, z) = p.projection().inverse(x, y, z).unwrap();
-            let out = to_deg(lam + d.lam0, phi, z);
+            let out = to_deg(adjlon(lam + d.lam0), phi, z);
             assert_abs_diff_eq!(out.0, expect.0, epsilon = prec);
             assert_abs_diff_eq!(out.1, expect.1, epsilon = prec);
             assert_abs_diff_eq!(out.2, expect.2, epsilon = prec);

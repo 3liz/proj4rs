@@ -178,7 +178,7 @@ mod tests {
 
     #[test]
     fn proj_lcc() {
-        let p = Proj::from_proj_string("+proj=lcc   +ellps=GRS80  +lat_1=0.5 +lat_2=2").unwrap();
+        let p = Proj::from_proj_string("+proj=lcc +ellps=GRS80 +lat_1=0.5 +lat_2=2").unwrap();
 
         println!("{:#?}", p.projection());
 
