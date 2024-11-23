@@ -1,0 +1,53 @@
+# Use Maturin https://www.maturin.rs/
+[build-system]
+requires = ["maturin>=1.7,<2.0"]
+build-backend = "maturin"
+
+[project]
+name = "proj4rs"
+requires-python = ">=3.12"
+classifiers = [
+    "Programming Language :: Rust",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Programming Language :: Python :: Implementation :: PyPy",
+]
+dependencies = ["cffi"]
+dynamic = ["version"]
+
+[tool.maturin]
+bindings = "cffi"
+python-source = "python"
+module-name = "proj4rs._proj4rs"
+
+[tool.ruff]
+# Ruff configuration
+# See https://docs.astral.sh/ruff/configuration/
+line-length = 120
+target-version = "py312"
+extend-exclude = ["python/proj4rs/_proj4rs"]
+
+[tool.ruff.format]
+indent-style = "space"
+
+[tool.ruff.lint]
+extend-select = ["E", "F", "I", "ANN", "W", "T", "COM", "RUF"]
+ignore = ["ANN002", "ANN003"]
+
+[tool.ruff.lint.per-file-ignores]
+"python/tests/*" = ["T201"]
+
+[tool.ruff.lint.isort]
+lines-between-types = 1
+
+[tool.ruff.lint.flake8-annotations]
+ignore-fully-untyped = true
+suppress-none-returning = true
+suppress-dummy-args = true
+
+[tool.mypy]
+python_version = "3.12"
+allow_redefinition = true
+
+[[tool.mypy.overrides]]
+module = "_cffi_backend"
+ignore_missing_imports = true

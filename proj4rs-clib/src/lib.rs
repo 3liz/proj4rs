@@ -98,34 +98,25 @@ pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
 /// Returns the projection name
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_projname(c_ptr: *const Proj4rs) -> *const c_char {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.name.as_ptr() as *const c_char
-    } else {
-        ptr::null()
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.name.as_ptr() as *const c_char
 }
 
 /// Returns true if the projection is geographic
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_is_latlong(c_ptr: *const Proj4rs) -> bool {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.inner.is_latlong()
-    } else {
-        false
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.inner.is_latlong()
 }
 
 /// Returns true if the projection is geocentric
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.inner.is_geocent()
-    } else {
-        false
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.inner.is_geocent()
 }
 
 /// Return the projection axes
@@ -146,44 +137,32 @@ pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
 ///
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.inner.axis().as_ptr()
-    } else {
-        ptr::null()
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.inner.axis().as_ptr()
 }
 
 /// Return true if the axis are noramilized
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_is_normalized_axis(c_ptr: *const Proj4rs) -> bool {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.inner.is_normalized_axis()
-    } else {
-        false
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.inner.is_normalized_axis()
 }
 
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_to_meter(c_ptr: *const Proj4rs) -> f64 {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        proj.inner.to_meter()
-    } else {
-        0.
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    proj.inner.to_meter()
 }
 
 /// Return units of the projection (i.e "degrees", "m", "km", ...)
 #[no_mangle]
 pub extern "C" fn proj4rs_proj_units(c_ptr: *const Proj4rs) -> *const c_char {
-    if !c_ptr.is_null() {
-        let proj: &Proj4rs = unsafe { &*c_ptr };
-        to_c_unit(proj.inner.units()).as_ptr() as *const c_char
-    } else {
-        ptr::null()
-    }
+    assert!(!c_ptr.is_null(), "Null proj pointer");
+    let proj: &Proj4rs = unsafe { &*c_ptr };
+    to_c_unit(proj.inner.units()).as_ptr() as *const c_char
 }
 
 // ----------------------------

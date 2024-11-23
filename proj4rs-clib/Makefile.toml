@@ -36,3 +36,33 @@ dependencies = ["build-release", "cbindgen"]
 
 [tasks.release]
 dependencies = ["deb"]
+
+
+[tasks."python.lint"]
+command = "ruff"
+args = [
+    "check",
+    "--output-format", "concise",
+    "python",
+]
+
+
+[tasks."python.lint-fix"]
+command = "ruff"
+args = [
+    "check",
+    "--preview",
+    "--fix",
+    "python",
+]
+
+
+[tasks."python.typing"]
+command = "mypy"
+args = ["python"]
+
+
+[tasks."python.test"]
+command = "pytest"
+args = [ "-v", "python/tests"]
+dependencies = ["python.lint", "python.typing"]
