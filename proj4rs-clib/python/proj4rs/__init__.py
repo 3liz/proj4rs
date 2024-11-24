@@ -205,8 +205,6 @@ class Transform:
             -------
             A tuple of buffer objects in the case the input is a Sequence,
             a tuple of float otherwise.
-
-            If inplace is true and input is a Buffer, the input object is returned.
         """
         match (x, y, z):
             case (abc.Buffer(), None, None):

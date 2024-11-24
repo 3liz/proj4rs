@@ -14,12 +14,11 @@ homepage = "https://github.com/3liz/proj4rs/"
 repository = "https://github.com/3liz/proj4rs/"
 categories = ["science::geo"]
 
-
 [profile.release]
 lto = true
 codegen-units = 1
 strip = "debuginfo"
-
+incremental = false
 
 [patch.crates-io]
 # Use local crates
