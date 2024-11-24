@@ -65,3 +65,6 @@ name = "rsproj"
 [package.metadata.doc.rs]
 all-features = true
 
+[package.metadata.wasm-pack.profile.release]
+# Fix 'table.fill requires bulk-memory on' error
+wasm-opt = ["-O", "--enable-bulk-memory"]
