@@ -49,7 +49,7 @@ impl Projection {
     pub fn geos(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let h: f64 = params
             .try_value("h")?
-            .ok_or_else(|| Error::InputStringError("Missing parameter 'h'"))?;
+            .ok_or(Error::InputStringError("Missing parameter 'h'"))?;
         let flip_axis: bool = params
             .try_value::<&str>("sweep")
             .and_then(|sweep| match sweep {

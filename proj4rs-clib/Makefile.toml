@@ -47,6 +47,11 @@ args = [
 ]
 
 
+[tasks."python.build-dev"]
+command = "maturin"
+args = ["develop"]
+
+
 [tasks."python.lint-fix"]
 command = "ruff"
 args = [
@@ -65,4 +70,4 @@ args = ["python"]
 [tasks."python.test"]
 command = "pytest"
 args = [ "-v", "python/tests"]
-dependencies = ["python.lint", "python.typing"]
+dependencies = ["python.build-dev", "python.lint", "python.typing"]

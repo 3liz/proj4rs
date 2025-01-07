@@ -51,7 +51,6 @@ impl Projection {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use crate::math::consts::EPS_10;
@@ -64,9 +63,7 @@ mod tests {
 
         println!("{:#?}", p.projection());
 
-        let inputs = [
-            ((2., 47., 0.), (222638.98158654713, 5232016.06728385761, 0.)),
-        ];
+        let inputs = [((2., 47., 0.), (222638.98158654713, 5232016.06728385761, 0.))];
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
@@ -78,12 +75,12 @@ mod tests {
 
         println!("{:#?}", p.projection());
 
-        let inputs = [
-            ((-88., 30., 0.), (192811.01392664597, 3339584.72379820701, 0.)),
-        ];
+        let inputs = [(
+            (-88., 30., 0.),
+            (192811.01392664597, 3339584.72379820701, 0.),
+        )];
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
-
 }

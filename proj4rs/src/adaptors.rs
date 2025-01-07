@@ -36,7 +36,7 @@ impl Transform for (f64, f64) {
 ///
 /// let dst = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
 /// let src = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-
+///
 /// let (x, y, z) = transform_vertex_3d(&src, &dst, (2.0, 1.0, 0.0)).unwrap();
 /// ```
 pub fn transform_vertex_3d(src: &Proj, dst: &Proj, pt: (f64, f64, f64)) -> Result<(f64, f64, f64)> {
@@ -53,7 +53,7 @@ pub fn transform_vertex_3d(src: &Proj, dst: &Proj, pt: (f64, f64, f64)) -> Resul
 ///
 /// let dst = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
 /// let src = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-
+///
 /// let (x, y) = transform_vertex_2d(&src, &dst, (2.0, 1.0)).unwrap();
 /// ```
 #[inline(always)]
@@ -69,7 +69,7 @@ pub fn transform_vertex_2d(src: &Proj, dst: &Proj, pt: (f64, f64)) -> Result<(f6
 ///
 /// let dst = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
 /// let src = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-
+///
 /// let (x, y, z) = transform_xyz(&src, &dst, 2.0, 1.0, 0.0).unwrap();
 /// ```
 #[inline(always)]
@@ -85,7 +85,7 @@ pub fn transform_xyz(src: &Proj, dst: &Proj, x: f64, y: f64, z: f64) -> Result<(
 ///
 /// let dst = Proj::from_proj_string("+proj=utm +ellps=GRS80 +zone=30").unwrap();
 /// let src = Proj::from_proj_string("+proj=latlong +ellps=GRS80").unwrap();
-
+///
 /// let (x, y) = transform_xy(&src, &dst, 2.0, 1.0).unwrap();
 /// ```
 #[inline(always)]

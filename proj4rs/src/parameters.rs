@@ -37,7 +37,7 @@ impl<'a> TryFrom<&Parameter<'a>> for &'a str {
     }
 }
 
-impl<'a> Parameter<'a> {
+impl Parameter<'_> {
     fn try_value<F: FromStr>(&self) -> Result<F> {
         match self.value.map(F::from_str) {
             None => Err(Error::NoValueParameter),

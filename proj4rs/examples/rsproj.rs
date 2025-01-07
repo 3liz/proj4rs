@@ -58,15 +58,20 @@ fn main() -> Result<()> {
     for line in stdin.lines() {
         let line = line.unwrap();
         let inputs = line.as_str().split_whitespace().collect::<Vec<_>>();
-        if inputs.len() != 2 {
-            eprintln!("Expecting: '<x> ,<y>' found: {}", line.as_str());
+        if inputs.len() < 2 || inputs.len() > 3 {
+            eprintln!("Expecting: '<x> ,<y> [,<z>]' found: {}", line.as_str());
             std::process::exit(1);
         }
 
         let x: f64 = inputs[0].parse().map_err(from_parse_err)?;
         let y: f64 = inputs[1].parse().map_err(from_parse_err)?;
+        let z: f64 = if inputs.len() > 2 {
+            inputs[2].parse().map_err(from_parse_err)?
+        } else {
+            0.
+        };
 
-        let mut point = (x, y, 0.);
+        let mut point = (x, y, z);
 
         if src.is_latlong() {
             point.0 = point.0.to_radians();

@@ -110,7 +110,7 @@ where
     let src_datum = src.datum();
     let dst_datum = dst.datum();
 
-    // Return true if the datums are identical is respect
+    // Return true if the datums are identical with respect
     // to datum transformation.
     // As of PROJ 4 behavior, we prevent datum transformation
     // if either the source or destination are of an unknown datum type.

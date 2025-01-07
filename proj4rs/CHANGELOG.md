@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Changed 
+* Allow 3d inputs in examples/proj4rs
+
 ### Added
 
 * Added 'eqc' projection
