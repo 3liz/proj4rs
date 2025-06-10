@@ -66,3 +66,22 @@ fn test_longlat_alias() {
     let projection = proj::Proj::from_user_string(wgs84);
     assert!(projection.is_ok());
 }
+
+#[test]
+fn test_transform_epsg3044() {
+    // ESPG:3044 definition
+    let epsg3044 = "+proj=utm +zone=32 +ellps=GRS80 +units=m";
+    // ESPG:3857 definition
+    let epsg3857 = concat!(
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 ",
+        "+units=m",
+    );
+
+    let from = proj::Proj::from_user_string(epsg3044).unwrap();
+    let to = proj::Proj::from_user_string(epsg3857).unwrap();
+
+    let mut inp = (580900., 5625000., 0.);
+    transform::transform(&from, &to, &mut inp).unwrap();
+    assert_abs_diff_eq!(inp.0, 1129592.3568078864, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 6580906.077194334, epsilon = 1.0e-6);
+}

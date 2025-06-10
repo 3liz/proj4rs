@@ -7,3 +7,5 @@
 
 # Build
 ol-proj4rs-demo-app/dist
+pipeline*.sh
+toolchain.txt
