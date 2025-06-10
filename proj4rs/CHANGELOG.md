@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+## 0.1.7 - 2024-06-10
+
+### Fixed
+
+* Fix axis normalisation
+
+## 0.1.6 - 2024-06-10
+
 ### Fixed
 
 * Fix `+nadgrids=@null` as no-op on datum transformation

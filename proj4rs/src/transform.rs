@@ -323,8 +323,8 @@ fn normalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Result<
         let (mut x_out, mut y_out, mut z_out) = (x, y, z);
         axis.iter().enumerate().for_each(|(i, axe)| {
             let value = match i {
-                1 => x,
-                2 => y,
+                0 => x,
+                1 => y,
                 _ => z,
             };
             match axe {
@@ -359,8 +359,8 @@ fn denormalize_axis<P: Transform + ?Sized>(axis: &Axis, points: &mut P) -> Resul
                 _ => unreachable!(),
             };
             match i {
-                1 => x_out = value,
-                2 => y_out = value,
+                0 => x_out = value,
+                1 => y_out = value,
                 _ => z_out = value,
             }
         });
@@ -391,3 +391,4 @@ where
         Ok(())
     }
 }
+
