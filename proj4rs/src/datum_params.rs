@@ -50,7 +50,13 @@ impl DatumParams {
     }
 
     pub fn from_nadgrid_str(nadgrids: &str) -> Result<Self> {
-        NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
+        if nadgrids == "@null" || nadgrids == "null" {
+            // See https://proj.org/en/stable/usage/transformation.html#the-null-grid
+            // for discussion about null nadgrid
+            Ok(Self::NoDatum)
+        } else {
+            NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
+        }
     }
 
     pub fn use_nadgrids(&self) -> bool {

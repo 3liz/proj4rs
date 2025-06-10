@@ -52,8 +52,9 @@ fn test_transform_null_datum() {
 
     let mut inp = (489353.59, 6587552.2, 0.);
     transform::transform(&from, &to, &mut inp).unwrap();
-    assert_abs_diff_eq!(inp.0, 28943.07106250, epsilon = 1.0e-6);
-    assert_abs_diff_eq!(inp.1, 5837421.86618963, epsilon = 1.0e-6);
+    // Check against cs2cs output 
+    assert_abs_diff_eq!(inp.0, 28943.07106251, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 5837421.86634143, epsilon = 1.0e-6);
 }
 
 #[test]
@@ -70,11 +71,14 @@ fn test_longlat_alias() {
 #[test]
 fn test_transform_epsg3044() {
     // ESPG:3044 definition
-    let epsg3044 = "+proj=utm +zone=32 +ellps=GRS80 +units=m";
+    let epsg3044 = concat!(
+        "+proj=utm +zone=32 +ellps=GRS80 +units=m  +towgs84=0,0,0,0,0,0,0 ",
+        "+proj=utm +zone=32 +ellps=GRS80 +units=m",
+    );
     // ESPG:3857 definition
     let epsg3857 = concat!(
         "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 ",
-        "+units=m",
+        "+units=m +nadgrids=@null",
     );
 
     let from = proj::Proj::from_user_string(epsg3044).unwrap();
