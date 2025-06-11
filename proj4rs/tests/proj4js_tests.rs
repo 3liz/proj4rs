@@ -110,4 +110,38 @@ fn test_axis_denormalize() {
     assert_abs_diff_eq!(inp.0, 6580906.077194334, epsilon = 1.0e-6);
     assert_abs_diff_eq!(inp.1, 1129592.3568078864, epsilon = 1.0e-6);
 }
- 
+
+
+
+#[test]
+fn test_transform_epsg3844() {
+    // ESPG:3844 definition
+    let epsg3844 = concat!(
+        "+proj=sterea +lat_0=46 +lon_0=25 +k=0.99975 +x_0=500000 +y_0=500000 ",
+        "+ellps=krass ",
+        //"+towgs84=2.329,-147.042,-92.08,0.309,-0.325,-0.497,5.69 ",
+        //"+towgs84=44.107,-116.147,-54.648 ",
+        //"+towgs84=28,-121,-77 ",
+        "+units=m +no_defs +type=crs"
+    );
+    // ESPG:3857 definition
+    let epsg3857 = concat!(
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 ",
+        "+units=m",
+    );
+    
+    // ESPG:3857 definition 2
+    //let epsg3857 = concat!(
+    //   "+proj=webmerc +ellps=WGS84 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 ",
+    //   "+units=m +towgs84=0,0,0",
+    //);
+
+    let from = proj::Proj::from_user_string(epsg3844).unwrap();
+    let to = proj::Proj::from_user_string(epsg3857).unwrap();
+
+    let mut inp = (505000., 500000., 0.);
+    transform::transform(&from, &to, &mut inp).unwrap();
+    // Compare results from cs2cs output
+    assert_abs_diff_eq!(inp.0, 2790174.2500622645, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 5780346.2980352566, epsilon = 1.0e-6);
+}
