@@ -143,16 +143,57 @@ macro_rules! declare_proj {
     };
 }
 
+macro_rules! proj_param_expansion {
+    ($typename:ident {$($body:tt)*} ($name:ident) $($tail:tt)*) => {
+        proj_param_expansion!{
+            $typename
+            {
+                $($body)*
+                $name($name::Projection),
+            }
+            $($tail)*
+        }
+    };
+
+    ($typename:ident {$($body:tt)*} ([$name:ident, $feature:literal]) $($tail:tt)*) => {
+        proj_param_expansion!{
+            $typename
+            {
+                $($body)*
+                #[cfg(feature = $feature)]
+                $name($name::Projection),
+            }
+            $($tail)*
+        }
+    };
+
+    ($typename:ident {$($body:tt)*}) => {
+        #[allow(non_camel_case_types)]
+        #[derive(Debug, Clone)]
+        pub(crate) enum $typename {$($body)*}
+    };
+}
+
+macro_rules! declare_proj_params {
+    ($($tokens:tt),* $(,)?) => {
+        proj_param_expansion!{ProjParams {} $(($tokens))*}
+    };
+}
+
 // ----------------------------
 // Projection list
 // ---------------------------
 
 pub mod aea;
+#[cfg(feature = "aeqd")]
+pub mod aeqd;
 pub mod eqc;
 pub mod estmerc;
 pub mod etmerc;
 pub mod geocent;
 pub mod geos;
+#[cfg(feature = "krovak")]
+pub mod krovak;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
@@ -163,13 +204,14 @@ pub mod stere;
 pub mod sterea;
 pub mod tmerc;
 
-#[cfg(feature = "aeqd")]
-pub mod aeqd;
-
 #[allow(unused_mut)]
 const fn num_projections() -> usize {
     let mut num = 22;
     #[cfg(feature = "aeqd")]
+    {
+        num += 1;
+    }
+    #[cfg(feature = "krovak")]
     {
         num += 1;
     }
@@ -204,27 +246,27 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(eqc),
     #[cfg(feature = "aeqd")]
     declare_proj!(aeqd),
+    #[cfg(feature = "krovak")]
+    declare_proj!(krovak),
 ];
 
-#[allow(non_camel_case_types)]
-#[derive(Debug, Clone)]
-pub(crate) enum ProjParams {
-    latlong(latlong::Projection),
-    lcc(lcc::Projection),
-    etmerc(etmerc::Projection),
-    tmerc(tmerc::Projection),
-    aea(aea::Projection),
-    stere(stere::Projection),
-    sterea(sterea::Projection),
-    merc(merc::Projection),
-    geocent(geocent::Projection),
-    somerc(somerc::Projection),
-    laea(laea::Projection),
-    moll(moll::Projection),
-    geos(geos::Projection),
-    eqc(eqc::Projection),
-    #[cfg(feature = "aeqd")]
-    aeqd(aeqd::Projection),
+declare_proj_params! {
+    latlong,
+    lcc,
+    etmerc,
+    tmerc,
+    aea,
+    stere,
+    sterea,
+    merc,
+    geocent,
+    somerc,
+    laea,
+    moll,
+    geos,
+    eqc,
+    [aeqd, "aeqd"],
+    [krovak, "krovak"],
 }
 
 ///

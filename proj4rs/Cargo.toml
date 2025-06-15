@@ -54,6 +54,7 @@ wasm-strict = []
 proj4js-compat = []
 with-wasm-entrypoint = []
 aeqd = ["proj4rs-geodesic"]
+krovak = []
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen = "0.2"

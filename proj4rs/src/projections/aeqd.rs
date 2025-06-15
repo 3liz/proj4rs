@@ -102,7 +102,6 @@ enum AeqdProj {
 }
 
 impl AeqdProj {
-
     fn mode(p: &ProjData) -> (Mode, f64, f64) {
         let (sinph0, cosph0);
         let phi0 = p.phi0;
@@ -432,7 +431,6 @@ struct GuamProj {
 
 impl GuamProj {
     fn new(p: &mut ProjData) -> Self {
-
         let (_, sinph0, cosph0) = AeqdProj::mode(p);
 
         // Based on clenshaw coefficient with
@@ -705,20 +703,18 @@ mod tests {
 
     #[test]
     fn proj_aeqd_ellipsoidal_guam() {
-        let p =
-            Proj::from_proj_string(concat!(
-                "+proj=aeqd +guam +lon_0=144.74875 +lat_0=13.47246 ",
-                "+x_0=50000 +y_0=50000 +ellps=clrk66 +units=m",
-            )).unwrap();
+        let p = Proj::from_proj_string(concat!(
+            "+proj=aeqd +guam +lon_0=144.74875 +lat_0=13.47246 ",
+            "+x_0=50000 +y_0=50000 +ellps=clrk66 +units=m",
+        ))
+        .unwrap();
 
         println!("{:#?}", p.projection());
 
-        let inputs = [
-            (
-                (144.8, 13.5, 0.),
-                (55548.574682530634, 53047.282504629671, 0.),
-            ),
-        ];
+        let inputs = [(
+            (144.8, 13.5, 0.),
+            (55548.574682530634, 53047.282504629671, 0.),
+        )];
 
         test_proj_forward(&p, &inputs, 1e-6);
         test_proj_inverse(&p, &inputs, 1e-6);

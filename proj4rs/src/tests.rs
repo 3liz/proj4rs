@@ -69,6 +69,7 @@ pub(crate) mod utils {
             let (x, y, z) = descale(d, *input);
             let (lam, phi, z) = p.projection().inverse(x, y, z).unwrap();
             let out = to_deg(adjlon(lam + d.lam0), phi, z);
+            println!("{:?}", out);
             assert_abs_diff_eq!(out.0, expect.0, epsilon = prec);
             assert_abs_diff_eq!(out.1, expect.1, epsilon = prec);
             assert_abs_diff_eq!(out.2, expect.2, epsilon = prec);

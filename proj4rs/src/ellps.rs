@@ -62,7 +62,7 @@ const TOK_R_h: &str = "R_h";
 
 /// A shape parameter
 #[allow(non_camel_case_types)]
-enum Shape {
+pub enum Shape {
     SP_rf(f64),
     SP_f(f64),
     SP_es(f64),
@@ -143,7 +143,7 @@ impl Ellipsoid {
         })
     }
 
-    #[cfg(test)]
+    #[allow(dead_code)]
     pub fn try_from_ellipsoid(defn: &EllipsoidDefn) -> Result<Self> {
         Self::calc_ellipsoid_params(
             defn.a,
@@ -199,7 +199,7 @@ impl Ellipsoid {
 
     /// Calculate parameters and return a new ellipsoid
     /// This is the true constructor
-    fn calc_ellipsoid_params(a: f64, sp: Shape) -> Result<Self> {
+    pub fn calc_ellipsoid_params(a: f64, sp: Shape) -> Result<Self> {
         if a <= 0. {
             return Err(Error::InvalidParameterValue("Invalid major axis"));
         }
