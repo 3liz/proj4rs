@@ -42,19 +42,81 @@ impl Parameter<'_> {
     fn try_value<F: FromStr>(&self) -> Result<F> {
         match self.value.map(F::from_str) {
             None => Err(Error::NoValueParameter(self.name.into())),
-            Some(result) => result.map_err(|_err| Error::ParameterValueError(self.name.into())),
+            Some(result) => result.map_err(|_| Error::ParameterValueError(self.name.into())),
         }
     }
 
-    /// Return a value in radians assuming input is
-    /// in degree (decimal)
+    /// Return a value in radians
     ///
     /// By default it is assumed that unspecified input
     /// is in degree.
     ///
-    /// TODO: parse dms value
-    pub fn try_angular_value(&self) -> Result<f64> {
-        self.try_value::<f64>().map(|v| v.to_radians())
+    /// If value string end with 'r', then it assumed that
+    /// input value is given directly in radians
+    ///
+    /// Syntax suffix is [rR][EeWwNnSs]
+    fn try_angular_value(&self) -> Result<f64> {
+        const FWD_SFX: &[char; 4] = &['E', 'e', 'N', 'n'];
+        const INV_SFX: &[char; 4] = &['W', 'w', 'S', 's'];
+        const RAD_SFX: &[char; 2] = &['r', 'R'];
+
+        match self.value {
+            None => Err(Error::NoValueParameter(self.name.into())),
+            Some(s) => {
+                let (s, sgn) = if let Some(s) = s.strip_suffix(FWD_SFX) {
+                    (s, 1.0)
+                } else if let Some(s) = s.strip_suffix(INV_SFX) {
+                    (s, -1.0)
+                } else {
+                    (s, 1.0)
+                };
+
+                if let Some(s) = s.strip_suffix(RAD_SFX) {
+                    f64::from_str(s).map(|v| sgn * v)
+                } else {
+                    // Decimal degrees
+                    Self::parse_dms(s).map(|v| sgn * v.to_radians())
+                }
+            }
+            .map_err(|_| Error::ParameterValueError(self.name.into())),
+        }
+    }
+
+    /// Parse DMS input
+    ///
+    /// DMS input is expected to be DD[dD]MM'SS"
+    fn parse_dms(s: &str) -> Result<f64, <f64 as FromStr>::Err> {
+        const DEG_SFX: &[char; 3] = &['d', 'D', '\u{00b0}'];
+
+        fn parse_number_part<'a>(
+            s: &'a str,
+            sfx: &'static str,
+        ) -> Result<(&'a str, f64), <f64 as FromStr>::Err> {
+            // check the first non-numeric symbol starting from
+            // the end and return prefix and parsed value.
+            Ok(if let Some(s) = s.strip_suffix(sfx) {
+                if let Some((pfx, v)) = s.rsplit_once(|c: char| !c.is_ascii_digit() && c != '.') {
+                    (&s[..(pfx.len() + 1)], f64::from_str(v)?)
+                } else {
+                    ("", f64::from_str(s)?)
+                }
+            } else {
+                (s, 0.)
+            })
+        }
+
+        if s.is_empty() {
+            // Force error if string is empty
+            return f64::from_str(s);
+        }
+
+        let (s, seconds) = parse_number_part(s, "\"")?;
+        let (s, minutes) = parse_number_part(s, "'")?;
+
+        let s = s.trim_end_matches(DEG_SFX);
+        let degrees = if !s.is_empty() { f64::from_str(s)? } else { 0. };
+
+        Ok(degrees + (minutes + seconds / 60.) / 60.)
     }
 
     /// Check the token as a boolean flag
@@ -106,6 +168,7 @@ impl<'a> FromIterator<Parameter<'a>> for ParamList<'a> {
 
 #[cfg(test)]
 mod tests {
+    use super::Parameter;
     use crate::projstring::parse;
 
     #[test]
@@ -135,5 +198,70 @@ mod tests {
 
         assert_eq!(params.try_value::<f64>("foo").unwrap().unwrap_or(0.), 1234.);
         assert_eq!(params.try_value::<f64>("bar").unwrap().unwrap_or(0.), 0.);
+    }
+
+    #[test]
+    fn param_try_angular_value() {
+
+        // Invalid specifier
+        let params = parse("+foo").unwrap();
+        assert!(params.try_angular_value("foo").is_err());
+
+        // Input in degrees
+        let params = parse("+foo=47").unwrap();
+        assert_eq!(
+            params.try_angular_value("foo").unwrap().unwrap(),
+            47.0f64.to_radians()
+        );
+
+        // Input in radians
+        let params = parse("+foo=2.3r").unwrap();
+        assert_eq!(params.try_angular_value("foo").unwrap().unwrap(), 2.3f64);
+
+        let params = parse("+foo=2.3R").unwrap();
+        assert_eq!(params.try_angular_value("foo").unwrap().unwrap(), 2.3f64);
+
+        // Orientation specifier
+        let params = parse("+foo=47w").unwrap();
+        assert_eq!(
+            params.try_angular_value("foo").unwrap().unwrap(),
+            -47.0f64.to_radians()
+        );
+
+        let params = parse("+foo=47W").unwrap();
+        assert_eq!(
+            params.try_angular_value("foo").unwrap().unwrap(),
+            -47.0f64.to_radians()
+        );
+
+        // Input in radians with orientation specifier
+        let params = parse("+foo=2.3rw").unwrap();
+        assert_eq!(params.try_angular_value("foo").unwrap().unwrap(), -2.3);
+
+        let params = parse("+foo=2.3R").unwrap();
+        assert_eq!(params.try_angular_value("foo").unwrap().unwrap(), 2.3);
+
+        // Invalid specifier
+        let params = parse("+foo=2.3wr").unwrap();
+        assert!(params.try_angular_value("foo").is_err());
+
+        // DWS value
+        let params = parse("+foo=38d30'9\"").unwrap();
+        assert_eq!(
+            params.try_angular_value("foo").unwrap().unwrap(),
+            38.5025_f64.to_radians(),
+        );
+    }
+
+    #[test]
+    fn param_dms_parsing() {
+        assert_eq!(Parameter::parse_dms("38"), Ok(38.0));
+        assert_eq!(Parameter::parse_dms("38d"), Ok(38.0));
+        assert_eq!(Parameter::parse_dms("38D"), Ok(38.0));
+        assert_eq!(Parameter::parse_dms("38\u{00b0}"), Ok(38.0));
+        assert_eq!(Parameter::parse_dms("38d30'"), Ok(38.5));
+        assert_eq!(Parameter::parse_dms("38d30'9\""), Ok(38.5025));
+        assert_eq!(Parameter::parse_dms("38d30.15'"), Ok(38.5025));
+        assert_eq!(Parameter::parse_dms("30'9\""), Ok(0.5025));
     }
 }

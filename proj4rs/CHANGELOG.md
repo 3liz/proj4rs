@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* DMS notation support for angular proj string values
 * Added optional projections: 
     * aeqd 
     * krovak
