@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Added
+
+* Added optional projections: 
+    * aeqd 
+    * krovak
+    * mill
+    * cea
+
 ## 0.1.7 - 2024-06-10
 
 ### Fixed

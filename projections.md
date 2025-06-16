@@ -16,16 +16,20 @@
     (moll, wag4, wag5),
     (geos),
     (eqc),
+    (aeqd),
+    (krovak),
+    (mill),
+    (cea),
 ]
 ```
 
 ## Projections defined in proj4js
 
 - [+] aea
-- [-] aeqd
+- [+] aeqd
 - [-] bonne
 - [-] cass
-- [-] cea
+- [+] cea
 - [+] eqc
 - [-] eqdc
 - [-] eqearth
@@ -36,12 +40,12 @@
 - [+] geos
 - [-] gnom
 - [-] gstmerc
-- [-] krovac
+- [+] krovac
 - [+] laea
 - [+] lcc
 - [+] longlat
 - [+] merc
-- [-] mill
+- [+] mill
 - [+] moll
 - [-] nzmg
 - [-] omerc

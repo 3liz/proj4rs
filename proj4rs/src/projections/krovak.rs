@@ -29,6 +29,7 @@
 //!
 //! A description of the (forward) projection is found in:
 //!
+//!```text
 //!      Bohuslav Veverka,
 //!
 //!      KROVAK’S PROJECTION AND ITS USE FOR THE
@@ -36,17 +37,22 @@
 //!
 //!      50 years of the Research Institute of
 //!      and the Slovak Republic Geodesy, Topography and Cartography
+//!```
 //!
 //! which can be found via the Wayback Machine:
 //!
+//!```text
 //!      https://web.archive.org/web/20150216143806/https://www.vugtk.cz/odis/sborniky/sb2005/Sbornik_50_let_VUGTK/Part_1-Scientific_Contribution/16-Veverka.pdf
+//!```
 //!
 //! Further info, including the inverse projection, is given by EPSG:
 //!
+//!```text
 //!      Guidance Note 7 part 2
 //!      Coordinate Conversions and Transformations including Formulas
 //!
 //!      http://www.iogp.org/pubs/373-07-2.pdf
+//!```
 //!
 //! Variable names in this file mostly follows what is used in the
 //! paper by Veverka.
@@ -57,6 +63,7 @@
 //! altered from outside. The others all have defaults to match the
 //! common usage with Krovak projection.
 //!
+//!```text
 //!      lat_0 = latitude of centre of the projection
 //!
 //!      lon_0 = longitude of centre of the projection
@@ -73,7 +80,7 @@
 //!
 //!      y_0 = False Northing of the centre of the projection at
 //!            the apex of the cone
-//!
+//!```
 
 use crate::ellps::{Ellipsoid, Shape};
 use crate::errors::{Error, Result};
