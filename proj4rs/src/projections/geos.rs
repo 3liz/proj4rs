@@ -195,10 +195,10 @@ impl Ell {
         vz *= k;
 
         // Calculation of longitude and latitude.
-        let lam = vy.atan2(vx);
         Ok((
-            lam,
-            (self.radius_p_inv2 * ((vz * lam.cos() / vx).atan())),
+            vy.atan2(vx),
+            // NOTE: see https://github.com/OSGeo/PROJ/issues/4522
+            (self.radius_p_inv2 * vz / vx.hypot(vy)).atan(),
             z,
         ))
     }
@@ -269,9 +269,8 @@ impl Sph {
         vz *= k;
 
         // Calculation of longitude and latitude.
-        let lam = vy.atan2(vx);
-
-        Ok((lam, (vz * lam.cos() / vx).atan(), z))
+        // NOTE: see https://github.com/OSGeo/PROJ/issues/4522
+        Ok((vy.atan2(vx), (vz / vx.hypot(vy)).atan(), z))
     }
 }
 
@@ -282,13 +281,15 @@ mod tests {
 
     #[test]
     fn proj_geos_el() {
-        let p = Proj::from_proj_string("+proj=geos +lon_0=0 +h=35785782.858 +x_0=0 +y_0=0 +a=6378160 +b=6356775 +units=m +no_defs")
-            .unwrap();
+        let p = Proj::from_proj_string(concat!(
+            "+proj=geos +lon_0=0 +h=35785782.858 +x_0=0 +y_0=0 +a=6378160 +b=6356775 ",
+            "+units=m +no_defs",
+        ))
+        .unwrap();
 
         println!("{:#?}", p.projection());
 
         let inputs = [
-            //
             (
                 (18.763481601401576, 9.204293875870595, 0.),
                 (2000000.0, 1000000.0, 0.),
@@ -308,7 +309,7 @@ mod tests {
         ];
 
         test_proj_forward(&p, &inputs, 1e-8);
-        test_proj_inverse(&p, &inputs, 1.0e-2);
+        test_proj_inverse(&p, &inputs, 1e-8);
     }
 
     #[test]
@@ -337,6 +338,6 @@ mod tests {
         ];
 
         test_proj_forward(&p, &inputs, 1.0e-8);
-        test_proj_inverse(&p, &inputs, 1.0e-2);
+        test_proj_inverse(&p, &inputs, 1.0e-8);
     }
 }
