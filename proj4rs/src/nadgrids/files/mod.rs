@@ -18,7 +18,7 @@ use ntv2::read_ntv2;
 fn default_file_finder(name: &str) -> Result<PathBuf> {
     let p = Path::new(name);
     match p.exists().then_some(p.into()).or_else(|| {
-        if let Ok(val) = env::var("PROJ_DATA") {
+        if let Ok(val) = env::var("PROJ_NADGRIDS").or_else(|_| env::var("PROJ_DATA")) {
             val.split(':').find_map(|s| {
                 let p = Path::new(s).join(name);
                 p.exists().then_some(p)

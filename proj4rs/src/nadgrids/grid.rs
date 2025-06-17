@@ -6,6 +6,8 @@ use crate::math::{adjlon, consts::PI};
 use crate::transform::Direction;
 use std::fmt::{self, Display};
 
+pub(crate) const REL_TOLERANCE_HGRIDSHIFT: f64 = 1.0e-5;
+
 /// Lambda phi pair
 #[derive(Debug)]
 pub(crate) struct Lp {
@@ -163,7 +165,7 @@ impl Grid {
             phi - self.ll.phi,
         )?;
 
-        Ok((lam - t_lam, phi + t_phi, z))
+        Ok((lam + t_lam, phi + t_phi, z))
     }
 
     fn nad_cvt_inverse(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
@@ -175,15 +177,18 @@ impl Grid {
         let (tb_lam, tb_phi) = (adjlon(lam - self.ll.lam - PI) + PI, phi - self.ll.phi);
         let (mut t_lam, mut t_phi) = self.nad_intr(tb_lam, tb_phi)?;
 
-        t_lam += tb_lam;
+        t_lam = tb_lam - t_lam;
         t_phi = tb_phi - t_phi;
 
         let mut i = MAX_ITER;
         while i > 0 {
             if let Ok((del_lam, del_phi)) = self.nad_intr(t_lam, t_phi) {
-                let (diff_lam, diff_phi) = (t_lam - del_lam - tb_lam, t_phi + del_phi - tb_phi);
+                let (dif_lam, dif_phi) = (t_lam + del_lam - tb_lam, t_phi + del_phi - tb_phi);
 
-                if diff_lam * diff_lam + diff_phi * diff_phi <= TOL2 {
+                t_lam -= dif_lam;
+                t_phi -= dif_phi;
+
+                if dif_lam * dif_lam + dif_phi * dif_phi <= TOL2 {
                     break;
                 }
 
@@ -192,12 +197,11 @@ impl Grid {
                 // Follows proj5 behavior: returns
                 // the first order approximation
                 // in case of failure.
-                i = 0;
                 break;
             }
         }
 
-        if i > 0 {
+        if i == 0 {
             return Err(Error::InverseGridShiftConvError);
         }
 
@@ -205,26 +209,28 @@ impl Grid {
     }
 
     fn nad_intr(&self, lam: f64, phi: f64) -> Result<(f64, f64)> {
+        // Apply bilinear interpolation
         let (t_lam, t_phi) = (lam / self.del.lam, phi / self.del.phi);
 
         fn _check_lim(t: f64, lim: f64) -> Result<(f64, f64)> {
-            let mut i = t.floor();
+            let mut i = if t.is_nan() { 0. } else { t.floor() };
             let mut f = t - i;
             if i < 0. {
-                if i == -1. && f > 0.99999999999 {
+                if i == -1. && f > 1. - 10. * REL_TOLERANCE_HGRIDSHIFT {
                     i += 1.;
-                    f = 0.
+                    f = 0.;
                 } else {
                     return Err(Error::PointOutsideNadShiftArea);
                 }
             } else {
-                match i + 1. {
-                    n if n == lim && f < 1.0e-11 => {
+                let n = i + 1.;
+                if n >= lim {
+                    if n == lim && f < 10. * REL_TOLERANCE_HGRIDSHIFT {
                         i -= 1.;
                         f = 1.;
+                    } else {
+                        return Err(Error::PointOutsideNadShiftArea);
                     }
-                    n if n > lim => return Err(Error::PointOutsideNadShiftArea),
-                    _ => (),
                 }
             }
             Ok((i, f))

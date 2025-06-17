@@ -74,7 +74,7 @@ impl Parameter<'_> {
                 if let Some(s) = s.strip_suffix(RAD_SFX) {
                     f64::from_str(s).map(|v| sgn * v)
                 } else {
-                    // Decimal degrees
+                    // Degrees
                     Self::parse_dms(s).map(|v| sgn * v.to_radians())
                 }
             }
@@ -82,7 +82,7 @@ impl Parameter<'_> {
         }
     }
 
-    /// Parse DMS input
+    /// DMS input parser
     ///
     /// DMS input is expected to be DD[dD]MM'SS"
     fn parse_dms(s: &str) -> Result<f64, <f64 as FromStr>::Err> {
@@ -202,7 +202,6 @@ mod tests {
 
     #[test]
     fn param_try_angular_value() {
-
         // Invalid specifier
         let params = parse("+foo").unwrap();
         assert!(params.try_angular_value("foo").is_err());

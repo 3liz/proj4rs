@@ -4,6 +4,7 @@
 use crate::errors::{Error, Result};
 use crate::log::trace;
 use crate::math::consts::SEC_TO_RAD;
+use crate::nadgrids::grid::REL_TOLERANCE_HGRIDSHIFT;
 use crate::nadgrids::header::error_str::*;
 use crate::nadgrids::header::{Endianness, Header};
 use crate::nadgrids::{Catalog, Grid, GridId, Lp};
@@ -101,9 +102,10 @@ fn read_ntv2_grid<R: Read>(
     let mut cvs: Vec<Lp> = (0..gs_count)
         .map(|_| {
             buf.read(read)?;
+            // NOTE: phi and lam are inverted
             Ok(Lp {
-                lam: SEC_TO_RAD * (buf.get_f32(0) as f64),
-                phi: SEC_TO_RAD * (buf.get_f32(4) as f64),
+                phi: SEC_TO_RAD * (buf.get_f32(0) as f64),
+                lam: SEC_TO_RAD * (buf.get_f32(4) as f64) * -1.0, // NOTE: Compensate NT convention
             })
         })
         .collect::<Result<Vec<_>>>()?;
@@ -116,7 +118,7 @@ fn read_ntv2_grid<R: Read>(
         cvs[offs..(offs + rowsize)].reverse();
     }
 
-    let epsilon = (del.lam.abs() + del.phi.abs()) / 10_000.;
+    let epsilon = (del.lam.abs() + del.phi.abs()) * REL_TOLERANCE_HGRIDSHIFT;
 
     catalog.add_grid(
         key.into(),

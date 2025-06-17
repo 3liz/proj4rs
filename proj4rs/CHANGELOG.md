@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* Fix NTv2 grid interpolation
 * Fix inverse geos transform and apply more efficient 
   computation: https://github.com/OSGeo/PROJ/pull/4523 
 

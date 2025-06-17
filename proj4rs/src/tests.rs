@@ -115,3 +115,94 @@ fn test_utm33_grs80() {
     assert_abs_diff_eq!(v1[0].0, 391027.67777461524, epsilon = 1.0e-10);
     assert_abs_diff_eq!(v1[0].1, 5820089.724404063, epsilon = 1.0e-10);
 }
+
+#[test]
+fn test_wgs84_bng_conversion() {
+    //crate::nadgrids::catalog::files::
+
+    let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+    let to = Proj::from_proj_string(concat!(
+        "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
+        "+ellps=airy ", //+nadgrids=OSTN15_NTv2_OSGBtoETRS.gsb",
+    ))
+    .unwrap();
+
+    let mut v1 = vec![(-4.89328_f64.to_radians(), 51.66311_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v1[0].0, 199925.978901151626, epsilon = 1.0e-8);
+    assert_abs_diff_eq!(v1[0].1, 200052.051949012151, epsilon = 1.0e-8);
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_wgs84_bng_nadgrid_conversion() {
+    use crate::nadgrids::{catalog, files::read_from_file};
+    catalog::set_builder(read_from_file);
+
+    let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+    let to = Proj::from_proj_string(concat!(
+        "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
+        "+ellps=airy +nadgrids=OSTN15/OSTN15_NTv2_OSGBtoETRS.gsb",
+    ))
+    .unwrap();
+
+    let mut v1 = vec![(-4.89328_f64.to_radians(), 51.66311_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    eprintln!("{:?}", v1[0]);
+
+    assert_abs_diff_eq!(v1[0].0, 199999.973939543968, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(v1[0].1, 200000.366094537778, epsilon = 1.0e-6);
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_wgs84_bng_nadgrid_inverse_conversion() {
+    use crate::nadgrids::{catalog, files::read_from_file};
+    catalog::set_builder(read_from_file);
+
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+    let from = Proj::from_proj_string(concat!(
+        "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
+        "+ellps=airy +nadgrids=OSTN15/OSTN15_NTv2_OSGBtoETRS.gsb",
+    ))
+    .unwrap();
+
+    let mut v1 = vec![(199999.973939543968, 200000.366094537778, 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    eprintln!("{:?}", (v1[0].0.to_degrees(), v1[0].1.to_degrees()));
+
+    assert_abs_diff_eq!(v1[0].0, -4.89328_f64.to_radians(), epsilon = 1.0e-10);
+    assert_abs_diff_eq!(v1[0].1, 51.66311_f64.to_radians(), epsilon = 1.0e-10);
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_wgs84_bng_latlong_nadgrid() {
+    use crate::nadgrids::{catalog, files::read_from_file};
+    catalog::set_builder(read_from_file);
+
+    let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+    let to = Proj::from_proj_string(concat!(
+        "+proj=latlong ",
+        "+nadgrids=OSTN15/OSTN15_NTv2_OSGBtoETRS.gsb",
+    ))
+    .unwrap();
+
+    let mut v1 = vec![(-9.0_f64.to_radians(), 49.0_f64.to_radians(), 0.0)];
+    //let mut v1 = vec![(-4.89328_f64.to_radians(), 51.66311_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    eprintln!("{:?}", (v1[0].0.to_degrees(), v1[0].1.to_degrees()));
+
+    // Compare to output of proj 9
+    // echo -9.0 49.0 | cct -z0 -t0 -d 12 +proj=longlat +nadgrids=OSTN15_NTv2_OSGBtoETRS.gsb
+    assert_abs_diff_eq!(v1[0].0, -8.999464150263_f64.to_radians(), epsilon = 1.0e-10);
+    assert_abs_diff_eq!(v1[0].1, 48.999301262247_f64.to_radians(), epsilon = 1.0e-10);
+}

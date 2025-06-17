@@ -21,9 +21,7 @@ pub(crate) mod consts {
     // Other value op epsilon used
     pub(crate) const EPS_7: f64 = 1.0e-7;
 
-    // XXX float has excessive precision
-    //pub const SEC_TO_RAD: f64 = 4.84813681109535993589914102357e-6;
-    pub(crate) const SEC_TO_RAD: f64 = 4.848_136_811_095_36e-6;
+    pub(crate) const SEC_TO_RAD: f64 = (PI / 180.0) / 3600.0;
 }
 
 // Redefinition of mathematical functions
