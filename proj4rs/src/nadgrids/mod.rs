@@ -9,10 +9,10 @@ pub(crate) mod grid;
 
 pub use catlg::{catalog, Catalog, GridRef};
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 mod header;
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 pub mod files;
 
 use std::ops::ControlFlow;
