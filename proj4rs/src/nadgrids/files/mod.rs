@@ -81,7 +81,7 @@ pub fn read_from_file(catalog: &Catalog, key: &str) -> Result<()> {
 }
 
 /// Read a grid from a file given by `key`
-pub(crate) fn read<R: Read + Seek>(catalog: &Catalog, key: &str, read: &mut R) -> Result<()> {
+pub fn read<R: Read + Seek>(catalog: &Catalog, key: &str, read: &mut R) -> Result<()> {
     // Guess the file
     match recognize(key, read)? {
         FileType::Ntv2 => read_ntv2(catalog, key, read),

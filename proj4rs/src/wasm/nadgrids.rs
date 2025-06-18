@@ -5,7 +5,8 @@
 //!
 use crate::errors::Error;
 use crate::math::consts::SEC_TO_RAD;
-use crate::nadgrids::{catalog, Grid, GridId, Lp};
+use crate::nadgrids::grid::{Grid, GridId, Lp};
+use crate::nadgrids::catalog;
 use js_sys::DataView;
 use wasm_bindgen::prelude::*;
 

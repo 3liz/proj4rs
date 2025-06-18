@@ -5,7 +5,7 @@ use crate::errors::{Error, Result};
 use crate::transform::Direction;
 
 mod catlg;
-mod grid;
+pub(crate) mod grid;
 
 pub use catlg::{catalog, Catalog, GridRef};
 
@@ -17,8 +17,7 @@ pub mod files;
 
 use std::ops::ControlFlow;
 
-pub(crate) use grid::Lp;
-pub(crate) use grid::{Grid, GridId};
+pub use grid::Grid;
 
 /// NadGrids
 ///

@@ -3,7 +3,7 @@
 //! from the [geographiclib rust project](https://github.com/savage13/geographiclib/tree/master)
 //!
 //! This is only a part of the geographiclib implementation needed by proj4rs
-//! with *heavy* build feature.
+//! for implementing some projections.
 //!
 //! Example
 //!
@@ -24,11 +24,10 @@
 
 use std::sync;
 
-
-#[cfg(target_arch = "wasm32")]
+#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
 static GEOD_INIT: std::cell::OnceCell<bool> = std::cell::OnceCell::new();
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 static GEOD_INIT: sync::OnceLock<bool> = sync::OnceLock::new();
 
 

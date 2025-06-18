@@ -2,7 +2,7 @@
 //! Nadgrid parser
 //!
 use crate::errors::{Error, Result};
-use crate::nadgrids::GridId;
+use crate::nadgrids::grid::GridId;
 use std::io::Read;
 
 #[derive(Copy, Clone)]
