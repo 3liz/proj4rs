@@ -9,8 +9,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
-* Fix Support for wasm-wasip2 target
+* Fix Fix tolerance in inverse grid shift iteration
+    - https://github.com/3liz/proj4rs/issues/37
 * Fix NTv2 grid interpolation
+    - https://github.com/3liz/proj4rs/issues/32
+* Fix Support for wasm-wasip2 target
+    - https://github.com/3liz/proj4rs/issues/30
 * Fix inverse geos transform and apply more efficient 
   computation: https://github.com/OSGeo/PROJ/pull/4523 
 

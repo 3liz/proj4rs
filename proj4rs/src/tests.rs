@@ -206,3 +206,42 @@ fn test_wgs84_bng_latlong_nadgrid() {
     assert_abs_diff_eq!(v1[0].0, -8.999464150263_f64.to_radians(), epsilon = 1.0e-10);
     assert_abs_diff_eq!(v1[0].1, 48.999301262247_f64.to_radians(), epsilon = 1.0e-10);
 }
+
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_epsg27700_bad_point() {
+    // From https://github.com/3liz/proj4rs/issues/37
+    use crate::nadgrids::{catalog, files::read_from_file};
+    catalog::set_builder(read_from_file);
+
+    const EPSG_27700: &str = concat!(
+        "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
+        "+ellps=airy +nadgrids=OSTN15/OSTN15_NTv2_OSGBtoETRS.gsb",
+    );
+    
+    let epsg_4326 = Proj::from_proj_string("+proj=longlat +datum=WGS84").unwrap();
+    let epsg_27700 = Proj::from_proj_string(EPSG_27700).unwrap();
+
+    crate::adaptors::transform_vertex_2d(
+        &epsg_4326,
+        &epsg_27700,
+        (-0.03209530211282055, 0.8866271675445546),
+    )
+    .unwrap();
+
+    crate::adaptors::transform_vertex_2d(
+        &epsg_4326,
+        &epsg_27700,
+        (-0.0321, 0.8866271675445546),
+    )
+    .unwrap();
+
+    crate::adaptors::transform_vertex_2d(
+        &epsg_4326,
+        &epsg_27700,
+        (-0.03209530211282055, 0.8866272),
+    )
+    .unwrap();
+
+}

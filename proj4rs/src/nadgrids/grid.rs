@@ -171,7 +171,6 @@ impl Grid {
     fn nad_cvt_inverse(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         const MAX_ITER: usize = 10;
         const TOL: f64 = 1.0e-24;
-        const TOL2: f64 = TOL * TOL;
 
         // normalize input to ll origin
         let (tb_lam, tb_phi) = (adjlon(lam - self.ll.lam - PI) + PI, phi - self.ll.phi);
@@ -188,7 +187,7 @@ impl Grid {
                 t_lam -= dif_lam;
                 t_phi -= dif_phi;
 
-                if dif_lam * dif_lam + dif_phi * dif_phi <= TOL2 {
+                if dif_lam * dif_lam + dif_phi * dif_phi <= TOL {
                     break;
                 }
 
@@ -202,6 +201,7 @@ impl Grid {
         }
 
         if i == 0 {
+            crate::log::error!("Inverse grid shift iterator failed to converge");
             return Err(Error::InverseGridShiftConvError);
         }
 
