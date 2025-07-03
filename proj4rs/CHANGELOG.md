@@ -11,6 +11,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 * Fix Fix tolerance in inverse grid shift iteration
     - https://github.com/3liz/proj4rs/issues/37
+
+## 0.1.8 - 2025-06-18
+
+### Fixed
+
 * Fix NTv2 grid interpolation
     - https://github.com/3liz/proj4rs/issues/32
 * Fix Support for wasm-wasip2 target
