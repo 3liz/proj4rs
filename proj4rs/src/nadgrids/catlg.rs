@@ -41,7 +41,7 @@ mod implem {
         /// Convert raw ptr to static reference
         pub(super) fn get(&self) -> Option<&'static Node> {
             let p = self.0.load(Ordering::Relaxed);
-            (!p.is_null()).then(|| unsafe { &*p })
+            unsafe { p.as_ref() }
         }
         pub(super) fn insert(&self, node: Node) -> &'static Node {
             node.next
