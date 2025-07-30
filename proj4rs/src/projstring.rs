@@ -57,12 +57,11 @@ mod tokenizer {
     /// Get the next quoted or unquoted token from the input string
     pub(super) fn unquote_next(s: &str) -> Result<(&str, &str)> {
         let s = s.trim_start();
-        if s.starts_with('\"') {
+        if let Some(s) = s.strip_prefix('\"') {
             // Check if string part is terminated by a quote,
             // if not, continue with the next part.
             // Inner quotes not separated by a whitespace is left
             // as part of the token.
-            let s = unsafe { s.split_once('\"').unwrap_unchecked().1 };
             match s
                 .split_inclusive(|c: char| c.is_whitespace())
                 .try_fold(0usize, |len, s| {
@@ -89,9 +88,8 @@ mod tokenizer {
         let s = s.trim_start();
         if s.is_empty() {
             Ok(("", None, ""))
-        } else if s.starts_with('+') {
-            let (_, rest) = unsafe { s.split_once('+').unwrap_unchecked() }; // Swallow '+'
-
+        // Swallow '+'
+        } else if let Some(rest) = s.strip_prefix('+') {
             let (name, rest) = parse_identifier(rest)?;
             if name.is_empty() {
                 Err(Error::InputStringError("Empty parameter name"))
