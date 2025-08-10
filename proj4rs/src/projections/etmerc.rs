@@ -29,16 +29,15 @@ type Coeffs = [f64; ETMERC_ORDER];
 fn gatg(c: &Coeffs, B: f64) -> f64 {
     let mut h2 = 0.;
     let cos_2B = 2. * (2. * B).cos();
-    let h = unsafe {
-        c.iter()
-            .copied()
-            .reduce(|h1, p| {
-                let h = -h2 + cos_2B * h1 + p;
-                h2 = h1;
-                h
-            })
-            .unwrap_unchecked()
-    };
+    let h = c
+        .iter()
+        .copied()
+        .reduce(|h1, p| {
+            let h = -h2 + cos_2B * h1 + p;
+            h2 = h1;
+            h
+        })
+        .unwrap();
     B + h * (2. * B).sin()
 }
 
@@ -56,19 +55,18 @@ fn clens_cplx(a: &Coeffs, arg_r: f64, arg_i: f64) -> (f64, f64) {
     let (mut hr1, mut hr2) = (0., 0.);
 
     let mut hi = 0.;
-    let hr = unsafe {
-        a.iter()
-            .copied()
-            .reduce(|hr, p| {
-                hr2 = hr1;
-                hi2 = hi1;
-                hr1 = hr;
-                hi1 = hi;
-                hi = -hi2 + i * hr1 + r * hi1;
-                -hr2 + r * hr1 - i * hi1 + p
-            })
-            .unwrap_unchecked()
-    };
+    let hr = a
+        .iter()
+        .copied()
+        .reduce(|hr, p| {
+            hr2 = hr1;
+            hi2 = hi1;
+            hr1 = hr;
+            hi1 = hi;
+            hi = -hi2 + i * hr1 + r * hi1;
+            -hr2 + r * hr1 - i * hi1 + p
+        })
+        .unwrap();
 
     r = sin_arg_r * cosh_arg_i;
     i = cos_arg_r * sinh_arg_i;
