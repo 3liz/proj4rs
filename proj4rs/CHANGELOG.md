@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 * Fix Fix tolerance in inverse grid shift iteration
     - https://github.com/3liz/proj4rs/issues/37
 
+### Changed
+
+* Simplify away some unsafe code
+   - https://github.com/3liz/proj4rs/pull/38
+
 ## 0.1.8 - 2025-06-18
 
 ### Fixed
