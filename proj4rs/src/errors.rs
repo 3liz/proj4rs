@@ -56,9 +56,9 @@ pub enum Error {
     ToleranceConditionError,
     #[error("Non convergence of phi2 calculation")]
     NonInvPhi2Convergence,
-    #[error("Failed no compute forward projection")]
+    #[error("Failed to compute forward projection")]
     ForwardProjectionFailure,
-    #[error("Failed no compute inverse projection")]
+    #[error("Failed to compute inverse projection")]
     InverseProjectionFailure,
     #[error("Invalid UTM zone")]
     InvalidUtmZone,

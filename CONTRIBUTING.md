@@ -10,5 +10,5 @@ In order to test your new code, you need to build it thanks to WASM. More inform
 
 ### Test
 
-If you want to test your code, you can ron locally some demos by reading [this README](./proj4rs/ol-proj4rs-demo-app/README.md) in `ol-proj4rs-demo-app/`.
+If you want to test your code, you can run locally some demos by reading [this README](./proj4rs/ol-proj4rs-demo-app/README.md) in `ol-proj4rs-demo-app/`.
 You can create another demo page with a HTML file + JavaScript file combo.
