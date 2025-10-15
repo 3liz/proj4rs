@@ -4,7 +4,7 @@
 use crate::errors::{Error, Result};
 use crate::log::trace;
 use crate::math::consts::SEC_TO_RAD;
-use crate::nadgrids::grid::{REL_TOLERANCE_HGRIDSHIFT, Grid, GridId, Lp};
+use crate::nadgrids::grid::{Grid, GridId, Lp, REL_TOLERANCE_HGRIDSHIFT};
 use crate::nadgrids::header::error_str::*;
 use crate::nadgrids::header::{Endianness, Header};
 use crate::nadgrids::Catalog;
@@ -105,7 +105,7 @@ fn read_ntv2_grid<R: Read>(
             // NOTE: phi and lam are inverted
             Ok(Lp {
                 phi: SEC_TO_RAD * (buf.get_f32(0) as f64),
-                lam: SEC_TO_RAD * (buf.get_f32(4) as f64) * -1.0, // NOTE: Compensate NT convention
+                lam: -(SEC_TO_RAD * (buf.get_f32(4) as f64)), // NOTE: Compensate NT convention
             })
         })
         .collect::<Result<Vec<_>>>()?;

@@ -207,7 +207,6 @@ fn test_wgs84_bng_latlong_nadgrid() {
     assert_abs_diff_eq!(v1[0].1, 48.999301262247_f64.to_radians(), epsilon = 1.0e-10);
 }
 
-
 #[test]
 #[cfg(feature = "local_tests")]
 fn test_epsg27700_bad_point() {
@@ -219,7 +218,7 @@ fn test_epsg27700_bad_point() {
         "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
         "+ellps=airy +nadgrids=OSTN15/OSTN15_NTv2_OSGBtoETRS.gsb",
     );
-    
+
     let epsg_4326 = Proj::from_proj_string("+proj=longlat +datum=WGS84").unwrap();
     let epsg_27700 = Proj::from_proj_string(EPSG_27700).unwrap();
 
@@ -230,12 +229,8 @@ fn test_epsg27700_bad_point() {
     )
     .unwrap();
 
-    crate::adaptors::transform_vertex_2d(
-        &epsg_4326,
-        &epsg_27700,
-        (-0.0321, 0.8866271675445546),
-    )
-    .unwrap();
+    crate::adaptors::transform_vertex_2d(&epsg_4326, &epsg_27700, (-0.0321, 0.8866271675445546))
+        .unwrap();
 
     crate::adaptors::transform_vertex_2d(
         &epsg_4326,
@@ -243,5 +238,4 @@ fn test_epsg27700_bad_point() {
         (-0.03209530211282055, 0.8866272),
     )
     .unwrap();
-
 }

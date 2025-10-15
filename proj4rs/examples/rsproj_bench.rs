@@ -1,7 +1,7 @@
 //!
 //! Display benchmarks for computing forward and inverse projections
 //!
-//! Compute benchmarks the same way as the `bench_proj_trans` PROJ 
+//! Compute benchmarks the same way as the `bench_proj_trans` PROJ
 //! test utility
 //!
 use clap::{ArgAction, Parser};
@@ -14,8 +14,6 @@ use rand::prelude::*;
 
 use std::io::{self, BufRead};
 use std::time::Instant;
-
-
 
 #[derive(Parser)]
 #[command(author, version="0.1", about="Bench projections", long_about = None)]
@@ -92,7 +90,7 @@ fn main() -> Result<()> {
             x = x.to_radians();
             y = y.to_radians();
         }
-      
+
         let mut point = (x, y, z);
 
         transform::transform(&src, &dst, &mut point)?;
@@ -102,7 +100,7 @@ fn main() -> Result<()> {
 
         // Time noise generation
         let start = Instant::now();
-        for _ in 0..loops { 
+        for _ in 0..loops {
             if noise_x > 0. {
                 point.0 = x + noise_x * (2. * rng.random::<f64>() - 1.);
             }
@@ -113,7 +111,7 @@ fn main() -> Result<()> {
         let noise_elapsed = start.elapsed();
 
         let start = Instant::now();
-        for _ in 0..loops { 
+        for _ in 0..loops {
             if noise_x > 0. {
                 point.0 = x + noise_x * (2. * rng.random::<f64>() - 1.);
             }
@@ -122,12 +120,14 @@ fn main() -> Result<()> {
             }
             transform::transform(&src, &dst, &mut point)?;
         }
-    
+
         let elapsed = start.elapsed();
-        
+
         println!("Duration: {} ms", (elapsed - noise_elapsed).as_millis());
-        println!("Throughput: {:.2} million coordinates/s", 
-            1e-3 * (loops as f64) / (elapsed - noise_elapsed).as_millis() as f64);
+        println!(
+            "Throughput: {:.2} million coordinates/s",
+            1e-3 * (loops as f64) / (elapsed - noise_elapsed).as_millis() as f64
+        );
     }
     Ok(())
 }
