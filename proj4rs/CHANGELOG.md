@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Changed
+
+* Remove dependency to lazy-static
+    - https://github.com/3liz/proj4rs/pull/41
 
 ## 0.1.9 - 2025-09-16
 
