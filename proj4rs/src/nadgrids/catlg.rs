@@ -33,11 +33,15 @@ mod implem {
     impl Default for NodePtr {
         #[inline]
         fn default() -> Self {
-            Self(null_mut::<Node>().into())
+            Self::new()
         }
     }
 
     impl NodePtr {
+        #[inline]
+        pub(super) const fn new() -> Self {
+            Self(AtomicPtr::new(null_mut::<Node>()))
+        }
         /// Convert raw ptr to static reference
         pub(super) fn get(&self) -> Option<&'static Node> {
             let p = self.0.load(Ordering::Relaxed);
@@ -65,11 +69,15 @@ mod implem {
     impl Default for NodePtr {
         #[inline]
         fn default() -> Self {
-            Self(Cell::new(None))
+            Self::new()
         }
     }
 
     impl NodePtr {
+        #[inline]
+        pub(super) const fn new() -> Self {
+            Self(Cell::new(None))
+        }
         /// Convert raw ptr to static reference
         #[inline]
         pub(super) fn get(&self) -> Option<&'static Node> {
@@ -122,13 +130,25 @@ type BuilderRef = RefCell<Option<GridBuilder>>;
 #[cfg(feature = "multi-thread")]
 type BuilderRef = Option<GridBuilder>;
 
-#[derive(Default)]
+#[cfg(not(feature = "multi-thread"))]
+const EMPTY_BUILDER_REF: BuilderRef = RefCell::new(None);
+
+#[cfg(feature = "multi-thread")]
+const EMPTY_BUILDER_REF: BuilderRef = None;
+
 pub struct Catalog {
     first: NodePtr,
     builder: BuilderRef,
 }
 
 impl Catalog {
+    const fn new() -> Self {
+        Self {
+            first: NodePtr::new(),
+            builder: EMPTY_BUILDER_REF,
+        }
+    }
+
     fn iter(&self) -> impl Iterator<Item = &'static Node> {
         std::iter::successors(self.first.get(), |prev| prev.next.get())
     }
@@ -171,15 +191,18 @@ impl Catalog {
     }
 }
 
+impl Default for Catalog {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[cfg(feature = "multi-thread")]
 pub mod catalog {
     use super::*;
-    use lazy_static::lazy_static;
     use std::sync::Mutex;
 
-    lazy_static! {
-        static ref CATALOG: Mutex<Catalog> = Mutex::new(Catalog::default());
-    }
+    static CATALOG: Mutex<Catalog> = Mutex::new(Catalog::new());
 
     pub fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
         let cat = CATALOG.lock().unwrap();
