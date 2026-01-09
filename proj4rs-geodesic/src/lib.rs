@@ -30,7 +30,6 @@ static GEOD_INIT: std::cell::OnceCell<bool> = std::cell::OnceCell::new();
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 static GEOD_INIT: sync::OnceLock<bool> = sync::OnceLock::new();
 
-
 /// Ellipsoid on which Geodesic Calculations are computed
 #[repr(C)]
 #[derive(Clone)]
@@ -63,7 +62,7 @@ impl std::fmt::Debug for Geodesic {
 }
 
 #[link(name = "geodesic", kind = "static")]
-extern "C" {
+unsafe extern "C" {
     fn Init();
     fn geod_init(g: *mut Geodesic, a: f64, f: f64) -> bool;
     fn geod_inverse(
@@ -98,8 +97,10 @@ impl Geodesic {
     /// // Geodesic { a: 6378145, f: 0.003352891869237217 }
     /// ```
     pub fn new(a: f64, f: f64) -> Self {
-        GEOD_INIT.get_or_init(||{
-            unsafe { Init(); }
+        GEOD_INIT.get_or_init(|| {
+            unsafe {
+                Init();
+            }
             true
         });
         unsafe {
@@ -110,11 +111,11 @@ impl Geodesic {
             g.assume_init()
         }
     }
-    
+
     #[allow(non_upper_case_globals)]
     pub fn wgs84() -> Self {
         const a: f64 = 6_378_137.0;
-        const f: f64 = 1.0/298.257_223_563; /* WGS84 */
+        const f: f64 = 1.0 / 298.257_223_563; /* WGS84 */
         Self::new(a, f)
     }
 

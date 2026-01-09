@@ -195,11 +195,7 @@ impl Projection {
                 phi_l = FRAC_PI_2 - 2. * tp.atan();
                 halfpi = -FRAC_PI_2;
                 halfe = -0.5 * self.e;
-                if self.mode == N_POLE {
-                    (x, -y)
-                } else {
-                    (x, y)
-                }
+                if self.mode == N_POLE { (x, -y) } else { (x, y) }
             }
         };
 
@@ -341,11 +337,7 @@ impl Projection {
     pub fn init(p: &mut ProjData, phits: f64) -> Result<Self> {
         let t = p.phi0.abs();
         let mode = if (t - FRAC_PI_2).abs() < EPS_10 {
-            if p.phi0 < 0. {
-                S_POLE
-            } else {
-                N_POLE
-            }
+            if p.phi0 < 0. { S_POLE } else { N_POLE }
         } else if t > EPS_10 {
             OBLIQ
         } else {

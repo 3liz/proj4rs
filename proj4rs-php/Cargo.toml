@@ -1,7 +1,7 @@
 [package]
 name = "proj4rs-php"
-version = "0.1.0"
-edition = "2021"
+version = "0.1.1"
+edition = "2024"
 keywords.workspace = true
 authors.workspace = true
 license.workspace = true
