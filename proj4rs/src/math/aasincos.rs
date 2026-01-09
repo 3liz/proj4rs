@@ -36,11 +36,7 @@ pub(crate) fn aacos(v: f64) -> Result<f64> {
 }
 
 pub(crate) fn asqrt(v: f64) -> f64 {
-    if v <= 0. {
-        0.
-    } else {
-        v.sqrt()
-    }
+    if v <= 0. { 0. } else { v.sqrt() }
 }
 
 pub(crate) fn aatan2(n: f64, d: f64) -> f64 {

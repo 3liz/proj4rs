@@ -226,11 +226,7 @@ where
                         // phi
                         // ---
                         if t.abs() <= EPS_12 {
-                            if phi < 0. {
-                                -FRAC_PI_2
-                            } else {
-                                FRAC_PI_2
-                            }
+                            if phi < 0. { -FRAC_PI_2 } else { FRAC_PI_2 }
                         } else {
                             phi
                         },

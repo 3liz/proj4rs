@@ -118,7 +118,7 @@ impl Transform for GeometryCollection {
 mod tests {
     use approx::assert_abs_diff_eq;
 
-    use crate::{transform::transform, Proj};
+    use crate::{Proj, transform::transform};
 
     use super::*;
 

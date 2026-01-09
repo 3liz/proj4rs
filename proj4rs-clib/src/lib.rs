@@ -5,7 +5,7 @@ use std::ptr;
 
 use proj4rs::{
     errors, proj,
-    transform::{transform, Transform, TransformClosure},
+    transform::{Transform, TransformClosure, transform},
 };
 
 thread_local!(static LAST_ERROR: RefCell<CString> = RefCell::new(CString::new("").unwrap()));
@@ -46,7 +46,7 @@ fn to_c_unit(name: &str) -> &'static str {
 }
 
 /// Return the last error message
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_last_error() -> *const c_char {
     LAST_ERROR.with_borrow(|c| c.as_ptr() as *const c_char)
 }
@@ -66,7 +66,7 @@ pub struct Proj4rs {
 /// * A "WGS84" string - equivalent to the projstring "+proj=longlat +ellps=WGS84"
 /// * An EPSG code
 ///
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
     let cstr_defn = unsafe { CStr::from_ptr(c_defn) };
     match cstr_defn
@@ -86,7 +86,7 @@ pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
 }
 
 /// Delete projection object
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
     if !c_ptr.is_null() {
         unsafe {
@@ -96,7 +96,7 @@ pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
 }
 
 /// Returns the projection name
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_projname(c_ptr: *const Proj4rs) -> *const c_char {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -104,7 +104,7 @@ pub extern "C" fn proj4rs_proj_projname(c_ptr: *const Proj4rs) -> *const c_char 
 }
 
 /// Returns true if the projection is geographic
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_is_latlong(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -112,7 +112,7 @@ pub extern "C" fn proj4rs_proj_is_latlong(c_ptr: *const Proj4rs) -> bool {
 }
 
 /// Returns true if the projection is geocentric
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -135,7 +135,7 @@ pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
 /// }
 /// ```
 ///
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -143,14 +143,14 @@ pub extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
 }
 
 /// Return true if the axis are noramilized
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_is_normalized_axis(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.is_normalized_axis()
 }
 
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_to_meter(c_ptr: *const Proj4rs) -> f64 {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -158,7 +158,7 @@ pub extern "C" fn proj4rs_proj_to_meter(c_ptr: *const Proj4rs) -> f64 {
 }
 
 /// Return units of the projection (i.e "degrees", "m", "km", ...)
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_proj_units(c_ptr: *const Proj4rs) -> *const c_char {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
@@ -184,7 +184,7 @@ pub const ERR: c_int = 0;
 ///
 /// If `convert` is `true` then latlong coordinates are assumed te be in degrees.
 ///
-#[no_mangle]
+#[unsafe(no_mangle)]
 pub extern "C" fn proj4rs_transform(
     src_ptr: *const Proj4rs,
     dst_ptr: *const Proj4rs,
@@ -213,7 +213,7 @@ pub extern "C" fn proj4rs_transform(
             to_radians(x, y, len, stride);
         }
     }
-    
+
     if let Err(err) = transform(&src.inner, &dst.inner, &mut Coords(x, y, z, len, stride)) {
         set_last_error(err);
         ERR
@@ -287,27 +287,31 @@ impl Transform for Coords {
 }
 
 unsafe fn to_degrees(mut x: *mut f64, mut y: *mut f64, mut len: isize, stride: isize) {
-    loop {
-        *x = (*x).to_degrees();
-        *y = (*y).to_degrees();
-        len -= 1;
-        if len <= 0 {
-            break;
+    unsafe {
+        loop {
+            *x = (*x).to_degrees();
+            *y = (*y).to_degrees();
+            len -= 1;
+            if len <= 0 {
+                break;
+            }
+            x = x.byte_offset(stride);
+            y = y.byte_offset(stride);
         }
-        x = x.byte_offset(stride);
-        y = y.byte_offset(stride);
     }
 }
 
 unsafe fn to_radians(mut x: *mut f64, mut y: *mut f64, mut len: isize, stride: isize) {
-    loop {
-        *x = (*x).to_radians();
-        *y = (*y).to_radians();
-        len -= 1;
-        if len <= 0 {
-            break;
+    unsafe {
+        loop {
+            *x = (*x).to_radians();
+            *y = (*y).to_radians();
+            len -= 1;
+            if len <= 0 {
+                break;
+            }
+            x = x.byte_offset(stride);
+            y = y.byte_offset(stride);
         }
-        x = x.byte_offset(stride);
-        y = y.byte_offset(stride);
     }
 }

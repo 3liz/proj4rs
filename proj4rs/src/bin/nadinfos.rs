@@ -2,7 +2,7 @@
 //! Display infos about NAD grid
 //!
 use proj4rs::errors::{Error, Result};
-use proj4rs::nadgrids::{files::read_from_file, Catalog};
+use proj4rs::nadgrids::{Catalog, files::read_from_file};
 use std::env;
 
 fn main() -> Result<()> {
