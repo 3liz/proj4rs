@@ -7,7 +7,7 @@ use crate::transform::Direction;
 mod catlg;
 pub(crate) mod grid;
 
-pub use catlg::{catalog, Catalog, GridRef};
+pub use catlg::{Catalog, GridRef, catalog};
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 mod header;

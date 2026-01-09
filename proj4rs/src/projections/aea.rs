@@ -9,7 +9,7 @@
 //
 use crate::errors::{Error, Result};
 use crate::math::{
-    consts::{EPS_10, EPS_7, FRAC_PI_2},
+    consts::{EPS_7, EPS_10, FRAC_PI_2},
     msfn, qsfn,
 };
 use crate::parameters::ParamList;

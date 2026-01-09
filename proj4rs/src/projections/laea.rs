@@ -104,11 +104,7 @@ impl EProj {
 
         let t = phi0.abs();
         let mode = if (t - FRAC_PI_2).abs() < EPS_10 {
-            if phi0 < 0. {
-                S_POLE
-            } else {
-                N_POLE
-            }
+            if phi0 < 0. { S_POLE } else { N_POLE }
         } else if t.abs() < EPS_10 {
             let rq = (0.5 * qp).sqrt();
             EQUIT {
@@ -285,11 +281,7 @@ impl SProj {
         use SMode::*;
 
         let mode = if (t - FRAC_PI_2).abs() < EPS_10 {
-            if p.phi0 < 0. {
-                S_POLE
-            } else {
-                N_POLE
-            }
+            if p.phi0 < 0. { S_POLE } else { N_POLE }
         } else if t.abs() < EPS_10 {
             EQUIT
         } else {

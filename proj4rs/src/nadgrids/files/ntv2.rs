@@ -4,10 +4,10 @@
 use crate::errors::{Error, Result};
 use crate::log::trace;
 use crate::math::consts::SEC_TO_RAD;
+use crate::nadgrids::Catalog;
 use crate::nadgrids::grid::{Grid, GridId, Lp, REL_TOLERANCE_HGRIDSHIFT};
 use crate::nadgrids::header::error_str::*;
 use crate::nadgrids::header::{Endianness, Header};
-use crate::nadgrids::Catalog;
 use std::io::Read;
 
 const NTV2_HEADER_SIZE: usize = 11 * 16;

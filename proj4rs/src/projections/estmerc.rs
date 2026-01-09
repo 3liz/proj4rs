@@ -9,8 +9,9 @@
 //!
 use crate::errors::{Error, Result};
 use crate::math::{
+    Enfn,
     consts::{EPS_10, FRAC_PI_2},
-    enfn, inv_mlfn, mlfn, Enfn,
+    enfn, inv_mlfn, mlfn,
 };
 use crate::parameters::ParamList;
 use crate::proj::ProjData;

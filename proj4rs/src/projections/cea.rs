@@ -81,11 +81,7 @@ impl Projection {
                     Err(Error::CoordTransOutsideProjectionDomain)
                 } else {
                     let phi = if t >= 1. {
-                        if y < 0. {
-                            -FRAC_PI_2
-                        } else {
-                            FRAC_PI_2
-                        }
+                        if y < 0. { -FRAC_PI_2 } else { FRAC_PI_2 }
                     } else {
                         y.asin()
                     };
