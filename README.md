@@ -1,6 +1,12 @@
+[![Crates.io](https://img.shields.io/crates/v/proj4rs)](https://crates.io/crates/proj4rs)
 [![Crates.io](https://img.shields.io/crates/d/proj4rs)](https://crates.io/crates/proj4rs)
+[![License](https://img.shields.io/badge/license-MIT_OR_Apache_2.0-blue.svg)](https://github.com/image-rs/imageproc/blob/master/LICENSE)
 [![Documentation](https://img.shields.io/badge/Documentation-Published-green)](https://docs.rs/proj4rs/latest/proj4rs/)
 [![Demo](https://img.shields.io/badge/Demo-Published-green)](https://docs.3liz.org/proj4rs/)
+
+
+
+
 
 ---
 

@@ -7,7 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+
 ### Changed
+
+* Bump crs-definitions dependency
+    - https://github.com/3liz/proj4rs/pull/42#
 
 * Remove dependency to lazy-static
     - https://github.com/3liz/proj4rs/pull/41
