@@ -11,7 +11,7 @@ use crate::datums::{self, DatumDefn};
 use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
-use crate::projections::{find_projection, ProjDelegate};
+use crate::projections::{ProjDelegate, find_projection};
 use crate::{ellipsoids, prime_meridians, projstring, units};
 
 use std::fmt;

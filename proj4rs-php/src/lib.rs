@@ -3,10 +3,8 @@
 //!
 //! See https://davidcole1340.github.io/ext-php-rs
 
-
-use proj4rs::{errors, proj, transform};
 use ext_php_rs::prelude::*;
-
+use proj4rs::{errors, proj, transform};
 
 #[cfg(feature = "logging")]
 use log;
@@ -31,18 +29,16 @@ impl From<proj::Proj> for Projection {
     }
 }
 
-
 #[php_impl(rename_methods = "camelCase")]
 impl Projection {
-
     #[constructor]
     fn new(defn: &str) -> PhpResult<Self> {
-     proj::Proj::from_user_string(defn)
-        .map(Projection::from)
-        .map_err(|e| PhpException::from(e.to_string()))
+        proj::Proj::from_user_string(defn)
+            .map(Projection::from)
+            .map_err(|e| PhpException::from(e.to_string()))
     }
 
-    // see https://github.com/davidcole1340/ext-php-rs/issues/325   
+    // see https://github.com/davidcole1340/ext-php-rs/issues/325
     // pub fn projname(&self) -> &'static str {
     //   self.inner.projname()
     // }
@@ -76,7 +72,7 @@ impl Projection {
         self.inner.to_meter()
     }
 
-    // see https://github.com/davidcole1340/ext-php-rs/issues/325   
+    // see https://github.com/davidcole1340/ext-php-rs/issues/325
     // pub fn units(&self) -> &'static str {
     //    self.inner.units()
     // }
@@ -85,7 +81,6 @@ impl Projection {
         self.inner.units().into()
     }
 }
-
 
 // ----------------------------
 // Wrapper for Transform
@@ -133,7 +128,9 @@ pub fn transform_point(
     convert: bool,
 ) -> PhpResult<()> {
     if point.x.is_nan() || point.y.is_nan() {
-        return Err(PhpException::from(errors::Error::NanCoordinateValue.to_string()));
+        return Err(PhpException::from(
+            errors::Error::NanCoordinateValue.to_string(),
+        ));
     }
 
     if convert && src.inner.is_latlong() {
@@ -150,7 +147,6 @@ pub fn transform_point(
     }
     Ok(())
 }
-
 
 #[php_module]
 pub fn get_module(module: ModuleBuilder) -> ModuleBuilder {

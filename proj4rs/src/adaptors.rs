@@ -6,7 +6,7 @@ pub mod geo_types;
 
 use crate::errors::Result;
 use crate::proj::Proj;
-use crate::transform::{transform, Transform, TransformClosure};
+use crate::transform::{Transform, TransformClosure, transform};
 
 //
 // Transform a 3-tuple

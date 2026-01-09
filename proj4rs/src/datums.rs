@@ -1,7 +1,7 @@
 //!
 //! Proj4 datum definitions
 //!
-use crate::ellipsoids::{constants as ellps, EllipsoidDefn};
+use crate::ellipsoids::{EllipsoidDefn, constants as ellps};
 
 /// Shift method is either
 /// defined by Helmert transforms or nadgrids

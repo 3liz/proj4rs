@@ -27,9 +27,9 @@ use proj4rs_geodesic::Geodesic;
 
 use crate::errors::{Error, Result};
 use crate::math::{
-    aasin,
+    Enfn, aasin,
     consts::{EPS_10, FRAC_PI_2, PI},
-    enfn, inv_mlfn, mlfn, Enfn,
+    enfn, inv_mlfn, mlfn,
 };
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
