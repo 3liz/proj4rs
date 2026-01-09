@@ -23,7 +23,7 @@ exclude = [
 
 [dependencies]
 thiserror = "2.0"
-crs-definitions = { version = "0.3", optional = true, default-features = false, features = ["proj4"] }
+crs-definitions = { version = "0.4", optional = true, default-features = false, features = ["proj4"] }
 geo-types = { version = "0.7.12", optional = true }
 log = { version = "0.4", optional = true }
 proj4rs-geodesic = { version = "~0.1", optional = true }
