@@ -5,12 +5,13 @@ use crate::errors::{Error, Result};
 use crate::transform::Direction;
 
 mod catlg;
+mod header;
+
+pub mod formats;
+
 pub(crate) mod grid;
 
 pub use catlg::{Catalog, GridRef, catalog};
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-mod header;
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 pub mod files;

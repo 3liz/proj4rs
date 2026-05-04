@@ -82,6 +82,14 @@ pub enum Error {
     UnknownGridFormat,
     #[error("Numerical argument too  large")]
     ArgumentTooLarge,
+
+    #[cfg(feature = "tiff")]
+    #[error("TIFF error")]
+    TiffError(#[from] tiff::TiffError),
+
+    #[cfg(feature = "tiff")]
+    #[error("Invalid Tiff grid format: {0}")]
+    InvalidTiffGridFormat(&'static str),
 }
 
 pub type Result<T, E = Error> = std::result::Result<T, E>;

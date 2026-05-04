@@ -5,7 +5,7 @@ The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the de
 
 ## Compiling for WASM
 
-Install [wasm-pack](https://rustwasm.github.io/wasm-pack/book/)
+Install [wasm-pack](https://wasm-bindgen.github.io/wasm-pack/installer/)
 
 ```bash
 wasm-pack build --target web --no-default-features

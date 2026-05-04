@@ -214,8 +214,9 @@ pub mod catalog {
             None => cat
                 .builder
                 .and_then(|b| {
-                    if b(&cat, name).is_err() {
-                        error!("Error looking for grid shift {}", name);
+                    #[allow(unused)]
+                    if let Err(err) = b(&cat, name) {
+                        error!("Error looking for grid shift {name}: {err}");
                     }
                     cat.find(name).map(|iter| grids.extend(iter))
                 })
@@ -230,7 +231,16 @@ pub mod catalog {
     pub fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
         CATALOG.lock().unwrap().builder.replace(builder)
     }
+
+    pub fn with_catalog<F, R>(f: F) -> R
+    where 
+        F: FnOnce(&Catalog) -> R,
+    {
+        let ctlg = CATALOG.lock().unwrap();
+        f(&ctlg)
+    }
 }
+
 #[cfg(not(feature = "multi-thread"))]
 pub mod catalog {
     use super::*;
@@ -264,5 +274,12 @@ pub mod catalog {
 
     pub fn set_builder(builder: GridBuilder) -> Option<GridBuilder> {
         CATALOG.with(|cat| cat.builder.borrow_mut().replace(builder))
+    }
+
+    pub fn with_catalog<F, R>(f: F) -> R
+    where 
+        F: FnOnce(&Catalog) -> R,
+    {
+        CATALOG.with(f)
     }
 }

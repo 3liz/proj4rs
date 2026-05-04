@@ -1,43 +1,33 @@
 //!
 //! Read grid from files
 //!
-use std::env;
-use std::fs::File;
-use std::io::{BufReader, Read, Seek, SeekFrom};
-use std::path::{Path, PathBuf};
+use std::io::{Read, Seek, SeekFrom};
 
 use crate::errors::{Error, Result};
 use crate::nadgrids::Catalog;
 
+#[cfg(feature = "tiff")]
+mod geotiff;
 mod ntv2;
 
-use super::header::Header;
-use ntv2::read_ntv2;
+#[cfg(feature = "tiff")]
+use geotiff::is_tiff;
 
-/// Define a default file finder functions
-fn default_file_finder(name: &str) -> Result<PathBuf> {
-    let p = Path::new(name);
-    match p.exists().then_some(p.into()).or_else(|| {
-        if let Ok(val) = env::var("PROJ_NADGRIDS").or_else(|_| env::var("PROJ_DATA")) {
-            val.split(':').find_map(|s| {
-                let p = Path::new(s).join(name);
-                p.exists().then_some(p)
-            })
-        } else {
-            None
-        }
-    }) {
-        Some(p) => Ok(p),
-        None => Err(Error::GridFileNotFound(name.into())),
-    }
+// Dummy tiff check
+#[cfg(not(feature = "tiff"))]
+fn is_tiff<const N: usize>(_: usize, _: Header<N>) -> bool {
+    false
 }
+
+use super::header::Header;
 
 pub(crate) enum FileType {
     Ntv1,
     Ntv2,
     Gtx,
-    Ctable,
     Ctable2,
+    Tiff,
+    Unknown,
 }
 
 /// Recognize grid file type
@@ -59,9 +49,10 @@ pub(crate) fn recognize<R: Read + Seek>(key: &str, read: &mut R) -> Result<FileT
             FileType::Gtx
         } else if size >= 9 && header.cmp_str(0, "CTABLE V2") {
             FileType::Ctable2
+        } else if is_tiff(size, header) {
+            FileType::Tiff
         } else {
-            // Ctable fallback
-            FileType::Ctable
+            FileType::Unknown
         }
     });
 
@@ -70,21 +61,13 @@ pub(crate) fn recognize<R: Read + Seek>(key: &str, read: &mut R) -> Result<FileT
     rv
 }
 
-/// Grid builder that read from a file
-pub fn read_from_file(catalog: &Catalog, key: &str) -> Result<()> {
-    // Use a BufReader for efficiency
-    read(
-        catalog,
-        key,
-        &mut BufReader::new(File::open(default_file_finder(key)?)?),
-    )
-}
-
-/// Read a grid from a file given by `key`
+/// Read a grid from IO stream
 pub fn read<R: Read + Seek>(catalog: &Catalog, key: &str, read: &mut R) -> Result<()> {
     // Guess the file
     match recognize(key, read)? {
-        FileType::Ntv2 => read_ntv2(catalog, key, read),
+        FileType::Ntv2 => ntv2::read_ntv2(catalog, key, read),
+        #[cfg(feature = "tiff")]
+        FileType::Tiff => geotiff::read_tiff(catalog, key, read),
         _ => Err(Error::UnknownGridFormat),
     }
 }

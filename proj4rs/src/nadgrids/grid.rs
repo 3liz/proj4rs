@@ -61,6 +61,15 @@ impl From<(u32, u32)> for GridId {
     }
 }
 
+impl From<&[u8]> for GridId {
+    fn from(s: &[u8]) -> Self {
+        let mut v = [0u8; 8];
+        let len = std::cmp::min(v.len(), s.len());
+        v[..len].clone_from_slice(&s[..len]);
+        Self(v)
+    }
+}
+
 /// Grid table
 #[derive(Debug)]
 pub struct Grid {
@@ -77,35 +86,71 @@ pub struct Grid {
     /// Conversion matrix: usually stored as f32, f32
     /// and converted to f64, f64
     pub(crate) cvs: Box<[Lp]>,
+    pub(crate) is_geographic: bool,
 }
 
 impl Display for Grid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         writeln!(f, "Id:      {}", self.id.as_str())?;
         writeln!(f, "Lineage: {}", self.lineage.as_str())?;
-        writeln!(
-            f,
-            "Lower Left  ({:>12.7}, {:>12.7})",
-            self.ll.lam.to_degrees(),
-            self.ll.phi.to_degrees()
-        )?;
-        writeln!(
-            f,
-            "Upper Right ({:>12.7}, {:>12.7})",
-            self.ur.lam.to_degrees(),
-            self.ur.phi.to_degrees()
-        )?;
+        writeln!(f, "Geographic: {}", self.is_geographic)?;
+        if self.is_geographic {
+            writeln!(
+                f,
+                "Lower Left  ({:>12.7}, {:>12.7})",
+                self.ll.lam.to_degrees(),
+                self.ll.phi.to_degrees()
+            )?;
+            writeln!(
+                f,
+                "Upper Right ({:>12.7}, {:>12.7})",
+                self.ur.lam.to_degrees(),
+                self.ur.phi.to_degrees()
+            )?;
+        } else {
+            writeln!(
+                f,
+                "Lower Left  ({:>12.7}, {:>12.7})",
+                self.ll.lam, self.ll.phi,
+            )?;
+            writeln!(
+                f,
+                "Upper Right ({:>12.7}, {:>12.7})",
+                self.ur.lam, self.ur.phi
+            )?;
+        }
         writeln!(
             f,
             "Size ({} x {})",
             self.lim.lam as usize, self.lim.phi as usize
         )?;
-        writeln!(
-            f,
-            "Delta ({},{})",
-            self.del.lam.to_degrees(),
-            self.del.phi.to_degrees()
-        )
+        if self.is_geographic {
+            writeln!(
+                f,
+                "Delta ({},{})",
+                self.del.lam.to_degrees(),
+                self.del.phi.to_degrees()
+            )?;
+        } else {
+            writeln!(f, "Delta ({},{})", self.del.lam, self.del.phi,)?;
+        }
+        writeln!(f, "Data: ")?;
+        for l in &self.cvs[..10] {
+            if self.is_geographic {
+                writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
+            } else {
+                writeln!(f, " ({},{})", l.lam, l.phi)?;
+            }
+        }
+        writeln!(f, "...")?;
+        for l in &self.cvs[self.cvs.len() - 10..] {
+            if self.is_geographic {
+                writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
+            } else {
+                writeln!(f, " ({},{})", l.lam, l.phi)?;
+            }
+        }
+        Ok(())
     }
 }
 

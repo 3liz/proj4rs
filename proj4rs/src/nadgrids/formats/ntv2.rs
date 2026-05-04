@@ -53,11 +53,13 @@ fn read_ntv2_grid<R: Read>(
         lineage = GridId::root();
     }
 
+    // Lower left corner
     let mut ll = Lp {
         lam: -head.get_f64(120), // W_LONG
         phi: head.get_f64(72),   // S_LAT
     };
 
+    // Upper rigth corner
     let mut ur = Lp {
         lam: -head.get_f64(104), // E_LONG
         phi: head.get_f64(88),   // N_LAT
@@ -68,6 +70,7 @@ fn read_ntv2_grid<R: Read>(
         phi: head.get_f64(136), // latitude interval
     };
 
+    // Size limit
     let lim = Lp {
         lam: (((ur.lam - ll.lam).abs() / del.lam + 0.5) + 1.).floor(),
         phi: (((ur.phi - ll.phi).abs() / del.phi + 0.5) + 1.).floor(),
@@ -131,6 +134,7 @@ fn read_ntv2_grid<R: Read>(
             lim,
             epsilon,
             cvs: cvs.into_boxed_slice(),
+            is_geographic: true,
         },
     )
 }

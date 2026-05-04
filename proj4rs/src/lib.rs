@@ -84,7 +84,7 @@
 //! ## Grid shift supports
 //!
 //! Nadgrid support is still experimental.
-//! Currently, only Ntv2 multi grids are supported for native build and WASM.
+//! Currently, only Ntv2 multi grids and GeoTIFF grids are supported for native build and WASM.
 //!
 
 mod datum_params;

@@ -2,7 +2,8 @@
 members = [ 
     "proj4rs-geodesic",
     "proj4rs",
-    "proj4rs-clib",
+    "proj4rs-clib", 
+    "run-wasm",
 ]
 resolver = "2"
 
