@@ -3,7 +3,6 @@ members = [
     "proj4rs-geodesic",
     "proj4rs",
     "proj4rs-clib",
-    "proj4rs-php", 
 ]
 resolver = "2"
 
