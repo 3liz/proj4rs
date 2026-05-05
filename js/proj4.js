@@ -108,7 +108,7 @@ function transformer(from, to, coords) {
         return [transformed.x, transformed.y];
       }
     } else {
-      keys = Object.keys(coords);
+      let keys = Object.keys(coords);
       if (keys.length > 2) {
         keys.forEach(function (key) {
           if (key !== 'x' && key !== 'y' && (key !== 'z' || geocent)) {
