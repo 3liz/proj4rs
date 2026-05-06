@@ -1,6 +1,6 @@
 [package]
 name = "proj4rs"
-version = "0.1.11"
+version = "0.2.0"
 edition = "2024"
 description = "Rust adaptation of Proj4"
 readme = "../README.md"
