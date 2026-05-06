@@ -1,7 +1,7 @@
 //!
 //! Miller Cylindrical (Spherical)
 //!
-//! See https://proj.org/en/stable/operations/projections/mill.html
+//! See <https://proj.org/en/stable/operations/projections/mill.html>
 //!
 use crate::errors::Result;
 use crate::math::consts::FRAC_PI_4;

@@ -1,7 +1,7 @@
 //!
 //! Project:  PROJ
 //! Purpose:  Implementation of the krovak (Krovak) projection.
-//!           Definition: http://www.ihsenergy.com/epsg/guid7.html#1.4.3
+//!           Definition: <http://www.ihsenergy.com/epsg/guid7.html#1.4.3>
 //! Author:   Thomas Flemming, tf@ttqv.com
 //!
 //!

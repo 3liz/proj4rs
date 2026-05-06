@@ -83,9 +83,9 @@ impl Transform for Rect {
 
 impl Transform for Triangle {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
-        self.0.transform_coordinates(f)?;
-        self.1.transform_coordinates(f)?;
-        self.2.transform_coordinates(f)
+        self.v1().transform_coordinates(f)?;
+        self.v2().transform_coordinates(f)?;
+        self.v3().transform_coordinates(f)
     }
 }
 

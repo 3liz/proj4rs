@@ -5,7 +5,7 @@
 //!
 //! * lat_ts:
 //!
-//! See https://proj.org/en/stable/operations/projections/cea.html
+//! See <https://proj.org/en/stable/operations/projections/cea.html>
 //!
 
 use crate::errors::{Error, Result};

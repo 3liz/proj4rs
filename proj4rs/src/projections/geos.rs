@@ -11,7 +11,7 @@
 //! Copyright (c) 2012   Martin Raspaud
 //!
 //!  See also (section 4.4.3.2):
-//!    https://www.cgms-info.org/documents/pdf_cgms_03.pdf
+//!    <https://www.cgms-info.org/documents/pdf_cgms_03.pdf>
 //!
 //! Permission is hereby granted, free of charge, to any person obtaining
 //! a copy of this software and associated documentation files (the
