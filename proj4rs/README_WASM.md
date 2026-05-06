@@ -30,3 +30,18 @@ This will create a npm bundler package in js/pkg-bundler
 
 
 Packages are created in the *js/*  directory at the root of the repository.
+
+Before publishing, you'll need to populate `package.json` like below : 
+
+```json
+...
+"files": [
+    "proj4rs_bg.wasm",
+    "proj4rs_bg.wasm.d.ts",
+    "proj4rs.js",
+    "proj4rs_bg.js",
+    "proj4rs.d.ts",
+    "proj4.js"
+  ]
+...
+```
