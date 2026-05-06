@@ -37,6 +37,21 @@ args = [
     "--features=proj4js-compat",
 ]
 
+# NOTE: this increase substantially the size of the wasm 
+[tasks.wasm-tiff]
+description = "Build wasm module (web target)"
+command = "wasm-pack"
+args = [
+    "build",
+    "--out-dir=../js/pkg",
+    "--release",
+    "--target=web",
+    "--no-default-features",
+    "--features=tiff",
+    "--features=proj4js-compat",
+]
+
+
 
 [tasks.wasm_debug]
 description = "Build wasm module with logging feature (web target)"
@@ -67,7 +82,7 @@ args = [
 
 
 [tasks.wasm_bundle]
-description = "Build wasm package as nodejs bundle"
+description = "Build wasm package as bundle"
 command = "wasm-pack"
 args = [
     "build",
@@ -79,7 +94,7 @@ args = [
 ]
 
 [tasks.wasm_node]
-description = "Build wasm package as nodejs bundle"
+description = "Build wasm package as nodejs node"
 command = "wasm-pack"
 args = [
     "build",

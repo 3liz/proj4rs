@@ -187,20 +187,17 @@ macro_rules! declare_proj_params {
 pub mod aea;
 #[cfg(feature = "aeqd")]
 pub mod aeqd;
-#[cfg(feature = "esri")]
 pub mod cea;
 pub mod eqc;
 pub mod estmerc;
 pub mod etmerc;
 pub mod geocent;
 pub mod geos;
-#[cfg(feature = "krovak")]
 pub mod krovak;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
 pub mod merc;
-#[cfg(feature = "esri")]
 pub mod mill;
 pub mod moll;
 pub mod somerc;
@@ -210,18 +207,10 @@ pub mod tmerc;
 
 #[allow(unused_mut)]
 const fn num_projections() -> usize {
-    let mut num = 22;
+    let mut num = 25;
     #[cfg(feature = "aeqd")]
     {
         num += 1;
-    }
-    #[cfg(feature = "krovak")]
-    {
-        num += 1;
-    }
-    #[cfg(feature = "esri")]
-    {
-        num += 2;
     }
     num
 }
@@ -254,11 +243,8 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(eqc),
     #[cfg(feature = "aeqd")]
     declare_proj!(aeqd),
-    #[cfg(feature = "krovak")]
     declare_proj!(krovak),
-    #[cfg(feature = "esri")]
     declare_proj!(mill),
-    #[cfg(feature = "esri")]
     declare_proj!(cea),
 ];
 
@@ -278,9 +264,9 @@ declare_proj_params! {
     geos,
     eqc,
     [aeqd, "aeqd"],
-    [krovak, "krovak"],
-    [mill, "esri"],
-    [cea, "esri"],
+    krovak,
+    mill,
+    cea,
 }
 
 ///

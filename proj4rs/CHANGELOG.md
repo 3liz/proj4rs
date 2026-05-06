@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 * Implement GeoTIFF grids support
 * Fix deprecated field use in `geo_types::Triangle`
+* Add `krovak`,`cea` and `mill` in default build.
 
 ### Changed
 

@@ -46,7 +46,7 @@ rand = "0.10"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["multi-thread", "binaries"]
+default = ["multi-thread", "binaries", "aeqd"]
 binaries = []
 multi-thread = []
 geo-types = ["dep:geo-types"]
@@ -56,8 +56,6 @@ wasm-strict = []
 proj4js-compat = []
 with-wasm-entrypoint = []
 aeqd = ["proj4rs-geodesic"]
-krovak = []
-esri = []
 tiff = ["dep:tiff"]
 
 [target.wasm32-unknown-unknown.dependencies]
