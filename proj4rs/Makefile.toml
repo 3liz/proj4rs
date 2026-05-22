@@ -38,7 +38,7 @@ args = [
 ]
 
 # NOTE: this increase substantially the size of the wasm 
-[tasks.wasm-tiff]
+[tasks.wasm-all]
 description = "Build wasm module (web target)"
 command = "wasm-pack"
 args = [
@@ -48,7 +48,9 @@ args = [
     "--target=web",
     "--no-default-features",
     "--features=tiff",
+    "--features=aeqd",
     "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
 ]
 
 

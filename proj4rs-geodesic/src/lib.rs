@@ -21,11 +21,13 @@
 //!
 //! Note: this is an alternative to the Vincenty distance calculation.
 //!
-
+#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 use std::sync;
 
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-static GEOD_INIT: std::cell::OnceCell<bool> = std::cell::OnceCell::new();
+thread_local! {
+    static GEOD_INIT: std::cell::OnceCell<bool> = std::cell::OnceCell::new();
+}
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 static GEOD_INIT: sync::OnceLock<bool> = sync::OnceLock::new();
@@ -97,12 +99,26 @@ impl Geodesic {
     /// // Geodesic { a: 6378145, f: 0.003352891869237217 }
     /// ```
     pub fn new(a: f64, f: f64) -> Self {
-        GEOD_INIT.get_or_init(|| {
-            unsafe {
-                Init();
-            }
-            true
-        });
+        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+        {
+            GEOD_INIT.with(|v| {
+                v.get_or_init(|| {
+                    unsafe {
+                        Init();
+                    }
+                    true
+                });
+            });
+        }
+        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+        {
+            GEOD_INIT.get_or_init(|| {
+                unsafe {
+                    Init();
+                }
+                true
+            });
+        }
         unsafe {
             let mut g = std::mem::MaybeUninit::<Geodesic>::uninit();
             if !geod_init(g.as_mut_ptr(), a, f) {
