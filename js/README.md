@@ -12,12 +12,3 @@ python3 -m http.server
 ```
 
 The server will automatically serve the `index.html` file in the current directory
-
-## Running the OpenLayers demo from Docker container
-
-```bash
-.docker/ol-run.sh
-```
-
-This will build the Node.js image and run the application. Once the application
-is started, navigate to http://localhost:5173/.
