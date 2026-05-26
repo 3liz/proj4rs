@@ -4,8 +4,8 @@
 //! Use JS Dataview for passing nadgrids definition
 //!
 use js_sys::Uint8Array;
-use wasm_bindgen::prelude::*;
 use std::io::Cursor;
+use wasm_bindgen::prelude::*;
 
 use crate::nadgrids::{catalog, formats};
 

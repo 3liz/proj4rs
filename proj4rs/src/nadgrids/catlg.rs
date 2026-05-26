@@ -21,7 +21,7 @@ pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 #[doc(hidden)]
 pub type GridRef = &'static Grid;
 
-#[cfg(feature = "multi-thread")]
+#[cfg(not(target_arch = "wasm32"))]
 mod implem {
     use super::Node;
     use std::ptr::null_mut;
@@ -58,7 +58,7 @@ mod implem {
     }
 }
 
-#[cfg(not(feature = "multi-thread"))]
+#[cfg(target_arch = "wasm32")]
 mod implem {
     use super::Node;
     use std::cell::Cell;
@@ -120,32 +120,31 @@ impl Node {
     }
 }
 
-/// Private catalog implementation
-#[cfg(not(feature = "multi-thread"))]
-use std::cell::RefCell;
+#[cfg(target_arch = "wasm32")]
+mod arch {
+    use super::GridBuilder;
+    use std::cell::RefCell;
+    pub type BuilderRef = RefCell<Option<GridBuilder>>;
+    pub const EMPTY_BUILDER_REF: BuilderRef = RefCell::new(None);
+}
 
-#[cfg(not(feature = "multi-thread"))]
-type BuilderRef = RefCell<Option<GridBuilder>>;
-
-#[cfg(feature = "multi-thread")]
-type BuilderRef = Option<GridBuilder>;
-
-#[cfg(not(feature = "multi-thread"))]
-const EMPTY_BUILDER_REF: BuilderRef = RefCell::new(None);
-
-#[cfg(feature = "multi-thread")]
-const EMPTY_BUILDER_REF: BuilderRef = None;
+#[cfg(not(target_arch = "wasm32"))]
+mod arch {
+    use super::GridBuilder;
+    pub type BuilderRef = Option<GridBuilder>;
+    pub const EMPTY_BUILDER_REF: BuilderRef = None;
+}
 
 pub struct Catalog {
     first: NodePtr,
-    builder: BuilderRef,
+    builder: arch::BuilderRef,
 }
 
 impl Catalog {
     const fn new() -> Self {
         Self {
             first: NodePtr::new(),
-            builder: EMPTY_BUILDER_REF,
+            builder: arch::EMPTY_BUILDER_REF,
         }
     }
 
@@ -197,7 +196,7 @@ impl Default for Catalog {
     }
 }
 
-#[cfg(feature = "multi-thread")]
+#[cfg(not(target_arch = "wasm32"))]
 pub mod catalog {
     use super::*;
     use std::sync::Mutex;
@@ -233,7 +232,7 @@ pub mod catalog {
     }
 
     pub fn with_catalog<F, R>(f: F) -> R
-    where 
+    where
         F: FnOnce(&Catalog) -> R,
     {
         let ctlg = CATALOG.lock().unwrap();
@@ -241,7 +240,7 @@ pub mod catalog {
     }
 }
 
-#[cfg(not(feature = "multi-thread"))]
+#[cfg(target_arch = "wasm32")]
 pub mod catalog {
     use super::*;
 
@@ -277,7 +276,7 @@ pub mod catalog {
     }
 
     pub fn with_catalog<F, R>(f: F) -> R
-    where 
+    where
         F: FnOnce(&Catalog) -> R,
     {
         CATALOG.with(f)

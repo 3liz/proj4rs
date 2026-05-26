@@ -46,9 +46,8 @@ rand = "0.10"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["multi-thread", "binaries", "aeqd"]
+default = ["aeqd"]
 binaries = []
-multi-thread = []
 geo-types = ["dep:geo-types"]
 logging = ["log"]
 local_tests = []
