@@ -33,6 +33,7 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
+    "--no-default-features",
     "--features=proj4js-compat",
 ]
 
@@ -45,6 +46,7 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
+    "--no-default-features",
     "--features=tiff",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
@@ -60,6 +62,7 @@ args = [
     "--out-dir=../js/pkg",
     "--dev",
     "--target=web",
+    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
@@ -73,6 +76,7 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
+    "--no-default-features",
     "--features=wasm-strict",
     "--features=proj4js-compat",
 ]
@@ -98,6 +102,7 @@ args = [
     "--out-dir=../js/pkg-node",
     "--release",
     "--target=nodejs",
+    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
