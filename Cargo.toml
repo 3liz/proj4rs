@@ -15,15 +15,12 @@ homepage = "https://github.com/3liz/proj4rs/"
 repository = "https://github.com/3liz/proj4rs/"
 categories = ["science::geo"]
 
+[workspace.dependencies]
+proj4rs = { path = "proj4rs" }
+proj4rs-geodesic = { version = "0.1", path = "proj4rs-geodesic" }
+
 [profile.release]
 lto = true
 codegen-units = 1
 strip = "debuginfo"
 incremental = false
-
-[patch.crates-io]
-# Use local crates
-proj4rs = { path = "./proj4rs" }
-proj4rs-geodesic = { path = "./proj4rs-geodesic" }
-
-
