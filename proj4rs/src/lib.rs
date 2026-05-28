@@ -96,7 +96,6 @@ mod parameters;
 mod parse;
 mod prime_meridians;
 mod projstring;
-mod units;
 
 pub mod adaptors;
 pub mod errors;
@@ -104,6 +103,7 @@ pub mod nadgrids;
 pub mod proj;
 pub mod projections;
 pub mod transform;
+pub mod units;
 
 // Reexport
 pub use proj::Proj;
