@@ -175,6 +175,12 @@ impl Proj {
     pub fn vunits(&self) -> &'static str {
         self.vunits
     }
+
+    #[inline]
+    /// Returns the ellipsoid radius parameters as (major, minor)
+    pub fn ellipse_parameters(&self) -> (f64, f64) {
+        (self.projdata.ellps.a, self.projdata.ellps.b)
+    }
 }
 
 //-------------------------

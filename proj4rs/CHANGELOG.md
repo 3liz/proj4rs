@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+* Give access to the ellipsoid radius parameters from 'Proj'
 * Make module `units` public
 * Enforce multi-thread support on native build.
 * Add 'aeqd' projection in default wasm build
