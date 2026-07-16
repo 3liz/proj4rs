@@ -34,7 +34,9 @@ args = [
     "--release",
     "--target=web",
     "--no-default-features",
+    "--features=logging",
     "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
 ]
 
 # NOTE: this increase substantially the size of the wasm 
@@ -48,6 +50,7 @@ args = [
     "--target=web",
     "--no-default-features",
     "--features=tiff",
+    "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
 ]
@@ -91,7 +94,9 @@ args = [
     "--release",
     "--target=bundler",
     "--no-default-features",
+    "--features=logging",
     "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
 ]
 
 [tasks.wasm_node]
