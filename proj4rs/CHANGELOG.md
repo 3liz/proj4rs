@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+* Fix geodetic flattening for ellipsoid built from supplied semi-minor-axis
 * Give access to the ellipsoid radius parameters from 'Proj'
 * Make module `units` public
 * Enforce multi-thread support on native build.

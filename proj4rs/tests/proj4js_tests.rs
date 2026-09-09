@@ -138,3 +138,21 @@ fn test_transform_epsg3844() {
     assert_abs_diff_eq!(inp.0, 2790174.2500622645, epsilon = 1.0e-6);
     assert_abs_diff_eq!(inp.1, 5780346.2980352566, epsilon = 1.0e-6);
 }
+
+#[test]
+fn test_clark_1866() {
+    // Test for https://github.com/3liz/proj4rs/issues/47 regression
+    let clark = concat!(
+        "+proj=tmerc +lat_0=40 +lon_0=-74 +ellps=clrk66 +towgs84=-8,160,176 +units=m",
+    );
+    
+    let from = proj::Proj::from_user_string(clark).unwrap();
+    let to = proj::Proj::from_user_string("+proj=longlat +datum=WGS84").unwrap();
+
+    let mut inp = (10000.0, 20000.0, 30.0);
+    transform::transform(&from, &to, &mut inp).unwrap();
+
+    // Compare results from cs2cs output
+    assert_abs_diff_eq!(inp.0.to_degrees(), -73.88215840173, epsilon = 1.0e-8);
+    assert_abs_diff_eq!(inp.1.to_degrees(), 40.18007067501, epsilon = 1.0e-8);
+}

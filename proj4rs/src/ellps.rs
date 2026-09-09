@@ -262,7 +262,7 @@ impl Ellipsoid {
                 let b2 = b * b;
                 es = (a2 - b2) / a2;
                 e = es.sqrt();
-                f = (a - b) / b;
+                f = (a - b) / a; 
                 rf = if f > 0. { 1. / f } else { f64::INFINITY }
             }
         }
@@ -328,6 +328,8 @@ mod tests {
     use crate::ellipsoids::constants::*;
     use crate::projstring;
 
+    use approx::assert_abs_diff_eq;
+    
     #[test]
     fn ellps_from_defn() {
         let ellps = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
@@ -394,5 +396,11 @@ mod tests {
         assert!(from_projstring("+a=-2.").is_err());
         assert!(from_projstring("+es=-1.").is_err());
         assert!(from_projstring("+f=20.").is_err());
+    }
+
+    #[test] 
+    fn ellps_inverse_flattening_semi_minor() {
+        let ellp = Ellipsoid::calc_ellipsoid_params(2., Shape::SP_b(1.)).unwrap();
+        assert_abs_diff_eq!(ellp.f, 0.500000, epsilon = 1.0e-6);
     }
 }
