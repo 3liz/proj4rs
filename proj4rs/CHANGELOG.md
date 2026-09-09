@@ -7,16 +7,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+## 0.2.0 - 2026-09-09
+
+### Fixed
+
 * Fix geodetic flattening for ellipsoid built from supplied semi-minor-axis
+    - https://github.com/3liz/proj4rs/issues/47
+* Fix deprecated field use in `geo_types::Triangle`
+
+### Changed
+
 * Give access to the ellipsoid radius parameters from 'Proj'
 * Make module `units` public
 * Enforce multi-thread support on native build.
+
+### Added
+
 * Add 'aeqd' projection in default wasm build
 * Implement GeoTIFF grids support
-* Fix deprecated field use in `geo_types::Triangle`
 * Add `krovak`,`cea` and `mill` in default build.
-
-### Changed
 
 ## 0.1.10 - 2026-03-06
 
