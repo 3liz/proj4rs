@@ -9,7 +9,7 @@ main:
 	echo "  npm-package: Create wasm npm bundle"
 
 
-npm-package:
+build-npm-package:
 	@rm -rf js/pkg-bundle
 	cargo make --cwd proj4rs  wasm_bundle
 	cp README.md js/proj4.js js/pkg-bundle
@@ -20,3 +20,5 @@ npm-package:
 	json.dump(js, open("js/pkg-bundle/package.json", "w"), indent=4)
 	EOF
 
+publish-npm-package:
+	wasm-pack publish --pkg-dir=js/pkg-bundle -t bundler

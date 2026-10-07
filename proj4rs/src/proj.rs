@@ -210,7 +210,7 @@ impl Proj {
             .map(
                 |p| match prime_meridians::find_prime_meridian(p.try_into()?) {
                     Some(v) => Ok(v),
-                    None => p.try_into(),
+                    None => p.try_angular_value(),
                 },
             )
             .unwrap_or(Ok(0.))

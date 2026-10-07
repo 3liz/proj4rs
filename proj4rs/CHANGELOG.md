@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Fixed
+
+* Fix radians/dms conversion for prime meridians
+* Do no skip prime meridian for latlong/geocent
+
 ## 0.2.0 - 2026-09-09
 
 ### Fixed

@@ -287,7 +287,7 @@ where
     P: Transform + ?Sized,
 {
     let mut pm = p.from_greenwich();
-    if pm == 0. || p.is_geocent() || p.is_latlong() {
+    if pm == 0. {
         Ok(())
     } else {
         if dir == Forward {

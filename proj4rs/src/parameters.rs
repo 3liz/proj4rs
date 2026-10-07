@@ -55,7 +55,7 @@ impl Parameter<'_> {
     /// input value is given directly in radians
     ///
     /// Syntax suffix is [rR][EeWwNnSs]
-    fn try_angular_value(&self) -> Result<f64> {
+    pub fn try_angular_value(&self) -> Result<f64> {
         const FWD_SFX: &[char; 4] = &['E', 'e', 'N', 'n'];
         const INV_SFX: &[char; 4] = &['W', 'w', 'S', 's'];
         const RAD_SFX: &[char; 2] = &['r', 'R'];
@@ -110,13 +110,16 @@ impl Parameter<'_> {
             return f64::from_str(s);
         }
 
+        // Get leading negative sign
+        let (s, sgn) = s.strip_prefix("-").map(|s| (s, -1.0_f64)).unwrap_or((s, 1.0_f64));
+
         let (s, seconds) = parse_number_part(s, "\"")?;
         let (s, minutes) = parse_number_part(s, "'")?;
 
         let s = s.trim_end_matches(DEG_SFX);
         let degrees = if !s.is_empty() { f64::from_str(s)? } else { 0. };
 
-        Ok(degrees + (minutes + seconds / 60.) / 60.)
+        Ok(sgn * (degrees + (minutes + seconds / 60.) / 60.))
     }
 
     /// Check the token as a boolean flag
@@ -244,12 +247,20 @@ mod tests {
         let params = parse("+foo=2.3wr").unwrap();
         assert!(params.try_angular_value("foo").is_err());
 
-        // DWS value
+        // DMS value
         let params = parse("+foo=38d30'9\"").unwrap();
         assert_eq!(
             params.try_angular_value("foo").unwrap().unwrap(),
             38.5025_f64.to_radians(),
         );
+
+        // DMS negative value
+        let params = parse("+foo=-3d30'").unwrap();
+        assert_eq!(
+            params.try_angular_value("foo").unwrap().unwrap(),
+            -3.5_f64.to_radians(),
+        );
+
     }
 
     #[test]

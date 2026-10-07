@@ -135,6 +135,48 @@ fn test_wgs84_bng_conversion() {
     assert_abs_diff_eq!(v1[0].1, 200052.051949012151, epsilon = 1.0e-8);
 }
 
+
+#[test]
+fn test_prime_meridian_parameter_by_name() {
+
+    let from = Proj::from_proj_string("+proj=merc +ellps=WGS84 +pm=paris").unwrap();
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+    let mut v1 = vec![(0.0_f64.to_radians(), 0.0_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
+} 
+
+#[test]
+fn test_prime_meridian_parameter_dms() {
+
+    let from = Proj::from_proj_string("+proj=merc +ellps=WGS84 +pm=2d20'14.025\"E").unwrap();
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+    let mut v1 = vec![(0.0_f64.to_radians(), 0.0_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
+} 
+
+#[test]
+fn test_prime_meridian_for_latlong_geocent() {
+
+    let from = Proj::from_proj_string("+proj=latlong +ellps=WGS84 +pm=paris").unwrap();
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+    let mut v1 = vec![(0.0_f64.to_radians(), 0.0_f64.to_radians(), 0.0)];
+
+    transform(&from, &to, v1.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
+} 
+
+
+
 #[test]
 #[cfg(feature = "local_tests")]
 fn test_wgs84_bng_nadgrid_conversion() {
@@ -239,3 +281,32 @@ fn test_epsg27700_bad_point() {
     )
     .unwrap();
 }
+
+// Ignore that test for now since we do not handle `+nadgrids=@null` correctly
+#[ignore]
+#[test]
+// Regression test for issue #34: a standalone `+nadgrids=@null` means a zero
+// datum shift (identity to WGS84), NOT an unknown datum.
+fn test_nadgrids_null_keeps_other_side_towgs84() {
+    let from = Proj::from_proj_string(concat!(
+        "+proj=sterea +lat_0=52.1561605555556 +lon_0=5.38763888888889 ",
+        "+k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel ",
+        "+towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 ",
+        "+units=m +no_defs",
+    ))
+    .unwrap();
+    let to = Proj::from_proj_string(concat!(
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 ",
+        "+k=1 +units=m +towgs84=0,0,0,0,0,0,0  +no_defs",
+    ))
+    .unwrap();
+
+    // Amersfoort tower, RD coordinates (155000, 463000).
+    let mut v = vec![(155000.0_f64, 463000.0_f64, 0.0)];
+    transform(&from, &to, v.as_mut_slice()).unwrap();
+
+    // PROJ 9.8.1 reference (sub-millimetre agreement).
+    assert_abs_diff_eq!(v[0].0, 599700.751, epsilon = 1.0e-2);
+    assert_abs_diff_eq!(v[0].1, 6828231.373, epsilon = 1.0e-2);
+}
+
