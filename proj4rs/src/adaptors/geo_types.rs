@@ -75,17 +75,19 @@ impl Transform for Rect {
         let (mut min, mut max) = (self.min(), self.max());
         min.transform_coordinates(f)?;
         max.transform_coordinates(f)?;
-        self.set_min(min);
-        self.set_max(max);
+        *self = Rect::new(min, max);
         Ok(())
     }
 }
 
 impl Transform for Triangle {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
-        self.v1().transform_coordinates(f)?;
-        self.v2().transform_coordinates(f)?;
-        self.v3().transform_coordinates(f)
+        let (mut v1, mut v2, mut v3) = (self.v1(), self.v2(), self.v3());
+        v1.transform_coordinates(f)?;
+        v2.transform_coordinates(f)?;
+        v3.transform_coordinates(f)?;
+        *self = Triangle::unchecked_winding(v1, v2, v3);
+        Ok(())
     }
 }
 

@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Fixed
 
 * Fix UTM zone from `lon_0` on `etmerc`
-* Fix `geo_types` transform
+* Fix `geo_types` transforms
 * Fix `krovak` inverse with false easting/northing
 * Fix `laea` spherical oblique and south pole forward projection
 * Fix forward unit scaling inversion
