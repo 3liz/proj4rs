@@ -111,7 +111,10 @@ impl Parameter<'_> {
         }
 
         // Get leading negative sign
-        let (s, sgn) = s.strip_prefix("-").map(|s| (s, -1.0_f64)).unwrap_or((s, 1.0_f64));
+        let (s, sgn) = s
+            .strip_prefix("-")
+            .map(|s| (s, -1.0_f64))
+            .unwrap_or((s, 1.0_f64));
 
         let (s, seconds) = parse_number_part(s, "\"")?;
         let (s, minutes) = parse_number_part(s, "'")?;
@@ -260,7 +263,6 @@ mod tests {
             params.try_angular_value("foo").unwrap().unwrap(),
             -3.5_f64.to_radians(),
         );
-
     }
 
     #[test]

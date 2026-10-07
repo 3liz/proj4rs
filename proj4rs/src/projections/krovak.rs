@@ -86,7 +86,7 @@ use crate::ellps::{Ellipsoid, Shape};
 use crate::errors::{Error, Result};
 use crate::math::consts::{FRAC_PI_2, FRAC_PI_4};
 use crate::parameters::ParamList;
-use crate::proj::ProjData;
+use crate::proj::{Proj, ProjData};
 
 // Projection stub
 super::projection! { krovak }
@@ -132,7 +132,7 @@ impl Projection {
         }
 
         // if scale not set default to 0.9999
-        if params.get("k").is_none() && params.get("k0").is_none() {
+        if Proj::get_k0(&params).is_none() {
             p.k0 = 0.9999;
         }
 

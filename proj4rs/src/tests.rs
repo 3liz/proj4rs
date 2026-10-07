@@ -135,10 +135,8 @@ fn test_wgs84_bng_conversion() {
     assert_abs_diff_eq!(v1[0].1, 200052.051949012151, epsilon = 1.0e-8);
 }
 
-
 #[test]
 fn test_prime_meridian_parameter_by_name() {
-
     let from = Proj::from_proj_string("+proj=merc +ellps=WGS84 +pm=paris").unwrap();
     let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
@@ -147,11 +145,10 @@ fn test_prime_meridian_parameter_by_name() {
     transform(&from, &to, v1.as_mut_slice()).unwrap();
 
     assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
-} 
+}
 
 #[test]
 fn test_prime_meridian_parameter_dms() {
-
     let from = Proj::from_proj_string("+proj=merc +ellps=WGS84 +pm=2d20'14.025\"E").unwrap();
     let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
@@ -160,11 +157,10 @@ fn test_prime_meridian_parameter_dms() {
     transform(&from, &to, v1.as_mut_slice()).unwrap();
 
     assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
-} 
+}
 
 #[test]
 fn test_prime_meridian_for_latlong_geocent() {
-
     let from = Proj::from_proj_string("+proj=latlong +ellps=WGS84 +pm=paris").unwrap();
     let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
@@ -173,9 +169,7 @@ fn test_prime_meridian_for_latlong_geocent() {
     transform(&from, &to, v1.as_mut_slice()).unwrap();
 
     assert_abs_diff_eq!(v1[0].0.to_degrees(), 2.337, epsilon = 1.0e-3);
-} 
-
-
+}
 
 #[test]
 #[cfg(feature = "local_tests")]
@@ -309,4 +303,3 @@ fn test_nadgrids_null_keeps_other_side_towgs84() {
     assert_abs_diff_eq!(v[0].0, 599700.751, epsilon = 1.0e-2);
     assert_abs_diff_eq!(v[0].1, 6828231.373, epsilon = 1.0e-2);
 }
-

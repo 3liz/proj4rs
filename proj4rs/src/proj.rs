@@ -10,7 +10,7 @@ use crate::datum_transform::Datum;
 use crate::datums::{self, DatumDefn};
 use crate::ellps::Ellipsoid;
 use crate::errors::{Error, Result};
-use crate::parameters::ParamList;
+use crate::parameters::{ParamList, Parameter};
 use crate::projections::{ProjDelegate, find_projection};
 use crate::{ellipsoids, prime_meridians, projstring, units};
 
@@ -316,6 +316,14 @@ impl Proj {
         }
     }
 
+    /// k_0 aliases 
+    pub(crate) fn get_k0<'a>(params: &'a ParamList<'a>) -> Option<&'a Parameter<'a>> {
+        params
+            .get("k_0")
+            .or_else(|| params.get("k"))
+            .or_else(|| params.get("k0")) // Proj4js compatibilty alias
+    }
+
     ///
     /// Proj object constructor
     ///
@@ -366,11 +374,10 @@ impl Proj {
             x0: params.try_value("x_0")?.unwrap_or(0.),
             y0: params.try_value("y_0")?.unwrap_or(0.),
             // Proj4 compatibility
-            k0: match params.get("k0") {
-                Some(p) => Some(p.try_into()).transpose(),
-                None => params.try_value("k"),
-            }?
-            .unwrap_or(1.),
+            k0: Self::get_k0(&params)
+                .map(|p| p.try_into())
+                .transpose()?
+                .unwrap_or(1.),
         };
 
         let project = proj_init.init(&mut projdata, &params)?;
@@ -493,5 +500,12 @@ mod tests {
         let err = p.unwrap_err();
         println!("{:?}", err);
         assert!(matches!(err, Error::InvalidEllipsoid));
+    }
+
+    #[test]
+    fn proj_test_k_0() {
+        assert!(Proj::get_k0(&projstring::parse("+proj=krovak +k_0=1.0").unwrap()).is_some());
+        assert!(Proj::get_k0(&projstring::parse("+proj=krovak +k=1.0").unwrap()).is_some());
+        assert!(Proj::get_k0(&projstring::parse("+proj=krovak +k0=1.0").unwrap()).is_some());
     }
 }
