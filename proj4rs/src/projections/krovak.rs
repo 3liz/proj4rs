@@ -204,7 +204,7 @@ impl Projection {
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let (x, y) = if self.easting_northing {
             // NOTE that correction factors are reversed in y/x
-            (-y - self.xyfact.0, -x - self.xyfact.1)
+            (-y - self.xyfact.1, -x - self.xyfact.0)
         } else {
             (y, x)
         };
@@ -280,7 +280,29 @@ mod tests {
             ),
         ];
 
-        test_proj_forward(&p, &inputs, 1e-6);
-        test_proj_inverse(&p, &inputs, 1e-6);
+        test_proj_forward(&p, &inputs, 1e-10);
+        test_proj_inverse(&p, &inputs, 1e-10);
     }
+
+    #[test]
+    fn proj_krovak_x_0() {
+        let p = Proj::from_proj_string("+proj=krovak +x_0=100000 +y_0=0 +units=m").unwrap();
+
+        println!("{:#?}", p.projection());
+
+        let inputs = [
+            (
+                (12.09, 47.73, 0.),
+                (-1051555.937880165409, -1276319.151569747366, 0.),
+            ),
+            (
+                (22.56, 51.06, 0.),
+                (-259523.534749580605,  -983087.548008236452, 0.),
+            ),
+        ];
+
+        test_proj_forward(&p, &inputs, 1e-10);
+        test_proj_inverse(&p, &inputs, 1e-10) ;
+    }
+
 }
