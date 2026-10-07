@@ -172,6 +172,39 @@ fn test_prime_meridian_for_latlong_geocent() {
 }
 
 #[test]
+// Regression: geocentric output must be converted from meters to
+// the target units (divided by `to_meter`), not multiplied.
+fn test_geocent_units_scaling() {
+    let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+    let to = Proj::from_proj_string("+proj=geocent +datum=WGS84 +units=km").unwrap();
+
+    let mut v = vec![
+        (0.0_f64.to_radians(), 0.0_f64.to_radians(), 0.0),
+        (0.0_f64.to_radians(), 90.0_f64.to_radians(), 0.0),
+    ];
+
+    transform(&from, &to, v.as_mut_slice()).unwrap();
+
+    // Equator / Greenwich: X = a
+    assert_abs_diff_eq!(v[0].0, 6378.137, epsilon = 1.0e-9);
+    assert_abs_diff_eq!(v[0].1, 0., epsilon = 1.0e-9);
+    assert_abs_diff_eq!(v[0].2, 0., epsilon = 1.0e-9);
+    // North pole: Z = b
+    assert_abs_diff_eq!(v[1].0, 0., epsilon = 1.0e-9);
+    assert_abs_diff_eq!(v[1].1, 0., epsilon = 1.0e-9);
+    assert_abs_diff_eq!(v[1].2, 6356.752314245, epsilon = 1.0e-9);
+
+    // Round trip back to geographic
+    transform(&to, &from, v.as_mut_slice()).unwrap();
+
+    assert_abs_diff_eq!(v[0].0, 0., epsilon = 1.0e-12);
+    assert_abs_diff_eq!(v[0].1, 0., epsilon = 1.0e-12);
+    assert_abs_diff_eq!(v[0].2, 0., epsilon = 1.0e-6);
+    assert_abs_diff_eq!(v[1].1, 90.0_f64.to_radians(), epsilon = 1.0e-12);
+    assert_abs_diff_eq!(v[1].2, 0., epsilon = 1.0e-6);
+}
+
+#[test]
 #[cfg(feature = "local_tests")]
 fn test_wgs84_bng_nadgrid_conversion() {
     use crate::nadgrids::{catalog, files::read_from_file};

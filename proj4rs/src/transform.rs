@@ -263,7 +263,7 @@ where
     if fac != 1.0 {
         match dir {
             Forward => points.transform_coordinates(&mut |x, y, z| {
-                geodetic_to_geocentric(x, y, z, a, es).map(|(x, y, z)| (x * fac, y * fac, z * fac))
+                geodetic_to_geocentric(x, y, z, a, es).map(|(x, y, z)| (x / fac, y / fac, z / fac))
             }),
             Inverse => points.transform_coordinates(&mut |x, y, z| {
                 geocentric_to_geodetic(x * fac, y * fac, z * fac, a, es, b)
