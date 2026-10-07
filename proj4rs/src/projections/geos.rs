@@ -225,6 +225,14 @@ impl Sph {
 
         tmp = self.radius_g - vx;
 
+        /*
+         * Proj does not check visibility in spherical case
+        // Check visibility.
+        if (self.radius_g - vx) * vx - vy * vy - vz * vz < 0. {
+            return Err(Error::CoordTransOutsideProjectionDomain);
+        }
+        */
+
         if self.flip_axis {
             Ok((
                 self.radius_g_1 * (vy / vz.hypot(tmp)).atan(),

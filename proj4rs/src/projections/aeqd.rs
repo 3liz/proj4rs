@@ -464,12 +464,10 @@ impl GuamProj {
         let x2 = 0.5 * x * x;
         let mut phi = self.phi0;
         let mut t = 0.;
-        eprintln!("################# {} {} {}", x, y, phi.to_degrees());
         for _ in 0..3 {
             t = self.e * phi.sin();
             t = (1. - t * t).sqrt();
             phi = inv_mlfn(self.M1 + y - x2 * phi.tan() * t, self.es, self.en)?;
-            eprintln!("XXXXXXXXXXXXXXXXX {} {}", t, phi.to_degrees());
         }
         Ok((x * t / phi.cos(), phi, z))
     }

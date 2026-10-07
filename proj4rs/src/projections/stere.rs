@@ -149,16 +149,22 @@ impl Projection {
                 (a * cosx, a * sinx)
             }
             S_POLE => {
-                if (phi.abs() - FRAC_PI_2).abs() < 1e-15 {
+                if (phi + FRAC_PI_2).abs() < 1e-15 {
                     (0., 0.)
+                } else if (phi - FRAC_PI_2).abs() < 1e-15 {
+                    // Opposite pole cannot be projected
+                    return Err(Error::CoordTransOutsideProjectionDomain);
                 } else {
                     let x = self.akm1 * tsfn(-phi, -sinphi, self.e);
                     (x, x * coslam)
                 }
             }
             N_POLE => {
-                if (phi.abs() - FRAC_PI_2).abs() < 1e-15 {
+                if (phi - FRAC_PI_2).abs() < 1e-15 {
                     (0., 0.)
+                } else if (phi + FRAC_PI_2).abs() < 1e-15 {
+                    // Opposite pole cannot be projected
+                    return Err(Error::CoordTransOutsideProjectionDomain);
                 } else {
                     let x = self.akm1 * tsfn(phi, sinphi, self.e);
                     (x, -x * coslam)
@@ -415,6 +421,45 @@ mod tests {
     use super::*;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
+
+    #[test]
+    fn proj_stere_polar_antipode() {
+        // Regression: in ellipsoidal polar mode, only the projection-centre pole
+        // maps to the origin; the opposite pole must not.
+        use crate::transform::transform;
+
+        let ll = Proj::from_proj_string("+proj=longlat +ellps=WGS84").unwrap();
+
+        for (s, centre) in [
+            ("+proj=stere +lat_0=90 +ellps=WGS84", 90.),
+            ("+proj=stere +lat_0=-90 +ellps=WGS84", -90.),
+            ("+proj=stere +lat_0=90 +R=6400000", 90.),
+            ("+proj=stere +lat_0=-90 +R=6400000", -90.),
+        ] {
+            let p = Proj::from_proj_string(s).unwrap();
+
+            // Centre pole maps to the origin, whatever the longitude
+            for lon in [0., 30.] {
+                let mut v = (f64::to_radians(lon), f64::to_radians(centre), 0.);
+                transform(&ll, &p, &mut v).unwrap();
+                assert!(v.0.abs() < 1e-6 && v.1.abs() < 1e-6, "{s}: centre pole");
+            }
+
+            // Opposite pole is either rejected or projected far away (PROJ
+            // returns ~4e23 m), but never mapped to the origin
+            for lon in [0., 30.] {
+                let mut v = (f64::to_radians(lon), f64::to_radians(-centre), 0.);
+                if transform(&ll, &p, &mut v).is_ok() {
+                    assert!(
+                        v.0.hypot(v.1) > 1.0e15,
+                        "{s}: opposite pole projected to ({}, {})",
+                        v.0,
+                        v.1
+                    );
+                }
+            }
+        }
+    }
 
     #[test]
     fn proj_stere_stere_ellipsoidal() {

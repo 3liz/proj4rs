@@ -286,12 +286,8 @@ impl Projection {
             }
             None => {
                 // nearest central meridian input
-                let zone = ((adjlon(p.lam0) + PI) * 30. / PI).floor().round();
-                if (1. ..=60.).contains(&zone) {
-                    Ok(zone)
-                } else {
-                    Err(Error::InvalidUtmZone)
-                }
+                let zone = ((adjlon(p.lam0) + PI) * 30. / PI).floor().clamp(0., 59.) + 1.;
+                Ok(zone)
             }
         })?;
 
@@ -309,6 +305,61 @@ mod tests {
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
+
+    #[test]
+    fn proj_utm_zone_from_lon_0() {
+        // Regression: without +zone, the UTM zone is the one containing lon_0
+        use crate::transform::transform;
+        use approx::assert_abs_diff_eq;
+
+        let ll = Proj::from_proj_string("+proj=longlat +ellps=GRS80").unwrap();
+
+        // (lon_0, expected zone) as selected by PROJ 9.8.1.
+        // Note: lon_0=0 selects zone 30 in PROJ because of floating point rounding
+        // ((0 + pi) * 30 / pi = 29.999999999999996).
+        let cases = [
+            (0., 30),
+            (3., 31),
+            (5.9, 31),
+            (6., 32),
+            (-3., 30),
+            (-100., 14),
+            (45., 38),
+            (-177., 1),
+            (-179.9, 1),
+            (-180., 1),
+            (177., 60),
+            (179.9, 60),
+            (180., 60),
+        ];
+
+        for (lon_0, zone) in cases {
+            let s = format!("+proj=utm +ellps=GRS80 +lon_0={lon_0}");
+            let p = Proj::from_proj_string(&s)
+                .unwrap_or_else(|e| panic!("{s}: {e:?}"));
+            let p_zone =
+                Proj::from_proj_string(&format!("+proj=utm +ellps=GRS80 +zone={zone}")).unwrap();
+
+            // Central meridian of the expected zone
+            let cm = (zone as f64 - 0.5) * 6. - 180.;
+
+            // A point on the central meridian has easting 500000
+            let mut v = (cm.to_radians(), 45f64.to_radians(), 0.);
+            transform(&ll, &p, &mut v).unwrap();
+            assert_abs_diff_eq!(v.0, 500000., epsilon = 1.0e-6);
+
+            // A point 1° east of the central meridian (PROJ 9.8.1 reference),
+            // identical to the result with an explicit +zone
+            let mut v = ((cm + 1.).to_radians(), 45f64.to_radians(), 0.);
+            let mut w = v;
+            transform(&ll, &p, &mut v).unwrap();
+            transform(&ll, &p_zone, &mut w).unwrap();
+            assert_abs_diff_eq!(v.0, 578815.302917359, epsilon = 1.0e-6);
+            assert_abs_diff_eq!(v.1, 4983436.768229601, epsilon = 1.0e-6);
+            assert_abs_diff_eq!(v.0, w.0, epsilon = 1.0e-9);
+            assert_abs_diff_eq!(v.1, w.1, epsilon = 1.0e-9);
+        }
+    }
 
     #[test]
     fn proj_etmerc_etmerc() {

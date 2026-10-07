@@ -28,7 +28,7 @@ impl Projection {
     pub fn merc(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let phits: Option<f64> = params.try_angular_value("lat_ts")?;
         if let Some(phits) = phits
-            && phits >= FRAC_PI_2
+            && phits.abs() >= FRAC_PI_2
         {
             return Err(Error::InvalidParameterValue(
                 "lat_ts larger than 90 degrees",
@@ -97,6 +97,36 @@ mod tests {
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
+
+    #[test]
+    fn proj_merc_invalid_lat_ts() {
+        // Regression: |lat_ts| >= 90° must be rejected, including negative values
+        for s in [
+            "+proj=merc +ellps=GRS80 +lat_ts=90",
+            "+proj=merc +ellps=GRS80 +lat_ts=-90",
+            "+proj=merc +ellps=GRS80 +lat_ts=100",
+            "+proj=merc +ellps=GRS80 +lat_ts=-100",
+            "+proj=merc +R=6400000 +lat_ts=-90",
+            "+proj=merc +R=6400000 +lat_ts=-100",
+        ] {
+            assert!(Proj::from_proj_string(s).is_err(), "{s} should be rejected");
+        }
+    }
+
+    #[test]
+    fn proj_merc_negative_lat_ts() {
+        // Negative lat_ts gives the same scale factor as its absolute value
+        // Reference values from PROJ 9.8.1
+        let p = Proj::from_proj_string("+proj=merc +ellps=GRS80 +lat_ts=-45").unwrap();
+        let inputs = [((2., 1., 0.), (157693.670189252065, 78323.034180278919, 0.))];
+        test_proj_forward(&p, &inputs, 1.0e-8);
+        test_proj_inverse(&p, &inputs, EPS_10);
+
+        let p = Proj::from_proj_string("+proj=merc +R=6400000 +lat_ts=-45").unwrap();
+        let inputs = [((2., 1., 0.), (157969.171134519682, 78988.595886109935, 0.))];
+        test_proj_forward(&p, &inputs, 1.0e-8);
+        test_proj_inverse(&p, &inputs, EPS_10);
+    }
 
     #[test]
     fn proj_merc_merc_ellps() {

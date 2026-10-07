@@ -37,12 +37,19 @@ pub(crate) struct Projection {
 impl Projection {
     pub fn lcc(p: &mut ProjData, params: &ParamList) -> Result<Self> {
         let phi1 = params.try_angular_value("lat_1")?.unwrap_or(0.);
+        if phi1.abs() >= FRAC_PI_2 {
+            return Err(Error::InvalidParameterValue("|lat_1| should be < 90°"));
+        }
         let phi2 = params.try_angular_value("lat_2")?.unwrap_or_else(|| {
             if params.get("lat_0").is_none() {
                 p.phi0 = phi1;
             }
             phi1
         });
+
+        if phi2.abs() >= FRAC_PI_2 {
+            return Err(Error::InvalidParameterValue("|lat_2| should be < 90°"));
+        }
 
         // Standard Parallels cannot be equal and on opposite sides of the equator
         if (phi1 + phi2).abs() < EPS_10 {
@@ -175,6 +182,66 @@ mod tests {
     use crate::math::consts::EPS_10;
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
+
+    #[test]
+    fn proj_lcc_invalid_parallels() {
+        // Regression: standard parallels must satisfy |lat| < 90° and
+        // lat_1 + lat_2 != 0 (PROJ 9.8.1 rejects all of these)
+        for base in ["+proj=lcc +ellps=GRS80", "+proj=lcc +R=6400000"] {
+            for lats in [
+                "+lat_1=100 +lat_2=30",
+                "+lat_1=-100 +lat_2=30",
+                "+lat_1=30 +lat_2=100",
+                "+lat_1=30 +lat_2=-91",
+                "+lat_1=90",
+                "+lat_1=-90",
+                "+lat_1=90 +lat_2=90",
+                "+lat_1=90 +lat_2=60",
+                "+lat_1=60 +lat_2=90",
+                "+lat_1=-90 +lat_2=60",
+                "+lat_1=0",
+                "+lat_1=0 +lat_2=0",
+                "+lat_1=30 +lat_2=-30",
+                "+lat_1=90 +lat_2=-90",
+            ] {
+                let s = format!("{base} {lats}");
+                assert!(Proj::from_proj_string(&s).is_err(), "{s} should be rejected");
+            }
+        }
+    }
+
+    #[test]
+    fn proj_lcc_parallels() {
+        // Reference values from PROJ 9.8.1
+        let cases = [
+            (
+                "+proj=lcc +ellps=GRS80 +lat_1=45 +lat_2=60",
+                (3., 45., 0.),
+                (236472.085038610909, 5732329.812735097483, 0.),
+            ),
+            (
+                "+proj=lcc +ellps=GRS80 +lat_1=-45 +lat_2=-60",
+                (3., -45., 0.),
+                (236472.085038610909, -5732329.812735098414, 0.),
+            ),
+            (
+                "+proj=lcc +R=6400000 +lat_1=45 +lat_2=60",
+                (3., 45., 0.),
+                (236885.220760726719, 5785442.113372344524, 0.),
+            ),
+            (
+                "+proj=lcc +R=6400000 +lat_1=-45 +lat_2=-60",
+                (3., -45., 0.),
+                (236885.220760726719, -5785442.113372341730, 0.),
+            ),
+        ];
+
+        for (s, input, expect) in cases {
+            let p = Proj::from_proj_string(s).unwrap();
+            test_proj_forward(&p, &[(input, expect)], 1.0e-8);
+            test_proj_inverse(&p, &[(input, expect)], EPS_10);
+        }
+    }
 
     #[test]
     fn proj_lcc() {
