@@ -117,6 +117,35 @@ fn test_utm33_grs80() {
 }
 
 #[test]
+// Regression test for issue #34: a standalone `+nadgrids=@null` means a zero
+// datum shift (identity to WGS84), NOT an unknown datum. It previously parsed
+// to `NoDatum`, which short-circuited `datum_transform` and silently dropped
+// the *other* side's `+towgs84`. Reference values from PROJ 9.8.1 for
+// EPSG:28992 (Amersfoort/RD New, 7-parameter Helmert) -> EPSG:3857.
+fn test_nadgrids_null_keeps_other_side_towgs84() {
+    let from = Proj::from_proj_string(concat!(
+        "+proj=sterea +lat_0=52.1561605555556 +lon_0=5.38763888888889 ",
+        "+k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel ",
+        "+towgs84=565.417,50.3319,465.552,-0.398957,0.343988,-1.8774,4.0725 ",
+        "+units=m +no_defs",
+    ))
+    .unwrap();
+    let to = Proj::from_proj_string(concat!(
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 ",
+        "+k=1 +units=m +nadgrids=@null +no_defs",
+    ))
+    .unwrap();
+
+    // Amersfoort tower, RD coordinates (155000, 463000).
+    let mut v = vec![(155000.0_f64, 463000.0_f64, 0.0)];
+    transform(&from, &to, v.as_mut_slice()).unwrap();
+
+    // PROJ 9.8.1 reference (sub-millimetre agreement).
+    assert_abs_diff_eq!(v[0].0, 599700.751, epsilon = 1.0e-2);
+    assert_abs_diff_eq!(v[0].1, 6828231.373, epsilon = 1.0e-2);
+}
+
+#[test]
 fn test_wgs84_bng_conversion() {
     //crate::nadgrids::catalog::files::
 

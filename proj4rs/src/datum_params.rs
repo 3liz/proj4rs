@@ -50,13 +50,12 @@ impl DatumParams {
     }
 
     pub fn from_nadgrid_str(nadgrids: &str) -> Result<Self> {
-        if nadgrids == "@null" || nadgrids == "null" {
-            // See https://proj.org/en/stable/usage/transformation.html#the-null-grid
-            // for discussion about null nadgrid
-            Ok(Self::NoDatum)
-        } else {
-            NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
-        }
+        // A standalone "@null"/"null" grid parses to an empty NadGrids list,
+        // which applies a zero shift (identity) while still using the WGS84
+        // ellipsoid for the geocentric step. Returning NoDatum here would
+        // instead short-circuit datum_transform and silently drop the *other*
+        // side's +towgs84 (see https://proj.org/en/stable/usage/transformation.html#the-null-grid).
+        NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
     }
 
     pub fn use_nadgrids(&self) -> bool {
