@@ -299,13 +299,13 @@ impl Ellipsoid {
                 let es = self.es;
                 let a = match *tok {
                     // a sphere with same area as ellipsoid
-                    TOK_R_A => 1. - es * (SIXTH + es * (RA4 + es * RA6)),
+                    TOK_R_A => self.a * (1. - es * (SIXTH + es * (RA4 + es * RA6))),
                     // a sphere with same volume as ellipsoid
-                    TOK_R_V => 1. - es * (SIXTH + es * (RV4 + es * RV6)),
+                    TOK_R_V => self.a * (1. - es * (SIXTH + es * (RV4 + es * RV6))),
                     // a sphere with R = the arithmetic mean of the ellipsoid
                     TOK_R_a => (self.a + self.b) / 2.,
                     // a sphere with R = the geometric mean of the ellipsoid
-                    TOK_R_g => (self.a + self.b).sqrt(),
+                    TOK_R_g => (self.a * self.b).sqrt(),
                     // a sphere with R = the harmonic mean of the ellipsoid
                     TOK_R_h => (2. * self.a * self.b) / (self.a + self.b),
                     _ => unreachable!(),
@@ -384,6 +384,65 @@ mod tests {
                 .unwrap();
 
         assert_sphere(ellps);
+    }
+
+    fn spherify(token: &str) -> Ellipsoid {
+        Ellipsoid::try_from_ellipsoid_with_params(&WGS84, &projstring::parse(token).unwrap())
+            .unwrap()
+    }
+
+    #[test]
+    fn ellps_spherification_r_a() {
+        // Regression: R_A must be scaled by the semi-major axis
+        let wgs84 = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
+        let ellps = spherify("+R_A");
+        assert_sphere(ellps.clone());
+
+        // Exact authalic radius: sqrt((a² + b²·atanh(e)/e) / 2)
+        // See https://en.wikipedia.org/wiki/Earth_radius#Authalic_radius
+        let (a, b, e) = (wgs84.a, wgs84.b, wgs84.e);
+        let authalic = ((a * a + b * b * e.atanh() / e) / 2.).sqrt();
+        assert_abs_diff_eq!(ellps.a, authalic, epsilon = 1.0e-3);
+        assert_abs_diff_eq!(ellps.a, 6_371_007.181, epsilon = 1.0e-3);
+    }
+
+    #[test]
+    fn ellps_spherification_r_v() {
+        // Regression: R_V must be scaled by the semi-major axis
+        let wgs84 = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
+        let ellps = spherify("+R_V");
+        assert_sphere(ellps.clone());
+
+        // Exact radius of the sphere of same volume: (a²·b)^(1/3)
+        let volumic = (wgs84.a * wgs84.a * wgs84.b).cbrt();
+        assert_abs_diff_eq!(ellps.a, volumic, epsilon = 1.0e-3);
+        assert_abs_diff_eq!(ellps.a, 6_371_000.790, epsilon = 1.0e-3);
+    }
+
+    #[test]
+    fn ellps_spherification_r_g() {
+        // Regression: R_g is the geometric mean sqrt(a*b), not sqrt(a+b)
+        let wgs84 = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
+        let ellps = spherify("+R_g");
+        assert_sphere(ellps.clone());
+
+        assert_abs_diff_eq!(ellps.a, (wgs84.a * wgs84.b).sqrt(), epsilon = 1.0e-6);
+        assert_abs_diff_eq!(ellps.a, 6_367_435.680, epsilon = 1.0e-3);
+    }
+
+    #[test]
+    fn ellps_spherification_radius_bounds() {
+        // Every spherification radius must lie between b and a
+        let wgs84 = Ellipsoid::try_from_ellipsoid(&WGS84).unwrap();
+        for token in ["+R_A", "+R_V", "+R_a", "+R_g", "+R_h"] {
+            let r = spherify(token).a;
+            assert!(
+                wgs84.b < r && r < wgs84.a,
+                "{token}: radius {r} not in ]{}, {}[",
+                wgs84.b,
+                wgs84.a
+            );
+        }
     }
 
     #[test]

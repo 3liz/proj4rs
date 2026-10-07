@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* Fix spherification formulae
+* Support PROJ canonical `k_0`  and aliases
 * Fix radians/dms conversion for prime meridians
 * Do no skip prime meridian for latlong/geocent
 
