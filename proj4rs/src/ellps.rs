@@ -186,10 +186,10 @@ impl Ellipsoid {
         SHAPE_TOKENS.iter().find_map(|tok| {
             params.get(tok).map(|p| {
                 p.try_into().map(|v| match *tok {
-                    TOK_rf => SP_rf(v),
-                    TOK_f => SP_f(v),
                     TOK_es => SP_es(v),
                     TOK_e => SP_e(v),
+                    TOK_rf => SP_rf(v),
+                    TOK_f => SP_f(v),
                     TOK_b => SP_b(v),
                     _ => unreachable!(),
                 })
@@ -200,7 +200,7 @@ impl Ellipsoid {
     /// Calculate parameters and return a new ellipsoid
     /// This is the true constructor
     pub fn calc_ellipsoid_params(a: f64, sp: Shape) -> Result<Self> {
-        if a <= 0. {
+        if !(a > 0.0 && a.is_finite()) {
             return Err(Error::InvalidParameterValue("Invalid major axis"));
         }
 

@@ -120,6 +120,7 @@ where
 
     points.transform_coordinates(&mut |x, y, z| Datum::transform(src_datum, dst_datum, x, y, z))
 }
+
 // ---------------------------------
 // Projected to geographic (inverse)
 // ---------------------------------
@@ -127,10 +128,10 @@ fn projected_to_geographic<P>(p: &Proj, points: &mut P) -> Result<()>
 where
     P: Transform + ?Sized,
 {
-    // Nothing to do ?
     match p.projection_type() {
         ProjType::Latlong => {
             if p.geoc() {
+                // NOTE: +geoc only affects latlong CRS: as in PROJ
                 let rone_es = p.ellipsoid().rone_es;
                 // Geocentric latitude => geodetic latitude
                 points.transform_coordinates(&mut |lam, phi, z| {
@@ -179,6 +180,7 @@ where
 {
     match p.projection_type() {
         ProjType::Latlong => {
+            // See note above
             if p.geoc() {
                 let one_es = p.ellipsoid().one_es;
                 points.transform_coordinates(&mut |lam, phi, z| {

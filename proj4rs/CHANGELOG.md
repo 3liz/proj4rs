@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* Fix `laea` spherical oblique and south pole forward projection
 * Fix forward unit scaling inversion
 * Fix spherification formulae
 * Support PROJ canonical `k_0`  and aliases

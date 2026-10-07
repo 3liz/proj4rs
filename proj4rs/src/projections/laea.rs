@@ -188,7 +188,7 @@ impl EProj {
                 }
             }
             S_POLE => {
-                if (phi - FRAC_PI_2) < EPS_10 {
+                if (phi - FRAC_PI_2).abs() < EPS_10 {
                     return Err(Error::ToleranceConditionError);
                 }
                 let q = self.qp + q;
@@ -315,7 +315,7 @@ impl SProj {
                     y = (2. / y).sqrt();
                     Ok((
                         y * cosphi * lam.sin(),
-                        y * cosb1 * sinphi - sinb1 * cosphi * coslam,
+                        y * (cosb1 * sinphi - sinb1 * cosphi * coslam),
                         z,
                     ))
                 }
@@ -420,6 +420,41 @@ mod tests {
     }
 
     #[test]
+    fn proj_laea_el_south_pole() {
+        let p = Proj::from_proj_string("+proj=laea +lat_0=-90 +ellps=GRS80").unwrap();
+
+        println!("{:#?}", p.projection());
+
+        // Reference values from PROJ 9.4.0
+        let inputs = [
+            (
+                (2., -60., 0.),
+                (115511.036508127363, 3307803.298418846447, 0.),
+            ),
+            (
+                (-2., -60., 0.),
+                (-115511.036508127363, 3307803.298418846447, 0.),
+            ),
+            (
+                (120., -75., 0.),
+                (1446478.942507373169, -835125.006833756692, 0.),
+            ),
+            (
+                (-150., -89., 0.),
+                (-55846.223630396511, -96728.496738700414, 0.),
+            ),
+            (
+                (10., -30., 0.),
+                (1108169.451018129708, 6284741.260614857078, 0.),
+            ),
+        ];
+
+        test_proj_forward(&p, &inputs, 1.0e-10);
+        // Authalic latitude series limits inverse precision to ~1e-8 degrees
+        test_proj_inverse(&p, &inputs, 1.0e-7);
+    }
+
+    #[test]
     fn proj_laea_sp() {
         let p = Proj::from_proj_string("+proj=laea +a=6400000").unwrap();
 
@@ -444,6 +479,21 @@ mod tests {
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
+
+    #[test]
+    fn proj_laea_ob() {
+        let p = Proj::from_proj_string("+proj=laea +lat_0=45 +R=1").unwrap();
+
+        println!("{:#?}", p.projection());
+
+        let inputs = [
+            ((10.0, 50.0, 0.), (0.1119189757, 0.0943137903, 0.)),
+        ];
+
+        test_proj_forward(&p, &inputs, 1.0e-8);
+        test_proj_inverse(&p, &inputs, 1.0e-8);
+    }
+
 
     #[test]
     fn test_epsg3035() {
