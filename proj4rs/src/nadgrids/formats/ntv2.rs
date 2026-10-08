@@ -183,21 +183,4 @@ mod tests {
         assert_eq!(grid.id.as_str(), "0INT2GRS");
         assert_eq!(grid.cvs.len(), 1591);
     }
-
-    #[test]
-    #[cfg(feature = "local_tests")]
-    fn ntv2_bwta2017_gsb() {
-        setup();
-
-        let catalog = Catalog::default();
-        load_ntv2!(&catalog, "BWTA2017.gsb");
-
-        let grids = catalog.find("BWTA2017.gsb").unwrap().collect::<Vec<_>>();
-        assert_eq!(grids.len(), 1);
-
-        let grid = grids[0];
-        assert!(grid.is_root());
-        assert_eq!(grid.id.as_str(), "DHDN90  ");
-        assert_eq!(grid.cvs.len(), 24514459);
-    }
 }

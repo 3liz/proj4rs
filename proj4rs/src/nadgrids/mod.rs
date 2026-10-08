@@ -52,17 +52,17 @@ impl NadGrids {
 
         // Check for childs grid
         if let Some(grid) = candidate {
-            let _ = iter.try_fold(grid, |grid, g| {
+            let _ = iter.fold(grid, |grid, g| {
                 if !g.is_child_of(grid) {
-                    // No more childs, stop with the last candidate
-                    ControlFlow::Break(())
+                    // Skip it
+                    grid
                 } else if g.matches(lam, phi, z) {
                     // Match, check for childs
                     candidate.replace(g);
-                    ControlFlow::Continue(g)
+                    g
                 } else {
                     // Go next child
-                    ControlFlow::Continue(grid)
+                    grid
                 }
             });
         }
