@@ -95,10 +95,10 @@ use implem::NodePtr;
 
 /// Node to chain loaded nadgrids
 #[derive(Debug)]
-struct Node {
-    name: String,
-    grid: Grid,
-    parent: Option<&'static Node>,
+pub struct Node {
+    pub name: String,
+    pub grid: Grid,
+    pub parent: Option<&'static Node>,
     next: NodePtr,
 }
 
@@ -148,7 +148,7 @@ impl Catalog {
         }
     }
 
-    fn iter(&self) -> impl Iterator<Item = &'static Node> {
+    pub fn iter(&self) -> impl Iterator<Item = &'static Node> {
         std::iter::successors(self.first.get(), |prev| prev.next.get())
     }
 
@@ -167,18 +167,16 @@ impl Catalog {
     }
 
     pub fn find(&self, name: &str) -> Option<impl Iterator<Item = GridRef>> {
-        let mut iter = self.iter();
-        let node = iter.find(|n| n.name == name);
-        node.map(|node| {
-            std::iter::once(&node.grid).chain(iter.filter(|n| n.is_child_of(node)).map(|n| &n.grid))
-        })
+        // All nodes with the same name are from the same file
+        let mut iter = self.iter().filter(move |n| n.name == name).peekable();
+        iter.peek().is_some().then(|| iter.map(|n| &n.grid))
     }
 
     /// Add a grid to the gridlist
     /// Note that parent must exists in the list.
     pub fn add_grid(&self, name: String, grid: Grid) -> Result<(), Error> {
         let parent = if !grid.is_root() {
-            self.iter().find(|n| n.grid.id == grid.lineage)
+            self.iter().find(|n| n.name == name && n.grid.id == grid.lineage)
         } else {
             None
         };

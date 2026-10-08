@@ -78,7 +78,7 @@ fn test_wgs84_bng_latlong_nadgrid() {
 fn test_nadgrid_subgrid_lookup() {
     // Check that the subgrid hierarchy is correctly walked
     //
-    // Regression: subgrid search must not stop on a grandchild grid and skip
+    // Regression test: subgrid search must not stop on a grandchild grid and skip
     // the remaining sibling subgrids.
     //
     // SK83-98.GSB hierarchy: SKcsrs5m (root) with 15 children; 'fortq30s'
@@ -217,6 +217,82 @@ fn test_nadgrid_identical_datums() {
     let (from, to) = (latlong("ntf_r93.gsb"), latlong("ntf_r93.gsb,@null"));
     let mut v = (outside.0.to_radians(), outside.1.to_radians(), 0.0);
     assert!(transform(&from, &to, &mut v).is_err());
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_nadgrid_multiple_roots() {
+    // All top-level grids of a file must be used, not only
+    // the first one.
+    //
+    // ntv2_0.gsb (NAD27 -> NAD83, Canada) has 4 root grids, in file order:
+    // CAeast, CAwest, CAnorth and CAarctic.
+    setup();
+
+    let from = Proj::from_proj_string(
+        "+proj=latlong +ellps=clrk66 +nadgrids=north-america/ntv2_0.gsb",
+    )
+    .unwrap();
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+    // Expected output from proj 9.8.1:
+    // cs2cs -d 12 +proj=longlat +ellps=clrk66 +nadgrids=ntv2_0.gsb \
+    //    +to +proj=longlat +datum=WGS84
+    let cases: [(&str, (f64, f64), (f64, f64)); 7] = [
+        // First root
+        ("Montreal (CAeast)", (-73.57, 45.50), (-73.569587678433, 45.500039887888)),
+        // Other roots: were failing with PointOutsideNadShiftArea
+        ("Calgary (CAwest)", (-114.07, 51.05), (-114.070992067239, 51.050056225001)),
+        ("Vancouver (CAwest)", (-123.12, 49.28), (-123.121321768916, 49.279828606221)),
+        ("Yellowknife (CAnorth)", (-114.37, 62.45), (-114.371273380006, 62.450197115009)),
+        ("Iqaluit (CAnorth)", (-68.52, 63.75), (-68.518895049399, 63.750296782788)),
+        ("Eureka (CAarctic)", (-85.93, 79.99), (-85.929649486567, 79.991017875816)),
+        ("Alert (CAarctic)", (-62.35, 82.50), (-62.345059231252, 82.500971743320)),
+    ];
+
+    for (name, (lon, lat), (exp_lon, exp_lat)) in cases {
+        let mut v = (lon.to_radians(), lat.to_radians(), 0.0);
+        transform(&from, &to, &mut v).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+
+        let (out_lon, out_lat) = (v.0.to_degrees(), v.1.to_degrees());
+        eprintln!("{name}: ({out_lon:.12}, {out_lat:.12})");
+
+        // 1e-8 deg ~ 1 mm
+        assert_abs_diff_eq!(out_lon, exp_lon, epsilon = 1.0e-8);
+        assert_abs_diff_eq!(out_lat, exp_lat, epsilon = 1.0e-8);
+    }
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_nadgrid_same_subgrid_names_in_files() {
+    // Regression test: the parent of a subgrid must be searched only among the
+    // grids of the same file.
+    //
+    // ntv2_0.gsb and MAY76V20.gsb both have root grids named CAeast and
+    // CAwest with subgrids: the subgrids of one file must not be attached
+    // to the roots of the other one.
+    setup();
+
+    // Load both files
+    for file in ["north-america/ntv2_0.gsb", "north-america/MAY76V20.gsb"] {
+        assert!(catalog::find_grids(file, &mut vec![]), "{file} not found");
+    }
+
+    // Collect bad links and check outside the catalog lock, so that a failure
+    // does not poison the catalog for the other tests.
+    let foreign_parents: Vec<_> = catalog::with_catalog(|cat| {
+        cat.iter()
+            .filter_map(|node| node.parent.map(|parent| (node, parent)))
+            .filter(|(node, parent)| parent.name != node.name)
+            .map(|(node, parent)| format!("{} -> {}", node.name, parent.name))
+            .collect()
+    });
+
+    assert!(
+        foreign_parents.is_empty(),
+        "subgrids attached to a parent from another file: {foreign_parents:?}",
+    );
 }
 
 #[test]
