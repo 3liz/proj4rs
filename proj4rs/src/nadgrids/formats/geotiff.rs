@@ -66,6 +66,31 @@ fn read_tiff_grid<R: Read + Seek>(
 ) -> Result<()> {
     log::debug!("Reading TIFF Grid index {ifd_index} a {key}");
 
+    // Skip reduced resolution images (overviews) and masks
+    const FILETYPE_REDUCEDIMAGE: u32 = 0x1;
+    const FILETYPE_MASK: u32 = 0x4;
+    if let Some(tag) = reader.find_tag(Tag::NewSubfileType)?
+        && tag.into_u32()? & (FILETYPE_REDUCEDIMAGE | FILETYPE_MASK) != 0
+    {
+        log::debug!("Skipping IFD {ifd_index}: reduced resolution or mask image");
+        return Ok(());
+    }
+
+    // Make sure that we have at least two samples per pixels
+    let Ok(samples) = reader.get_tag_u32(Tag::SamplesPerPixel) else {
+        return Err(Error::InvalidTiffGridFormat("Missing SamplePePixel tag"));
+    };
+
+    if samples < 2 {
+        if ifd_index == 0 {
+            return Err(Error::InvalidTiffGridFormat("No enough samples"));
+        } else {
+            // Skip that image
+            log::debug!("Skipping IFD {ifd_index} because it has no enough samples");
+            return Ok(());
+        }
+    }
+
     // Check accepted photometric value
     if let Some(tag) = reader.find_tag(Tag::PhotometricInterpretation)?
         && tag.into_u16()? != tags::PhotometricInterpretation::BlackIsZero.to_u16()
@@ -147,7 +172,7 @@ fn read_tiff_grid<R: Read + Seek>(
     if let Ok(matrix) = reader.get_tag_f64_vec(TIFFTAG_GEOTRANSMATRIX)
         && matrix.len() == 16
     {
-        if matrix[1] != 0. || matrix[3] != 0. {
+        if matrix[1] != 0. || matrix[4] != 0. {
             return Err(Error::InvalidTiffGridFormat(
                 "Rotational terms not supported in GeoTransformationMatrix",
             ));
@@ -212,16 +237,6 @@ fn read_tiff_grid<R: Read + Seek>(
     }
 
     let layout = reader.image_buffer_layout()?;
-    // Make sure that we have at least two planes
-    if layout.planes < 2 {
-        if ifd_index == 0 {
-            return Err(Error::InvalidTiffGridFormat("No enough samples"));
-        } else {
-            // Skip that image
-            log::debug!("Skipping IFD {ifd_index} because it has no enough samples");
-            return Ok(());
-        }
-    }
 
     let mut result = layout
         .sample_type
@@ -239,6 +254,17 @@ fn read_tiff_grid<R: Read + Seek>(
     // Read GDAL metadata
     let metadata = Metadata::read(reader)?;
 
+    if metadata.lat_sample_idx as u32 >= samples || metadata.lon_sample_idx as u32 >= samples {
+        return Err(Error::InvalidTiffGridFormat("Invalid sample index"));
+    }
+
+    // Samples layout: band interleaved (planar) or pixel interleaved (chunky)
+    const BAND_INTERLEAVED: u16 = 2;
+    let planar = match reader.find_tag(Tag::PlanarConfiguration)? {
+        Some(tag) => tag.into_u16()? == BAND_INTERLEAVED,
+        None => false,
+    };
+
     // Read grid data
     let _ = reader.read_image_to_buffer(&mut result)?;
 
@@ -247,10 +273,13 @@ fn read_tiff_grid<R: Read + Seek>(
         return Err(Error::InvalidTiffGridFormat("Grid size too big"));
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn to_cvs<T: Into<f64> + Copy>(
         v: Vec<T>,
         nrows: usize,
         rowsize: usize,
+        samples: usize,
+        planar: bool,
         bottom_up: bool,
         metadata: &Metadata,
     ) -> Vec<Lp> {
@@ -260,38 +289,43 @@ fn read_tiff_grid<R: Read + Seek>(
         // image-oriented image. If m_bottomUp == true, then we had GeoTIFF hints
         // that the first row of the image is the southern-most
         let gcount = nrows * rowsize;
-        let lat_offset = (metadata.lat_sample_idx as usize) * gcount;
-        let lon_offset = (metadata.lon_sample_idx as usize) * gcount;
+        let lat_sample = metadata.lat_sample_idx as usize;
+        let lon_sample = metadata.lon_sample_idx as usize;
+
+        // Index of sample `s` for grid node `i`
+        let index = |i: usize, s: usize| {
+            if planar {
+                // Samples are stored band after band
+                s * gcount + i
+            } else {
+                // Samples are interleaved for each node
+                i * samples + s
+            }
+        };
 
         let unit_factor = metadata.unit_factor;
+        let node = |i: usize| Lp {
+            lam: v[index(i, lon_sample)].into() * unit_factor,
+            phi: v[index(i, lat_sample)].into() * unit_factor,
+        };
 
         if !bottom_up {
             // Follow NTv2 convention (southern-most is first row)
             // NOTE: rows are reversed
-            (0..gcount)
-                .rev()
-                .map(|i| Lp {
-                    lam: v[i + lon_offset].into() * unit_factor,
-                    phi: v[i + lat_offset].into() * unit_factor,
-                })
-                .collect()
+            (0..gcount).rev().map(node).collect()
         } else {
-            (0..gcount)
-                .map(|i| Lp {
-                    lam: v[i + lon_offset].into() * unit_factor,
-                    phi: v[i + lat_offset].into() * unit_factor,
-                })
-                .collect()
+            (0..gcount).map(node).collect()
         }
     }
 
+    let samples = samples as usize;
     let mut cvs = match result {
-        DecodingResult::I16(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
-        DecodingResult::U16(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
-        DecodingResult::I32(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
-        DecodingResult::U32(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
-        DecodingResult::F32(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
-        DecodingResult::F64(v) => to_cvs(v, nrows, rowsize, bottom_up, &metadata),
+        DecodingResult::I16(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
+        DecodingResult::U16(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
+        DecodingResult::I32(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
+        DecodingResult::U32(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
+        DecodingResult::F32(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
+        DecodingResult::F64(v) => to_cvs(v, nrows, rowsize, samples, planar, bottom_up, &metadata),
         _ => unreachable!(),
     };
 
@@ -350,9 +384,10 @@ fn read_tiff_grid<R: Read + Seek>(
     };
 
     let epsilon = (del.lam.abs() + del.phi.abs()) * REL_TOLERANCE_HGRIDSHIFT;
-    let lineage = GridId::root();
 
-    println!("{:?}", metadata.grid_name);
+    // Subgrid hierarchy: parents are always defined before their children
+    // (see https://github.com/OSGeo/PROJ-data/blob/master/grid_tools/README.md)
+    let lineage = metadata.parent_grid_name.unwrap_or_else(GridId::root);
 
     let id = metadata
         .grid_name
@@ -410,6 +445,7 @@ impl SampleMeta {
 #[derive(Default)]
 struct Metadata {
     grid_name: Option<GridId>,
+    parent_grid_name: Option<GridId>,
     unit_factor: f64,
     lon_sample_idx: u16,
     lat_sample_idx: u16,
@@ -475,6 +511,7 @@ impl Metadata {
     fn parse(md: &str) -> Result<Self> {
         let mut units: Option<UnitType> = None;
         let mut grid_name = None;
+        let mut parent_grid_name = None;
         let mut sample0 = SampleMeta::new(Descr::Lat, 0);
         let mut sample1 = SampleMeta::new(Descr::Lon, 1);
 
@@ -553,6 +590,9 @@ impl Metadata {
                             Some(("grid_name", _, _)) => {
                                 grid_name = Some(GridId::from(value.as_bytes()));
                             }
+                            Some(("parent_grid_name", _, _)) => {
+                                parent_grid_name = Some(GridId::from(value.as_bytes()));
+                            }
                             _ => {}
                         }
                     }
@@ -572,6 +612,7 @@ impl Metadata {
 
         Ok(Self {
             grid_name,
+            parent_grid_name,
             unit_factor: units
                 .map(|units| match units {
                     UnitType::ArcSecond => SEC_TO_RAD,
@@ -636,12 +677,63 @@ mod tests {
 
         assert_eq!(md.grid_name, Some(GridId::from("0INT2GRS".as_bytes())));
         assert_eq!(md.grid_name.unwrap().as_str(), "0INT2GRS");
+        assert_eq!(md.parent_grid_name, None);
         assert_eq!(md.unit_factor, SEC_TO_RAD);
         assert_eq!(md.lon_sample_idx, 1);
         assert_eq!(md.lat_sample_idx, 0);
         assert_eq!(md.lon_adf_scale, None);
         assert_eq!(md.lat_adf_scale, None);
         assert!(md.positive_east);
+    }
+
+    #[test]
+    fn tiff_pixel_interleaved() {
+        // Regression: pixel interleaved (chunky) grids must be supported and
+        // give the same grid as band interleaved (planar) ones.
+        //
+        // es_cat_icgc_100800401_pixel.tif was created with:
+        // gdal_translate -co INTERLEAVE=PIXEL -co COMPRESS=DEFLATE -co PREDICTOR=3 \
+        //    es_cat_icgc_100800401.tif es_cat_icgc_100800401_pixel.tif
+        setup();
+
+        let catalog = Catalog::default();
+        load_tiff!(&catalog, "es_cat_icgc_100800401.tif");
+        load_tiff!(&catalog, "es_cat_icgc_100800401_pixel.tif");
+
+        let planar = catalog
+            .find("es_cat_icgc_100800401.tif")
+            .unwrap()
+            .next()
+            .unwrap();
+        let chunky = catalog
+            .find("es_cat_icgc_100800401_pixel.tif")
+            .unwrap()
+            .next()
+            .unwrap();
+
+        assert_eq!(chunky.cvs.len(), planar.cvs.len());
+        for (i, (c, p)) in chunky.cvs.iter().zip(planar.cvs.iter()).enumerate() {
+            assert_eq!((c.lam, c.phi), (p.lam, p.phi), "node {i}");
+        }
+    }
+
+    #[test]
+    fn tiff_gdal_metadata_parent_grid_name() {
+        let md = Metadata::parse(concat!(
+            r#"<GDALMetadata>"#,
+            r#"<Item name="grid_name">fqsub03s</Item>"#,
+            r#"<Item name="parent_grid_name">fortq30s</Item>"#,
+            r#"<Item name="DESCRIPTION" sample="0" role="description">latitude_offset</Item>"#,
+            r#"<Item name="DESCRIPTION" sample="1" role="description">longitude_offset</Item>"#,
+            r#"</GDALMetadata>"#,
+        ))
+        .expect("Failed to parse GDAL metadata");
+
+        assert_eq!(md.grid_name, Some(GridId::from("fqsub03s".as_bytes())));
+        assert_eq!(
+            md.parent_grid_name,
+            Some(GridId::from("fortq30s".as_bytes()))
+        );
     }
 
     #[test]

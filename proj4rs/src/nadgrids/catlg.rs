@@ -276,6 +276,7 @@ pub mod catalog {
 }
 
 #[cfg(test)]
+#[allow(unused_imports)]
 mod tests {
     use super::*;
     use crate::nadgrids;
@@ -295,7 +296,10 @@ mod tests {
         catalog::set_builder(nadgrids::files::read_from_file);
 
         // Load both files
-        for file in ["north-america/ntv2_0.gsb", "north-america/MAY76V20.gsb"] {
+        for file in [
+            "proj-datumgrid/north-america/ntv2_0.gsb",
+            "proj-datumgrid/north-america/MAY76V20.gsb",
+        ] {
             assert!(catalog::find_grids(file, &mut vec![]), "{file} not found");
         }
 

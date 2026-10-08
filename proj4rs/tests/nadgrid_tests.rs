@@ -33,7 +33,7 @@ mod local_tests {
         let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
         let to = Proj::from_proj_string(concat!(
             "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
-            "+ellps=airy +nadgrids=europe/OSTN15_NTv2_OSGBtoETRS.gsb",
+            "+ellps=airy +nadgrids=proj-datumgrid/europe/OSTN15_NTv2_OSGBtoETRS.gsb",
         ))
         .unwrap();
 
@@ -55,7 +55,7 @@ mod local_tests {
         let from = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
         let to = Proj::from_proj_string(concat!(
             "+proj=latlong ",
-            "+nadgrids=europe/OSTN15_NTv2_OSGBtoETRS.gsb",
+            "+nadgrids=proj-datumgrid/europe/OSTN15_NTv2_OSGBtoETRS.gsb",
         ))
         .unwrap();
 
@@ -85,7 +85,7 @@ mod local_tests {
         setup();
 
         let from = Proj::from_proj_string(
-            "+proj=latlong +ellps=GRS80 +nadgrids=north-america/SK83-98.GSB",
+            "+proj=latlong +ellps=GRS80 +nadgrids=proj-datumgrid/north-america/SK83-98.GSB",
         )
         .unwrap();
         let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
@@ -146,9 +146,10 @@ mod local_tests {
         let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
 
         // ntf_r93.gsb covers lat [41, 52], lon [-5.5, 10]
-        let from =
-            Proj::from_proj_string("+proj=latlong +ellps=clrk80ign +nadgrids=ntf_r93.gsb,@null")
-                .unwrap();
+        let from = Proj::from_proj_string(
+            "+proj=latlong +ellps=clrk80ign +nadgrids=proj-datumgrid/ntf_r93.gsb,@null",
+        )
+        .unwrap();
 
         // Expected output from proj 9.8.1:
         // cs2cs -d 12 +proj=longlat +ellps=clrk80ign +nadgrids=ntf_r93.gsb,@null \
@@ -176,8 +177,10 @@ mod local_tests {
         }
 
         // Without '@null', points outside the grid are still an error
-        let from =
-            Proj::from_proj_string("+proj=latlong +ellps=clrk80ign +nadgrids=ntf_r93.gsb").unwrap();
+        let from = Proj::from_proj_string(
+            "+proj=latlong +ellps=clrk80ign +nadgrids=proj-datumgrid/ntf_r93.gsb",
+        )
+        .unwrap();
 
         let mut v = (15.0_f64.to_radians(), 50.0_f64.to_radians(), 0.0);
         assert!(transform(&from, &to, &mut v).is_err());
@@ -193,7 +196,7 @@ mod local_tests {
 
         fn latlong(nadgrids: &str) -> Proj {
             Proj::from_proj_string(&format!(
-                "+proj=latlong +ellps=clrk80ign +nadgrids={nadgrids}"
+                "+proj=latlong +ellps=clrk80ign +nadgrids=proj-datumgrid/{nadgrids}"
             ))
             .unwrap()
         }
@@ -241,7 +244,7 @@ mod local_tests {
         setup();
 
         let from = Proj::from_proj_string(
-            "+proj=latlong +ellps=clrk66 +nadgrids=north-america/ntv2_0.gsb",
+            "+proj=latlong +ellps=clrk66 +nadgrids=proj-datumgrid/north-america/ntv2_0.gsb",
         )
         .unwrap();
         let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
@@ -303,6 +306,72 @@ mod local_tests {
     }
 
     #[test]
+    #[cfg(feature = "tiff")]
+    fn test_geotiff_subgrid_hierarchy() {
+        // Regression: GeoTIFF grids must rebuild the subgrid hierarchy from the
+        // 'parent_grid_name' metadata instead of loading every IFD as a root grid.
+        //
+        // ca_nrc_SK83-98.tif is the GeoTIFF version of SK83-98.GSB: 17 IFDs,
+        // 1 root grid (SKcsrs5m), 15 subgrids and 1 sub-subgrid
+        // (fqsub03s, child of fortq30s).
+        setup();
+
+        const GRID: &str = "PROJ-data/ca_nrc/ca_nrc_SK83-98.tif";
+
+        let mut grids = vec![];
+        assert!(catalog::find_grids(GRID, &mut grids), "{GRID} not found");
+
+        assert_eq!(grids.len(), 17);
+        assert_eq!(grids.iter().filter(|g| g.is_root()).count(), 1);
+
+        // Every subgrid has its parent before it in the grid list
+        for (i, grid) in grids.iter().enumerate().filter(|(_, g)| !g.is_root()) {
+            assert!(
+                grids[..i].iter().any(|p| grid.is_child_of(p)),
+                "subgrid #{i} has no parent",
+            );
+        }
+
+        // Subgrid shifts are applied.
+        // Expected output from proj 9.8.1 with SK83-98.GSB (same grid data):
+        // cs2cs -d 12 +proj=longlat +ellps=GRS80 +nadgrids=SK83-98.GSB \
+        //    +to +proj=longlat +datum=WGS84
+        let from = Proj::from_proj_string(&format!("+proj=latlong +ellps=GRS80 +nadgrids={GRID}"))
+            .unwrap();
+        let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+        let cases: [(&str, (f64, f64), (f64, f64)); 3] = [
+            // Subgrid: ~1.24 m off with the root grid shift
+            (
+                "chous30s",
+                (-102.875, 53.75),
+                (-102.875014238888, 53.750006552778),
+            ),
+            // Subgrid
+            (
+                "grass30s",
+                (-106.70833, 49.08333),
+                (-106.708331800553, 49.083323900542),
+            ),
+            // Sub-subgrid: ~0.6 m off with the root grid shift
+            (
+                "fqsub03s",
+                (-103.67917, 50.75417),
+                (-103.679159748695, 50.754174386961),
+            ),
+        ];
+
+        for (name, (lon, lat), (exp_lon, exp_lat)) in cases {
+            let mut v = (lon.to_radians(), lat.to_radians(), 0.0);
+            transform(&from, &to, &mut v).unwrap_or_else(|e| panic!("{name}: {e:?}"));
+
+            // 1e-8 deg ~ 1 mm
+            assert_abs_diff_eq!(v.0.to_degrees(), exp_lon, epsilon = 1.0e-8);
+            assert_abs_diff_eq!(v.1.to_degrees(), exp_lat, epsilon = 1.0e-8);
+        }
+    }
+
+    #[test]
     #[cfg(feature = "local_tests")]
     fn test_epsg27700_bad_point() {
         // From https://github.com/3liz/proj4rs/issues/37
@@ -310,7 +379,7 @@ mod local_tests {
 
         const EPSG_27700: &str = concat!(
             "+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 ",
-            "+ellps=airy +nadgrids=europe/OSTN15_NTv2_OSGBtoETRS.gsb",
+            "+ellps=airy +nadgrids=proj-datumgrid/europe/OSTN15_NTv2_OSGBtoETRS.gsb",
         );
 
         let epsg_4326 = Proj::from_proj_string("+proj=longlat +datum=WGS84").unwrap();
