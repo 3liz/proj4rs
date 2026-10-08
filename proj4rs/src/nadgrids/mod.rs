@@ -20,8 +20,6 @@ use std::ops::ControlFlow;
 
 pub use grid::Grid;
 
-
-
 /// NadGrids
 ///
 /// Returned from the sequence
@@ -32,16 +30,18 @@ pub struct NadGrids {
     nullable: bool,
 }
 
-
 impl PartialEq for NadGrids {
     fn eq(&self, other: &Self) -> bool {
         // Compare references
         self.nullable == other.nullable
-        && self.grids.len() == other.grids.len()
-        && self.grids.iter().zip(&other.grids).all(|(g1, g2)| std::ptr::eq(*g1, *g2))
+            && self.grids.len() == other.grids.len()
+            && self
+                .grids
+                .iter()
+                .zip(&other.grids)
+                .all(|(g1, g2)| std::ptr::eq(*g1, *g2))
     }
 }
-
 
 impl NadGrids {
     pub fn apply_shift(

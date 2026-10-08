@@ -8,7 +8,7 @@ use crate::{
 impl Transform for Coord {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> Result<()> {
         let mut xy = (self.x, self.y);
-        (&mut xy).transform_coordinates(f)?;
+        xy.transform_coordinates(f)?;
         *self = Coord::from(xy);
         Ok(())
     }

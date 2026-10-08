@@ -486,14 +486,11 @@ mod tests {
 
         println!("{:#?}", p.projection());
 
-        let inputs = [
-            ((10.0, 50.0, 0.), (0.1119189757, 0.0943137903, 0.)),
-        ];
+        let inputs = [((10.0, 50.0, 0.), (0.1119189757, 0.0943137903, 0.))];
 
         test_proj_forward(&p, &inputs, 1.0e-8);
         test_proj_inverse(&p, &inputs, 1.0e-8);
     }
-
 
     #[test]
     fn test_epsg3035() {

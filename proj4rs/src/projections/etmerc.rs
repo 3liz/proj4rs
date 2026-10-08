@@ -335,8 +335,7 @@ mod tests {
 
         for (lon_0, zone) in cases {
             let s = format!("+proj=utm +ellps=GRS80 +lon_0={lon_0}");
-            let p = Proj::from_proj_string(&s)
-                .unwrap_or_else(|e| panic!("{s}: {e:?}"));
+            let p = Proj::from_proj_string(&s).unwrap_or_else(|e| panic!("{s}: {e:?}"));
             let p_zone =
                 Proj::from_proj_string(&format!("+proj=utm +ellps=GRS80 +zone={zone}")).unwrap();
 

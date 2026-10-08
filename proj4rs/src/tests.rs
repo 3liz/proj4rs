@@ -81,7 +81,6 @@ use crate::proj::Proj;
 use crate::transform::transform;
 use approx::assert_abs_diff_eq;
 
-
 #[test]
 fn test_transform_array() {
     let mut data: Vec<(f64, f64, f64)> = (1..=1_000)

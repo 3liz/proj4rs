@@ -26,7 +26,7 @@ use std::str::FromStr;
 /// - The third value represent the direction of  the `z` axis: 'u' (Up) or 'd' (Down)
 pub type Axis = [u8; 3];
 
-const NORMALIZED_AXIS: Axis = [b'e', b'n', b'u'];
+const NORMALIZED_AXIS: Axis = *b"enu";
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum ProjType {
@@ -316,7 +316,7 @@ impl Proj {
         }
     }
 
-    /// k_0 aliases 
+    /// k_0 aliases
     pub(crate) fn get_k0<'a>(params: &'a ParamList<'a>) -> Option<&'a Parameter<'a>> {
         params
             .get("k_0")

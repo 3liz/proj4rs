@@ -132,7 +132,7 @@ impl Projection {
         }
 
         // if scale not set default to 0.9999
-        if Proj::get_k0(&params).is_none() {
+        if Proj::get_k0(params).is_none() {
             p.k0 = 0.9999;
         }
 
@@ -297,12 +297,11 @@ mod tests {
             ),
             (
                 (22.56, 51.06, 0.),
-                (-259523.534749580605,  -983087.548008236452, 0.),
+                (-259523.534749580605, -983087.548008236452, 0.),
             ),
         ];
 
         test_proj_forward(&p, &inputs, 1e-10);
-        test_proj_inverse(&p, &inputs, 1e-10) ;
+        test_proj_inverse(&p, &inputs, 1e-10);
     }
-
 }

@@ -96,9 +96,9 @@ use implem::NodePtr;
 /// Node to chain loaded nadgrids
 #[derive(Debug)]
 pub struct Node {
-    pub name: String,
-    pub grid: Grid,
-    pub parent: Option<&'static Node>,
+    name: String,
+    grid: Grid,
+    parent: Option<&'static Node>,
     next: NodePtr,
 }
 
@@ -109,13 +109,6 @@ impl Node {
             grid,
             parent,
             next: NodePtr::default(),
-        }
-    }
-
-    pub fn is_child_of(&self, node: &Self) -> bool {
-        match self.parent {
-            Some(p) => std::ptr::eq(p, node) || p.is_child_of(node),
-            _ => false,
         }
     }
 }
@@ -148,7 +141,7 @@ impl Catalog {
         }
     }
 
-    pub fn iter(&self) -> impl Iterator<Item = &'static Node> {
+    fn iter(&self) -> impl Iterator<Item = &'static Node> {
         std::iter::successors(self.first.get(), |prev| prev.next.get())
     }
 
@@ -176,7 +169,8 @@ impl Catalog {
     /// Note that parent must exists in the list.
     pub fn add_grid(&self, name: String, grid: Grid) -> Result<(), Error> {
         let parent = if !grid.is_root() {
-            self.iter().find(|n| n.name == name && n.grid.id == grid.lineage)
+            self.iter()
+                .find(|n| n.name == name && n.grid.id == grid.lineage)
         } else {
             None
         };
@@ -278,5 +272,46 @@ pub mod catalog {
         F: FnOnce(&Catalog) -> R,
     {
         CATALOG.with(f)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::nadgrids;
+    use crate::tests::setup;
+
+    #[test]
+    #[cfg(feature = "local_tests")]
+    fn test_nadgrid_same_subgrid_names_in_files() {
+        // Regression test: the parent of a subgrid must be searched only among the
+        // grids of the same file.
+        //
+        // ntv2_0.gsb and MAY76V20.gsb both have root grids named CAeast and
+        // CAwest with subgrids: the subgrids of one file must not be attached
+        // to the roots of the other one.
+        setup();
+
+        catalog::set_builder(nadgrids::files::read_from_file);
+
+        // Load both files
+        for file in ["north-america/ntv2_0.gsb", "north-america/MAY76V20.gsb"] {
+            assert!(catalog::find_grids(file, &mut vec![]), "{file} not found");
+        }
+
+        // Collect bad links and check outside the catalog lock, so that a failure
+        // does not poison the catalog for the other tests.
+        let foreign_parents: Vec<_> = catalog::with_catalog(|cat| {
+            cat.iter()
+                .filter_map(|node| node.parent.map(|parent| (node, parent)))
+                .filter(|(node, parent)| parent.name != node.name)
+                .map(|(node, parent)| format!("{} -> {}", node.name, parent.name))
+                .collect()
+        });
+
+        assert!(
+            foreign_parents.is_empty(),
+            "subgrids attached to a parent from another file: {foreign_parents:?}",
+        );
     }
 }

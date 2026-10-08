@@ -205,7 +205,10 @@ mod tests {
                 "+lat_1=90 +lat_2=-90",
             ] {
                 let s = format!("{base} {lats}");
-                assert!(Proj::from_proj_string(&s).is_err(), "{s} should be rejected");
+                assert!(
+                    Proj::from_proj_string(&s).is_err(),
+                    "{s} should be rejected"
+                );
             }
         }
     }

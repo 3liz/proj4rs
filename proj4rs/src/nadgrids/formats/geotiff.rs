@@ -465,7 +465,7 @@ impl Metadata {
 
     fn read<R: Read + Seek>(reader: &mut Decoder<R>) -> Result<Self> {
         Self::parse(
-            &reader
+            reader
                 .get_tag_ascii_string(Self::TIFFTAG_GDAL_METADATA)
                 .unwrap_or_default()
                 .trim(),
@@ -499,22 +499,19 @@ impl Metadata {
                     {
                         let value = value.trim();
                         match Self::parse_attributs(attrs) {
-                            Some(("UNITTYPE", Some(sample), Some("unittype"))) => match sample {
-                                "0" | "1" => {
-                                    let unittype = UnitType::from_str(value)?;
-                                    match units {
-                                        Some(units) => {
-                                            if units != unittype {
-                                                return Err(Error::InvalidTiffGridFormat(
-                                                    "Samples have different units",
-                                                ));
-                                            }
+                            Some(("UNITTYPE", Some("0" | "1"), Some("unittype"))) => {
+                                let unittype = UnitType::from_str(value)?;
+                                match units {
+                                    Some(units) => {
+                                        if units != unittype {
+                                            return Err(Error::InvalidTiffGridFormat(
+                                                "Samples have different units",
+                                            ));
                                         }
-                                        None => units = Some(unittype),
                                     }
+                                    None => units = Some(unittype),
                                 }
-                                _ => {}
-                            },
+                            }
                             Some(("DESCRIPTION", Some(sample), Some("description"))) => {
                                 match sample {
                                     "0" => match value {

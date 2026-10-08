@@ -135,19 +135,29 @@ impl Display for Grid {
             writeln!(f, "Delta ({},{})", self.del.lam, self.del.phi,)?;
         }
         writeln!(f, "Data: ")?;
-        for l in &self.cvs[..10] {
-            if self.is_geographic {
-                writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
-            } else {
-                writeln!(f, " ({},{})", l.lam, l.phi)?;
+        if self.cvs.len() > 10 {
+            for l in &self.cvs[..10] {
+                if self.is_geographic {
+                    writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
+                } else {
+                    writeln!(f, " ({},{})", l.lam, l.phi)?;
+                }
             }
-        }
-        writeln!(f, "...")?;
-        for l in &self.cvs[self.cvs.len() - 10..] {
-            if self.is_geographic {
-                writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
-            } else {
-                writeln!(f, " ({},{})", l.lam, l.phi)?;
+            writeln!(f, "...")?;
+            for l in &self.cvs[self.cvs.len() - 10..] {
+                if self.is_geographic {
+                    writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
+                } else {
+                    writeln!(f, " ({},{})", l.lam, l.phi)?;
+                }
+            }
+        } else {
+            for l in &self.cvs {
+                if self.is_geographic {
+                    writeln!(f, "  ({},{})", l.lam.to_degrees(), l.phi.to_degrees(),)?;
+                } else {
+                    writeln!(f, " ({},{})", l.lam, l.phi)?;
+                }
             }
         }
         Ok(())
