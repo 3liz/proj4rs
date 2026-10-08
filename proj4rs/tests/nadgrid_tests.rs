@@ -122,6 +122,105 @@ fn test_nadgrid_subgrid_lookup() {
 
 #[test]
 #[cfg(feature = "local_tests")]
+fn test_nadgrid_null_fallback() {
+    // A trailing '@null' in a grid list acts as a world-wide
+    // zero-shift fallback: points outside the other grids must pass through
+    // unchanged instead of failing.
+    setup();
+
+    let to = Proj::from_proj_string("+proj=latlong +datum=WGS84").unwrap();
+
+    // ntf_r93.gsb covers lat [41, 52], lon [-5.5, 10]
+    let from = Proj::from_proj_string(
+        "+proj=latlong +ellps=clrk80ign +nadgrids=ntf_r93.gsb,@null",
+    )
+    .unwrap();
+
+    // Expected output from proj 9.8.1:
+    // cs2cs -d 12 +proj=longlat +ellps=clrk80ign +nadgrids=ntf_r93.gsb,@null \
+    //    +to +proj=longlat +datum=WGS84
+    let cases: [(&str, (f64, f64), (f64, f64)); 5] = [
+        // Inside the grid: shifted
+        ("Paris", (2.35, 48.85), (2.349295593686, 48.849933562569)),
+        ("Brest", (-4.5, 48.4), (-4.500970456948, 48.399916990002)),
+        // Outside the grid: '@null' fallback, unchanged
+        ("Prague", (15.0, 50.0), (15.0, 50.0)),
+        ("Atlantic", (-10.0, 40.0), (-10.0, 40.0)),
+        ("East of grid", (10.5, 47.0), (10.5, 47.0)),
+    ];
+
+    for (name, (lon, lat), (exp_lon, exp_lat)) in cases {
+        let mut v = (lon.to_radians(), lat.to_radians(), 0.0);
+        transform(&from, &to, &mut v)
+            .unwrap_or_else(|e| panic!("{name}: {e:?}"));
+
+        let (out_lon, out_lat) = (v.0.to_degrees(), v.1.to_degrees());
+        eprintln!("{name}: ({out_lon:.12}, {out_lat:.12})");
+
+        // 1e-8 deg ~ 1 mm
+        assert_abs_diff_eq!(out_lon, exp_lon, epsilon = 1.0e-8);
+        assert_abs_diff_eq!(out_lat, exp_lat, epsilon = 1.0e-8);
+    }
+
+    // Without '@null', points outside the grid are still an error
+    let from = Proj::from_proj_string(
+        "+proj=latlong +ellps=clrk80ign +nadgrids=ntf_r93.gsb",
+    )
+    .unwrap();
+
+    let mut v = (15.0_f64.to_radians(), 50.0_f64.to_radians(), 0.0);
+    assert!(transform(&from, &to, &mut v).is_err());
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
+fn test_nadgrid_identical_datums() {
+    // Two CRS with the same nadgrids list have identical datums,
+    // so no grid shift must be applied between them. A point outside the grid
+    // must then pass through unchanged instead of failing.
+    setup();
+
+    fn latlong(nadgrids: &str) -> Proj {
+        Proj::from_proj_string(&format!(
+            "+proj=latlong +ellps=clrk80ign +nadgrids={nadgrids}"
+        ))
+        .unwrap()
+    }
+
+    // ntf_r93.gsb covers lat [41, 52], lon [-5.5, 10]
+    let inside = (2.35_f64, 48.85_f64); // Paris
+    let outside = (15.0_f64, 50.0_f64); // Prague
+
+    // Results checked against proj 9.8.1:
+    // cs2cs -d 15 +proj=longlat +ellps=clrk80ign +nadgrids=<src> \
+    //    +to +proj=longlat +ellps=clrk80ign +nadgrids=<dst>
+    let identical = [
+        ("ntf_r93.gsb", "ntf_r93.gsb"),
+        ("ntf_r93.gsb,@null", "ntf_r93.gsb,@null"),
+    ];
+
+    for (src, dst) in identical {
+        let (from, to) = (latlong(src), latlong(dst));
+        for (lon, lat) in [inside, outside] {
+            let mut v = (lon.to_radians(), lat.to_radians(), 0.0);
+            transform(&from, &to, &mut v)
+                .unwrap_or_else(|e| panic!("{src} -> {dst} ({lon}, {lat}): {e:?}"));
+
+            // No shift, not even a forward/inverse round trip
+            assert_abs_diff_eq!(v.0.to_degrees(), lon, epsilon = 1.0e-12);
+            assert_abs_diff_eq!(v.1.to_degrees(), lat, epsilon = 1.0e-12);
+        }
+    }
+
+    // Different grid lists are not identical datums: the source grid is
+    // applied and fails outside of its area
+    let (from, to) = (latlong("ntf_r93.gsb"), latlong("ntf_r93.gsb,@null"));
+    let mut v = (outside.0.to_radians(), outside.1.to_radians(), 0.0);
+    assert!(transform(&from, &to, &mut v).is_err());
+}
+
+#[test]
+#[cfg(feature = "local_tests")]
 fn test_epsg27700_bad_point() {
     // From https://github.com/3liz/proj4rs/issues/37
     setup();
