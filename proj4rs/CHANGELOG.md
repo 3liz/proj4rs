@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* Fix standalone nagrids (@)null parameter behavior
 * Fix consistent build of nadgrid hierarchy
 * Fix trailing (@)null fallback for nadgrids 
 * Fix nadgrid subgrid traversal
