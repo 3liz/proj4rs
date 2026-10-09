@@ -259,7 +259,6 @@ fn test_transform_with_datum() {
     assert_abs_diff_eq!(inp.1, 6404230.291456630, epsilon = 1.0e-6);
 }
 
-
 #[test]
 fn test_transform_null_datum() {
     // Test when nadgrid list is empty

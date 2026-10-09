@@ -163,6 +163,38 @@ impl Proj {
         self.projdata.proj_type
     }
 
+    #[inline]
+    /// Return latitude of origin (lat_0)
+    /// in radians
+    pub fn latitude_of_origin(&self) -> f64 {
+        self.projdata.phi0
+    }
+
+    #[inline]
+    /// Return longitude of origin (lon_0)
+    /// in radians
+    pub fn longitude_of_origin(&self) -> f64 {
+        self.projdata.lam0
+    }
+
+    #[inline]
+    /// False easting in meters
+    pub fn false_easting(&self) -> f64 {
+        self.projdata.x0
+    }
+
+    #[inline]
+    /// False northing in meters
+    pub fn false_northing(&self) -> f64 {
+        self.projdata.y0
+    }
+
+    #[inline]
+    /// Scaling factor (k_0)
+    pub fn scaling_factor(&self) -> f64 {
+        self.projdata.k0
+    }
+
     pub fn units(&self) -> &'static str {
         if self.is_latlong() {
             units::DEGREES

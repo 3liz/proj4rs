@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Added
+
+* Expose accessors to projection parameters to public api
+
 ### Fixed
 
 * Fix standalone nagrids (@)null parameter behavior
