@@ -66,8 +66,16 @@ pub struct Proj4rs {
 /// * A "WGS84" string - equivalent to the projstring "+proj=longlat +ellps=WGS84"
 /// * An EPSG code
 ///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
+pub unsafe extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
+    if c_defn.is_null() {
+        set_last_error(errors::Error::InputStringError("Null input string"));
+        return ptr::null_mut();
+    }
+
     let cstr_defn = unsafe { CStr::from_ptr(c_defn) };
     match cstr_defn
         .to_str()
@@ -86,8 +94,12 @@ pub extern "C" fn proj4rs_proj_new(c_defn: *const c_char) -> *mut Proj4rs {
 }
 
 /// Delete projection object
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
+pub unsafe extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
     if !c_ptr.is_null() {
         unsafe {
             let _ = Box::from_raw(c_ptr);
@@ -96,24 +108,36 @@ pub extern "C" fn proj4rs_proj_delete(c_ptr: *mut Proj4rs) {
 }
 
 /// Returns the projection name
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_projname(c_ptr: *const Proj4rs) -> *const c_char {
+pub unsafe extern "C" fn proj4rs_proj_projname(c_ptr: *const Proj4rs) -> *const c_char {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.name.as_ptr() as *const c_char
 }
 
 /// Returns true if the projection is geographic
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_is_latlong(c_ptr: *const Proj4rs) -> bool {
+pub unsafe extern "C" fn proj4rs_proj_is_latlong(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.is_latlong()
 }
 
 /// Returns true if the projection is geocentric
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
+pub unsafe extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.is_geocent()
@@ -134,32 +158,45 @@ pub extern "C" fn proj4rs_proj_is_geocent(c_ptr: *const Proj4rs) -> bool {
 ///    printf("Axis are normalized\n")
 /// }
 /// ```
+/// # Safety
 ///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
+pub unsafe extern "C" fn proj4rs_proj_axis(c_ptr: *const Proj4rs) -> *const u8 {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.axis().as_ptr()
 }
 
 /// Return true if the axis are noramilized
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_is_normalized_axis(c_ptr: *const Proj4rs) -> bool {
+pub unsafe extern "C" fn proj4rs_proj_is_normalized_axis(c_ptr: *const Proj4rs) -> bool {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.is_normalized_axis()
 }
 
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_to_meter(c_ptr: *const Proj4rs) -> f64 {
+pub unsafe extern "C" fn proj4rs_proj_to_meter(c_ptr: *const Proj4rs) -> f64 {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     proj.inner.to_meter()
 }
 
 /// Return units of the projection (i.e "degrees", "m", "km", ...)
+///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_proj_units(c_ptr: *const Proj4rs) -> *const c_char {
+pub unsafe extern "C" fn proj4rs_proj_units(c_ptr: *const Proj4rs) -> *const c_char {
     assert!(!c_ptr.is_null(), "Null proj pointer");
     let proj: &Proj4rs = unsafe { &*c_ptr };
     to_c_unit(proj.inner.units()).as_ptr() as *const c_char
@@ -184,8 +221,11 @@ pub const ERR: c_int = 0;
 ///
 /// If `convert` is `true` then latlong coordinates are assumed te be in degrees.
 ///
+/// # Safety
+///
+/// This function may be passed an invalid non-null pointer
 #[unsafe(no_mangle)]
-pub extern "C" fn proj4rs_transform(
+pub unsafe extern "C" fn proj4rs_transform(
     src_ptr: *const Proj4rs,
     dst_ptr: *const Proj4rs,
     x: *mut f64,
@@ -231,8 +271,6 @@ struct Coords(*mut f64, *mut f64, *mut f64, isize, isize);
 
 impl Transform for Coords {
     fn transform_coordinates<F: TransformClosure>(&mut self, f: &mut F) -> errors::Result<()>
-    where
-        F: FnMut(f64, f64, f64) -> errors::Result<(f64, f64, f64)>,
     {
         let (mut xx, mut yy, mut zz, mut len, stride) = (self.0, self.1, self.2, self.3, self.4);
 

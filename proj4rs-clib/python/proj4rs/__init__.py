@@ -1,6 +1,6 @@
 from array import array
 from collections import abc
-from typing import Any, Tuple, TypeVar, Union, overload
+from typing import Any, TypeVar, overload
 
 from ._proj4rs import ffi, lib
 
@@ -95,35 +95,28 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[abc.Buffer, abc.Buffer],
-        Tuple[abc.Buffer, abc.Buffer, abc.Buffer],
-    ]: ...
+    ) -> tuple[abc.Buffer, abc.Buffer] | tuple[abc.Buffer, abc.Buffer, abc.Buffer]: ...
 
     @overload
     def transform(
         self,
-        x: float | int,
-        y: float | int,
+        x: float,
+        y: float,
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[float, float],
-    ]: ...
+    ) -> tuple[float, float]: ...
 
     @overload
     def transform(
         self,
-        x: float | int,
-        y: float | int,
-        z: float | int,
+        x: float,
+        y: float,
+        z: float,
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[float, float, float],
-    ]: ...
+    ) -> tuple[float, float, float]: ...
 
     @overload
     def transform(
@@ -133,9 +126,7 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[array, array],
-    ]: ...
+    ) -> tuple[array, array]: ...
 
     @overload
     def transform(
@@ -146,9 +137,7 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[array, array, array],
-    ]: ...
+    ) -> tuple[array, array, array]: ...
 
     @overload
     def transform(
@@ -158,9 +147,7 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[abc.Buffer, abc.Buffer],
-    ]: ...
+    ) -> tuple[abc.Buffer, abc.Buffer]: ...
 
     @overload
     def transform(
@@ -171,9 +158,7 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[abc.Buffer, abc.Buffer, abc.Buffer],
-    ]: ...
+    ) -> tuple[abc.Buffer, abc.Buffer, abc.Buffer]: ...
 
     def transform(
         self,
@@ -183,10 +168,7 @@ class Transform:
         *,
         convert: bool = True,
         inplace: bool = False,
-    ) -> Union[
-        Tuple[Any, Any],
-        Tuple[Any, Any, Any],
-    ]:
+    ) -> tuple[Any, Any] | tuple[Any, Any, Any]:
         """ Transform coordinates
 
             Parameters
@@ -244,7 +226,7 @@ class Transform:
                 mx = memoryview(x)
                 my = memoryview(y)
                 mz = memoryview(z) if z else None    # type: ignore [arg-type]
-                if len(my) != len(mx) and (not mz or len(mz) != len(mx)):  #
+                if len(my) != len(mx) and (not mz or len(mz) != len(mx)):
                     raise ValueError("Buffers must have same length")
                 _x = _copy_buffer(mx, inplace)
                 _y = _copy_buffer(my, inplace)

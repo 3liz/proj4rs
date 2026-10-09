@@ -24,7 +24,6 @@ def test_transform_sequence():
     assert y[0] == pytest.approx(2677630.7269610995, 1e-6)
 
 
-
 def test_transform_scalar():
 
     src = proj4rs.Proj("WGS84")
@@ -97,7 +96,7 @@ def test_transform_buffer_2d():
     x = array('d', [15.4213696, 47.0766716])
 
     # Reshape to a two dimensionnal array
-    m = memoryview(x).cast('b').cast('d', shape=(1,2))
+    m = memoryview(x).cast('b').cast('d', shape=(1, 2))
     print("* shape =", m.shape, "ndim", m.ndim)
 
     transform = proj4rs.Transform(
@@ -112,6 +111,3 @@ def test_transform_buffer_2d():
 
     assert x[0] == pytest.approx(4732659.007426266, 1e-6)
     assert x[1] == pytest.approx(2677630.7269610995, 1e-6)
-
-
-
