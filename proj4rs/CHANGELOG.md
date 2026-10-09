@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+* Workaround https://github.com/image-rs/image-tiff/issues/403
+    - Enable loading `PROJ-data/ca_nrc/ca_nrc_ntv2_0.tif`
+    - Use patched image-tiff branch
+
 ## 0.2.1 - 2026-10-09
 
 ### Added

@@ -84,8 +84,12 @@ If you want WKT support in WASM, please have a look at:
 
 ## Grid shift supports 
 
-Nadgrid support is still experimental.
-Currently, only Ntv2 multi grids are supported for native build and WASM.
+Nadgrid is supported for native build and WAMS.
+
+Support for:
+
+* Ntv2 multi grids
+* GDAL generated GeoTIFF multi grids
 
 ## JavaScript API
 

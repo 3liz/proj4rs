@@ -48,7 +48,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_wgs84_bng_latlong_nadgrid() {
         setup();
 
@@ -73,7 +72,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_nadgrid_subgrid_lookup() {
         // Check that the subgrid hierarchy is correctly walked
         //
@@ -136,7 +134,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_nadgrid_null_fallback() {
         // A trailing '@null' in a grid list acts as a world-wide
         // zero-shift fallback: points outside the other grids must pass through
@@ -187,7 +184,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_nadgrid_identical_datums() {
         // Two CRS with the same nadgrids list have identical datums,
         // so no grid shift must be applied between them. A point outside the grid
@@ -234,7 +230,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_nadgrid_multiple_roots() {
         // All top-level grids of a file must be used, not only
         // the first one.
@@ -372,7 +367,6 @@ mod local_tests {
     }
 
     #[test]
-    #[cfg(feature = "local_tests")]
     fn test_epsg27700_bad_point() {
         // From https://github.com/3liz/proj4rs/issues/37
         setup();
@@ -406,4 +400,21 @@ mod local_tests {
         )
         .unwrap();
     }
+
+    #[test]
+    #[cfg(feature = "tiff")]
+    fn test_ca_nrc_ntv2_0_panic() {
+        // Check fix for https://github.com/image-rs/image-tiff/issues/403
+        // from https://github.com/dmarteau/image-tiff/tree/stable-fix
+        setup();
+
+        const GRID: &str = "PROJ-data/ca_nrc/ca_nrc_ntv2_0.tif";
+
+        let mut grids = vec![];
+        assert!(catalog::find_grids(GRID, &mut grids), "{GRID} not found");
+
+        assert_eq!(grids.len(), 114);
+        assert_eq!(grids.iter().filter(|g| g.is_root()).count(), 4);
+    }
+
 }

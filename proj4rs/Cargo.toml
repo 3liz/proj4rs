@@ -27,7 +27,9 @@ crs-definitions = { version = "0.6", optional = true, default-features = false, 
 geo-types = { version = "0.7.12", optional = true }
 log = { version = "0.4", optional = true }
 proj4rs-geodesic = { workspace = true, optional = true }
-tiff = { version = "0.11" , optional = true }
+# Get around https://github.com/image-rs/image-tiff/issues/403
+#tiff = { version = "0.11" , optional = true }
+tiff = { git = "https://github.com/dmarteau/image-tiff.git" , branch = "stable-fix", optional = true }
 
 [dev-dependencies]
 approx = "0.5"
