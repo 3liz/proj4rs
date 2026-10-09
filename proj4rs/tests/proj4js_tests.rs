@@ -28,9 +28,13 @@ fn test_transform_with_datum() {
     let mut inp = (319180., 6399862., 0.);
 
     transform::transform(&from, &to, &mut inp).unwrap();
-    assert_abs_diff_eq!(inp.0, 1271137.92755580, epsilon = 1.0e-6);
-    assert_abs_diff_eq!(inp.1, 6404230.29136189, epsilon = 1.0e-6);
+    // Check against cs2cs (proj 9.4) output: proj4js gives
+    // (1271137.92755580, 6404230.29136189) because it does not handle
+    // +towgs84=0,0,0,0,0,0,0 as a 3 parameters transformation
+    assert_abs_diff_eq!(inp.0, 1271137.927561178, epsilon = 1.0e-6);
+    assert_abs_diff_eq!(inp.1, 6404230.291456630, epsilon = 1.0e-6);
 }
+
 
 #[test]
 fn test_transform_null_datum() {

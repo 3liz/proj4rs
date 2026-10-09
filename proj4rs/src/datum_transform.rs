@@ -44,28 +44,25 @@ pub(crate) struct Datum {
 
 impl Datum {
     pub fn new(ellps: &Ellipsoid, params: DatumParams) -> Self {
+        // check for WGS84/GRS80
+        let params = if params == ToWGS84_3(0., 0., 0.)
+            && ellps.a == SRS_WGS84_SEMIMAJOR
+            && (ellps.es - SRS_WGS84_ES).abs() < 0.000000000050
+        {
+            ToWGS84_0
+        } else {
+            params
+        };
+
         // Change ellipse parameters to wgs84
-        // when using nadgrids
-        let (a, b, es) = if params.use_nadgrids() {
+        // when using nadgrids or wgs84 equivalent
+        let (a, b, es) = if params.use_nadgrids() || params == ToWGS84_0 {
             (SRS_WGS84_SEMIMAJOR, SRS_WGS84_SEMIMINOR, SRS_WGS84_ES)
         } else {
             (ellps.a, ellps.b, ellps.es)
         };
 
-        Self {
-            // check for WGS84/GRS80
-            params: if params == ToWGS84_3(0., 0., 0.)
-                && ellps.a == SRS_WGS84_SEMIMAJOR
-                && (ellps.es - SRS_WGS84_ES).abs() < 0.000000000050
-            {
-                ToWGS84_0
-            } else {
-                params
-            },
-            a,
-            b,
-            es,
-        }
+        Self { params, a, b, es }
     }
 
     /// Convert from geodetic coordinates to wgs84/geocentric

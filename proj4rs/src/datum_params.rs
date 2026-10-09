@@ -36,27 +36,35 @@ impl DatumParams {
                 parse(i.next())?,
                 parse(i.next())?,
             )),
-            7 => Ok(DatumParams::ToWGS84_7(
-                parse(i.next())?,
-                parse(i.next())?,
-                parse(i.next())?,
-                parse(i.next())? * SEC_TO_RAD,
-                parse(i.next())? * SEC_TO_RAD,
-                parse(i.next())? * SEC_TO_RAD,
-                parse(i.next())? / 1_000_000.0 + 1.,
-            )),
+            7 => {
+                let (dx, dy, dz) = (parse(i.next())?, parse(i.next())?, parse(i.next())?);
+                let (rx, ry, rz, s) = (
+                    parse(i.next())?,
+                    parse(i.next())?,
+                    parse(i.next())?,
+                    parse(i.next())?,
+                );
+                // As PROJ, use 3 params if rotations and scale are null
+                if rx == 0. && ry == 0. && rz == 0. && s == 0. {
+                    Ok(DatumParams::ToWGS84_3(dx, dy, dz))
+                } else {
+                    Ok(DatumParams::ToWGS84_7(
+                        dx,
+                        dy,
+                        dz,
+                        rx * SEC_TO_RAD,
+                        ry * SEC_TO_RAD,
+                        rz * SEC_TO_RAD,
+                        s / 1_000_000.0 + 1.,
+                    ))
+                }
+            }
             _ => Err(Error::InvalidToWGS84String),
         }
     }
 
     pub fn from_nadgrid_str(nadgrids: &str) -> Result<Self> {
-        if nadgrids == "@null" || nadgrids == "null" {
-            // See https://proj.org/en/stable/usage/transformation.html#the-null-grid
-            // for discussion about null nadgrid
-            Ok(Self::NoDatum)
-        } else {
-            NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
-        }
+        NadGrids::new_grid_transform(nadgrids).map(Self::NadGrids)
     }
 
     pub fn use_nadgrids(&self) -> bool {
