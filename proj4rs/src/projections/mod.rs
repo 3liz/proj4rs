@@ -200,6 +200,7 @@ pub mod lcc;
 pub mod merc;
 pub mod mill;
 pub mod moll;
+pub mod poly;
 pub mod somerc;
 pub mod stere;
 pub mod sterea;
@@ -207,7 +208,7 @@ pub mod tmerc;
 
 #[allow(unused_mut)]
 const fn num_projections() -> usize {
-    let mut num = 25;
+    let mut num = 26;
     #[cfg(feature = "aeqd")]
     {
         num += 1;
@@ -246,6 +247,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(krovak),
     declare_proj!(mill),
     declare_proj!(cea),
+    declare_proj!(poly),
 ];
 
 declare_proj_params! {
@@ -267,6 +269,7 @@ declare_proj_params! {
     krovak,
     mill,
     cea,
+    poly,
 }
 
 ///
