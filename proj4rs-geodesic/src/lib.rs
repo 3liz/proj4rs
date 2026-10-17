@@ -1,9 +1,22 @@
-//! Rust interface for geodesic calculation from [GeographicLib](https://geographiclib.sourceforge.io/html/)
-//! This is the original implementation in C with a Rust interface and inspired
-//! from the [geographiclib rust project](https://github.com/savage13/geographiclib/tree/master)
+//! Geodesic calculations from [GeographicLib](https://geographiclib.sourceforge.io/html/)
 //!
-//! This is only a part of the geographiclib implementation needed by proj4rs
-//! for implementing some projections.
+//! This is a pure Rust port of the C implementation of the geodesic
+//! routines (`geodesic.c`) of GeographicLib as shipped with
+//! [Proj](https://proj.org/), and was inspired by the
+//! [geographiclib rust project](https://github.com/savage13/geographiclib/tree/master)
+//!
+//! The algorithms are described in
+//!
+//!   C. F. F. Karney,
+//!   [Algorithms for geodesics](https://doi.org/10.1007/s00190-012-0578-z),
+//!   J. Geodesy 87, 43--55 (2013);
+//!   Addenda: <https://geographiclib.sourceforge.io/geod-addenda.html>
+//!
+//! The crate provides:
+//!   - [`Geodesic`]: solution of the direct and inverse geodesic problems,
+//!   - [`GeodesicLine`]: efficient computation of many points along a
+//!     single geodesic,
+//!   - [`Polygon`]: perimeter and area of geodesic polygons.
 //!
 //! Example
 //!
@@ -21,223 +34,26 @@
 //!
 //! Note: this is an alternative to the Vincenty distance calculation.
 //!
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-use std::sync;
+//! Copyright (c) Charles Karney (2012-2022) <charles@karney.com> and licensed
+//! under the MIT/X11 License.  For more information, see
+//! <https://geographiclib.sourceforge.io/>
+//!
+mod geodesic;
+mod line;
+mod math;
+mod polygon;
 
+pub use geodesic::{Flags, Geodesic, Inverse, Mask, Position};
+pub use line::GeodesicLine;
+pub use polygon::{Polygon, PolygonResult};
+
+// Include wasm entry point for wasm32-unknown-unknown
+#[cfg(feature = "wasm-geodesic-api")]
 #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-thread_local! {
-    static GEOD_INIT: std::cell::OnceCell<bool> = std::cell::OnceCell::new();
-}
-
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-static GEOD_INIT: sync::OnceLock<bool> = sync::OnceLock::new();
-
-/// Ellipsoid on which Geodesic Calculations are computed
-#[repr(C)]
-#[derive(Clone)]
-pub struct Geodesic {
-    /// Semi-major axis
-    a: f64,
-    /// Flattening
-    f: f64,
-    f1: f64,
-    e2: f64,
-    ep2: f64,
-    n: f64,
-    b: f64,
-    c2: f64,
-    etol2: f64,
-    a3x: [f64; 6],
-    c3x: [f64; 15],
-    c4x: [f64; 21],
-}
-
-impl std::fmt::Display for Geodesic {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Geodesic {{ a: {}, f: {} }}", self.a, self.f)
-    }
-}
-impl std::fmt::Debug for Geodesic {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Geodesic {{ a: {}, f: {} }}", self.a, self.f)
-    }
-}
-
-#[link(name = "geodesic", kind = "static")]
-unsafe extern "C" {
-    fn Init();
-    fn geod_init(g: *mut Geodesic, a: f64, f: f64) -> bool;
-    fn geod_inverse(
-        g: *const Geodesic,
-        lat1: f64,
-        lon1: f64,
-        lat2: f64,
-        lon2: f64,
-        ps12: *mut f64,
-        pazi1: *mut f64,
-        pazi2: *mut f64,
-    );
-    fn geod_direct(
-        g: *const Geodesic,
-        lat1: f64,
-        lon1: f64,
-        azi1: f64,
-        s12: f64,
-        plat2: *mut f64,
-        plon2: *mut f64,
-        pazi2: *mut f64,
-    );
-}
-
-impl Geodesic {
-    /// Create new Ellipsoid with semi-major axis `a` in meters and a flattening `f`
-    ///
-    /// ```rust
-    /// use proj4rs_geodesic::Geodesic;
-    /// let g = Geodesic::new(6_378_145.0, 1.0/298.25);
-    /// println!("{}", g);
-    /// // Geodesic { a: 6378145, f: 0.003352891869237217 }
-    /// ```
-    pub fn new(a: f64, f: f64) -> Self {
-        #[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
-        {
-            GEOD_INIT.with(|v| {
-                v.get_or_init(|| {
-                    unsafe {
-                        Init();
-                    }
-                    true
-                });
-            });
-        }
-        #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
-        {
-            GEOD_INIT.get_or_init(|| {
-                unsafe {
-                    Init();
-                }
-                true
-            });
-        }
-        unsafe {
-            let mut g = std::mem::MaybeUninit::<Geodesic>::uninit();
-            if !geod_init(g.as_mut_ptr(), a, f) {
-                panic!("geodesic is not initialized");
-            }
-            g.assume_init()
-        }
-    }
-
-    #[allow(non_upper_case_globals)]
-    pub fn wgs84() -> Self {
-        const a: f64 = 6_378_137.0;
-        const f: f64 = 1.0 / 298.257_223_563; /* WGS84 */
-        Self::new(a, f)
-    }
-
-    /// Compute distance and azimuth from (`lat1`,`lon1`) to (`lat2`,`lon2`)
-    ///
-    /// # Arguments
-    ///   - lat1: Latitude of 1st point [degrees] [-90., 90.]
-    ///   - lon1: Longitude of 1st point [degrees] [-180., 180.]
-    ///   - lat2: Latitude of 2nd point [degrees] [-90. 90]
-    ///   - lon2: Longitude of 2nd point [degrees] [-180., 180.]
-    ///
-    /// # Returns
-    ///   - s12: Distance from 1st to 2nd point [meters]
-    ///   - azi1: Azimuth at 1st point [degrees]
-    ///   - azi2: Azimuth at 2nd point [degrees]
-    ///
-    /// If either point is at a pole, the azimuth is defined by keeping the
-    ///   longitude fixed, writing lat = ±(90° − ε), and taking the limit ε → 0+.
-    ///
-    /// The solution to the inverse problem is found using Newton's method.
-    ///  If this fails to converge (this is very unlikely in geodetic applications
-    ///  but does occur for very eccentric ellipsoids), then the bisection method
-    ///  is used to refine the solution.
-    ///
-    /// ```rust
-    /// // Example, determine the distance between JFK and Singapore Changi Airport:
-    /// use proj4rs_geodesic::Geodesic;
-    /// let g = Geodesic::wgs84();
-    /// let (jfk_lat, jfk_lon) = (40.64, -73.78);
-    /// let (sin_lat, sin_lon) = (1.36, 103.99);
-    /// let (m, a1, a2) = g.inverse(jfk_lat, jfk_lon, sin_lat, sin_lon);
-    /// assert_eq!(m,  15347512.94051294);  // Distance meters
-    /// assert_eq!(a1, 3.3057734780176125); // Azimuth at 1st point
-    /// assert_eq!(a2, 177.48784020815515); // Azimuth at 2nd point (forward)
-    /// ```
-    ///
-    pub fn inverse(&self, lat1: f64, lon1: f64, lat2: f64, lon2: f64) -> (f64, f64, f64) {
-        let mut s12 = 0.0;
-        let mut azi1 = 0.0;
-        let mut azi2 = 0.0;
-        unsafe {
-            geod_inverse(
-                self as *const Geodesic,
-                lat1,
-                lon1,
-                lat2,
-                lon2,
-                &mut s12 as *mut f64,
-                &mut azi1 as *mut f64,
-                &mut azi2 as *mut f64,
-            )
-        };
-        (s12, azi1, azi2)
-    }
-
-    /// Compute a new location (`lat2`,`lon2`) from (`lat1`,`lon1`) a distance `s12` at an azimuth of `azi1`
-    ///
-    /// # Arguments
-    ///   - lat1 - Latitude of 1st point [degrees] [-90.,90.]
-    ///   - lon1 - Longitude of 1st point [degrees] [-180., 180.]
-    ///   - azi1 - Azimuth at 1st point [degrees] [-180., 180.]
-    ///   - s12 - Distance from 1st to 2nd point [meters] Value may be negative
-    ///
-    /// # Returns
-    ///   - lat2 - Latitude of 2nd point [degrees]
-    ///   - lon2 - Longitude of 2nd point [degrees]
-    ///   - azi2 - Azimuth at 2nd point
-    ///
-    /// If either point is at a pole, the azimuth is defined by keeping the
-    ///  longitude fixed, writing lat = ±(90° − ε), and taking the limit ε → 0+.
-    ///  An arc length greater that 180° signifies a geodesic which is not a
-    ///  shortest path. (For a prolate ellipsoid, an additional condition is
-    ///  necessary for a shortest path: the longitudinal extent must not
-    ///  exceed of 180°.)
-    ///
-    /// ```rust
-    /// // Example, determine the point 10000 km NE of JFK:
-    /// use proj4rs_geodesic::Geodesic;
-    /// let g = Geodesic::wgs84();
-    /// let (lat,lon,az) = g.direct(40.64, -73.78, 45.0, 10e6);
-    /// assert_eq!(lat, 32.621100463725796);
-    /// assert_eq!(lon, 49.05248709295982);
-    /// assert_eq!(az,  140.40598587680074);
-    /// ```
-    ///
-    pub fn direct(&self, lat1: f64, lon1: f64, azi1: f64, s12: f64) -> (f64, f64, f64) {
-        let mut lat2 = 0.0;
-        let mut lon2 = 0.0;
-        let mut azi2 = 0.0;
-        unsafe {
-            geod_direct(
-                self as *const Geodesic,
-                lat1,
-                lon1,
-                azi1,
-                s12,
-                &mut lat2 as &mut f64,
-                &mut lon2 as &mut f64,
-                &mut azi2 as &mut f64,
-            )
-        };
-        (lat2, lon2, azi2)
-    }
-}
+mod wasm;
 
 #[cfg(test)]
+#[allow(clippy::excessive_precision)]
 mod tests {
 
     #[test]

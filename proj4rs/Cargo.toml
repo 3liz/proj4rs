@@ -26,7 +26,7 @@ thiserror = "2.0"
 crs-definitions = { version = "0.6", optional = true, default-features = false, features = ["proj4"] }
 geo-types = { version = "0.7.12", optional = true }
 log = { version = "0.4", optional = true }
-proj4rs-geodesic = { workspace = true, optional = true }
+proj4rs-geodesic = { workspace = true }
 # Get around https://github.com/image-rs/image-tiff/issues/403
 #tiff = { version = "0.11" , optional = true }
 tiff = { git = "https://github.com/dmarteau/image-tiff.git" , branch = "stable-fix", optional = true }
@@ -48,7 +48,8 @@ rand = "0.10"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["aeqd"]
+default = []
+geodesic-wasm-api = ["proj4rs-geodesic/wasm-geodesic-api"]
 binaries = []
 geo-types = ["dep:geo-types"]
 logging = ["log"]
@@ -56,8 +57,10 @@ local_tests = []
 wasm-strict = []
 proj4js-compat = []
 with-wasm-entrypoint = []
-aeqd = ["proj4rs-geodesic"]
 tiff = ["dep:tiff"]
+# no-op feature for keeping compatibility with 
+# downstream --features option
+aeqd = [] 
 
 [target.wasm32-unknown-unknown.dependencies]
 wasm-bindgen = "0.2"

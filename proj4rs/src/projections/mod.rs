@@ -185,7 +185,6 @@ macro_rules! declare_proj_params {
 // ---------------------------
 
 pub mod aea;
-#[cfg(feature = "aeqd")]
 pub mod aeqd;
 pub mod cea;
 pub mod eqc;
@@ -207,14 +206,10 @@ pub mod stere;
 pub mod sterea;
 pub mod tmerc;
 
-#[allow(unused_mut)]
 const fn num_projections() -> usize {
-    let mut num = 27;
-    #[cfg(feature = "aeqd")]
-    {
-        num += 1;
-    }
-    num
+    //let mut num = 27;
+    //num
+    28
 }
 
 const NUM_PROJECTIONS: usize = num_projections();
@@ -243,7 +238,6 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(moll, wag5),
     declare_proj!(geos),
     declare_proj!(eqc),
-    #[cfg(feature = "aeqd")]
     declare_proj!(aeqd),
     declare_proj!(krovak),
     declare_proj!(mill),
@@ -267,7 +261,7 @@ declare_proj_params! {
     moll,
     geos,
     eqc,
-    [aeqd, "aeqd"],
+    aeqd,
     krovak,
     mill,
     cea,

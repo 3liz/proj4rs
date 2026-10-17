@@ -17,7 +17,7 @@ categories = ["science::geo"]
 
 [workspace.dependencies]
 proj4rs = { path = "proj4rs" }
-proj4rs-geodesic = { version = "0.1", path = "proj4rs-geodesic" }
+proj4rs-geodesic = { version = "0.2", path = "proj4rs-geodesic" }
 
 [profile.release]
 lto = true
