@@ -20,6 +20,7 @@
     (krovak),
     (mill),
     (cea),
+    (poly),
 ]
 ```
 
@@ -50,7 +51,7 @@
 - [-] nzmg
 - [-] omerc
 - [-] ortho
-- [-] poly
+- [+] poly
 - [-] qsc
 - [-] robin
 - [-] sinu
