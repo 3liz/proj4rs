@@ -21,6 +21,7 @@
     (mill),
     (cea),
     (poly),
+    (ortho),
 ]
 ```
 
@@ -50,7 +51,7 @@
 - [+] moll
 - [-] nzmg
 - [-] omerc
-- [-] ortho
+- [+] ortho
 - [+] poly
 - [-] qsc
 - [-] robin
