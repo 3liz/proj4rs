@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+* Add `ortho` (Orthographic projection) projection.
 * Add `poly` (American Polyconic) projection, used by EPSG:5880, 5530, 29101 and 5472 (#50)
 * Workaround https://github.com/image-rs/image-tiff/issues/403
     - Enable loading `PROJ-data/ca_nrc/ca_nrc_ntv2_0.tif`
