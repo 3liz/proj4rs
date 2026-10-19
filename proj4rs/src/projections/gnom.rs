@@ -77,7 +77,7 @@ impl Projection {
             Mode::OBLIQ
         };
 
-        let g = if p.ellps.es == 0. {
+        let g = if p.ellps.is_sphere() {
             None
         } else {
             Some(Box::new(Geodesic::new(1., p.ellps.f)))
