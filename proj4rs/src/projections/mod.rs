@@ -192,6 +192,7 @@ pub mod estmerc;
 pub mod etmerc;
 pub mod geocent;
 pub mod geos;
+pub mod gnom;
 pub mod krovak;
 pub mod laea;
 pub mod latlong;
@@ -209,7 +210,7 @@ pub mod tmerc;
 const fn num_projections() -> usize {
     //let mut num = 27;
     //num
-    28
+    29
 }
 
 const NUM_PROJECTIONS: usize = num_projections();
@@ -244,6 +245,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(cea),
     declare_proj!(poly),
     declare_proj!(ortho),
+    declare_proj!(gnom),
 ];
 
 declare_proj_params! {
@@ -267,6 +269,7 @@ declare_proj_params! {
     cea,
     poly,
     ortho,
+    gnom,
 }
 
 ///
