@@ -200,6 +200,7 @@ pub mod lcc;
 pub mod merc;
 pub mod mill;
 pub mod moll;
+pub mod omerc;
 pub mod ortho;
 pub mod poly;
 pub mod somerc;
@@ -210,7 +211,7 @@ pub mod tmerc;
 const fn num_projections() -> usize {
     //let mut num = 27;
     //num
-    29
+    30
 }
 
 const NUM_PROJECTIONS: usize = num_projections();
@@ -246,6 +247,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(poly),
     declare_proj!(ortho),
     declare_proj!(gnom),
+    declare_proj!(omerc),
 ];
 
 declare_proj_params! {
@@ -270,6 +272,7 @@ declare_proj_params! {
     poly,
     ortho,
     gnom,
+    omerc,
 }
 
 ///
