@@ -186,6 +186,7 @@ macro_rules! declare_proj_params {
 
 pub mod aea;
 pub mod aeqd;
+pub mod cass;
 pub mod cea;
 pub mod eqc;
 pub mod estmerc;
@@ -210,7 +211,7 @@ pub mod sterea;
 pub mod tmerc;
 pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 33;
+const NUM_PROJECTIONS: usize = 34;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
@@ -247,6 +248,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(omerc),
     declare_proj!(tpers),
     declare_proj!(tpers, nsper),
+    declare_proj!(cass),
 ];
 
 declare_proj_params! {
@@ -274,6 +276,7 @@ declare_proj_params! {
     sinu,
     omerc,
     tpers,
+    cass,
 }
 
 ///

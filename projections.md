@@ -25,6 +25,7 @@
     (gnom),
     (omerc),
     (tpers, nsper),
+    (cass),
 ]
 ```
 
@@ -33,7 +34,7 @@
 - [+] aea
 - [+] aeqd
 - [-] bonne
-- [-] cass
+- [+] cass
 - [+] cea
 - [+] eqc
 - [-] eqdc
