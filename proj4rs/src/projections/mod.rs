@@ -203,6 +203,7 @@ pub mod moll;
 pub mod omerc;
 pub mod ortho;
 pub mod poly;
+pub mod sinu;
 pub mod somerc;
 pub mod stere;
 pub mod sterea;
@@ -247,6 +248,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(poly),
     declare_proj!(ortho),
     declare_proj!(gnom),
+    declare_proj!(sinu),
     declare_proj!(omerc),
 ];
 
@@ -272,6 +274,7 @@ declare_proj_params! {
     poly,
     ortho,
     gnom,
+    sinu,
     omerc,
 }
 
