@@ -28,6 +28,7 @@
     (cass),
     (eqdc),
     (robin),
+    (eqearth),
 ]
 ```
 
@@ -40,7 +41,7 @@
 - [+] cea
 - [+] eqc
 - [+] eqdc
-- [-] eqearth
+- [+] eqearth
 - [-] equi
 - [+] etmerc
 - [-] gauss

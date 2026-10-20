@@ -190,6 +190,7 @@ pub mod cass;
 pub mod cea;
 pub mod eqc;
 pub mod eqdc;
+pub mod eqearth;
 pub mod estmerc;
 pub mod etmerc;
 pub mod geocent;
@@ -213,7 +214,7 @@ pub mod sterea;
 pub mod tmerc;
 pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 36;
+const NUM_PROJECTIONS: usize = 37;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
@@ -253,6 +254,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(cass),
     declare_proj!(eqdc),
     declare_proj!(robin),
+    declare_proj!(eqearth),
 ];
 
 declare_proj_params! {
@@ -283,6 +285,7 @@ declare_proj_params! {
     cass,
     eqdc,
     robin,
+    eqearth,
 }
 
 ///
