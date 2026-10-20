@@ -3,6 +3,15 @@ members = [
     "proj4rs-geodesic",
     "proj4rs",
     "proj4rs-clib", 
+    "proj4rs-php",
+    "run-wasm",
+]
+# proj4rs-php requires the PHP development files and libclang:
+# build it explicitly with `cargo build -p proj4rs-php`
+default-members = [
+    "proj4rs-geodesic",
+    "proj4rs",
+    "proj4rs-clib",
     "run-wasm",
 ]
 resolver = "2"

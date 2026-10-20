@@ -65,17 +65,6 @@ $points = $trans->transformPoints([[15.4213696, 47.0766716], [2.35, 48.85, 0.0]]
 `Proj` exposes `projname()`, `isLatlong()`, `isGeocent()`, `axis()`,
 `isNormalizedAxis()`, `toMeter()` and `units()`.
 
-## Packaging
-
-```sh
-cargo make php.package
-```
-
-builds `target/php/proj4rs-php-<version>-<target>.tar.gz`, a platform-specific package
-with the release C library bundled in `lib/`. It is loaded automatically when using
-`FFI::cdef()`. When preloading, set `FFI_LIB` in `proj4rs.h` to the absolute path of
-the bundled library.
-
 ## Tests
 
 ```sh

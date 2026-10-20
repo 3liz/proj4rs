@@ -1,0 +1,17 @@
+{
+    "name": "3liz/proj4rs-php-ext-tests",
+    "description": "Test suite for the proj4rs PHP extension",
+    "type": "project",
+    "license": ["MIT", "Apache-2.0"],
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Proj4rs\\Tests\\": "tests/"
+        }
+    }
+}

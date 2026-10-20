@@ -1,0 +1,61 @@
+[tasks.default]
+alias = "build"
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+
+[tasks."build-release"]
+command = "cargo"
+args = ["build", "--release"]
+
+# Run the PHP tests shared with the FFI bindings
+[tasks."php.test"]
+command = "php"
+args = [
+    "-d", "extension=${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/debug/libproj4rs_php.so",
+    "../proj4rs-clib/php/tests/test_all.php",
+]
+dependencies = ["build"]
+
+# Build a binary package of the extension
+# Output: target/php/proj4rs-php-ext-<version>-php<X.Y>-<nts|zts>-<target>.tar.gz
+#
+# The extension is only compatible with the PHP version (and thread
+# safety mode) it was built against: see `php-config`.
+[tasks."php.package"]
+script_runner = "bash"
+script = '''
+set -e
+case "${CARGO_MAKE_RUST_TARGET_OS}" in
+    macos) LIBNAME=libproj4rs_php.dylib ;;
+    windows) LIBNAME=proj4rs_php.dll ;;
+    *) LIBNAME=libproj4rs_php.so ;;
+esac
+PHPVER=$(php -r 'echo PHP_MAJOR_VERSION, ".", PHP_MINOR_VERSION;')
+TS=$(php -r 'echo PHP_ZTS ? "zts" : "nts";')
+PKGNAME=proj4rs-php-ext-${CARGO_MAKE_CRATE_VERSION}-php${PHPVER}-${TS}-${CARGO_MAKE_RUST_TARGET_TRIPLE}
+OUTDIR=${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/php
+STAGING=${OUTDIR}/${PKGNAME}
+rm -rf "${STAGING}"
+mkdir -p "${STAGING}"
+cp "${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/release/${LIBNAME}" "${STAGING}/proj4rs.so"
+cp README.md "${STAGING}/"
+tar -czf "${OUTDIR}/${PKGNAME}.tar.gz" -C "${OUTDIR}" "${PKGNAME}"
+echo "Created ${OUTDIR}/${PKGNAME}.tar.gz"
+'''
+dependencies = ["build-release"]
+
+# PHPUnit test suite
+# Requires composer and the PHP dom, mbstring, xml and xmlwriter extensions
+[tasks."php.composer-install"]
+command = "composer"
+args = ["install", "--no-interaction", "--no-progress"]
+
+[tasks."php.unittest"]
+command = "php"
+args = [
+    "-d", "extension=${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/debug/libproj4rs_php.so",
+    "vendor/bin/phpunit",
+]
+dependencies = ["build", "php.composer-install"]
