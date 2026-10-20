@@ -209,13 +209,7 @@ pub mod stere;
 pub mod sterea;
 pub mod tmerc;
 
-const fn num_projections() -> usize {
-    //let mut num = 27;
-    //num
-    30
-}
-
-const NUM_PROJECTIONS: usize = num_projections();
+const NUM_PROJECTIONS: usize = 31;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
