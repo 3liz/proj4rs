@@ -38,8 +38,6 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { gnom }
 
-const DEG_TO_RAD: f64 = std::f64::consts::PI / 180.;
-
 #[allow(non_camel_case_types)]
 #[allow(clippy::upper_case_acronyms)]
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -191,10 +189,10 @@ impl Projection {
 
     fn e_forward(&self, g: &Geodesic, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let r = g.gen_inverse(
-            self.phi0 / DEG_TO_RAD,
+            self.phi0.to_degrees(),
             0.,
-            phi / DEG_TO_RAD,
-            lam / DEG_TO_RAD,
+            phi.to_degrees(),
+            lam.to_degrees(),
             Mask::AZIMUTH | Mask::REDUCED_LENGTH | Mask::GEODESIC_SCALE,
         );
         if r.scale12 <= 0. {
@@ -210,7 +208,7 @@ impl Projection {
         let eps = 0.01 * f64::EPSILON.sqrt();
 
         // Azimuth clockwise from north
-        let azi0 = x.atan2(y) / DEG_TO_RAD;
+        let azi0 = x.atan2(y).to_degrees();
         let mut rho = x.hypot(y);
         let mut s = rho.atan();
         let little = rho <= 1.;
@@ -218,7 +216,7 @@ impl Projection {
             rho = 1. / rho;
         }
         let l = g.line(
-            self.phi0 / DEG_TO_RAD,
+            self.phi0.to_degrees(),
             0.,
             azi0,
             Mask::LATITUDE
