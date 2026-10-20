@@ -14,9 +14,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Add `gnom` Gnonomic projection
+    - https://github.com/3liz/proj4rs/pull/53
+* Add `ortho` Orthographic projection.
+    - https://github.com/3liz/proj4rs/pull/52
+* Add `poly` American Polyconic projection, used by EPSG:5880, 5530, 29101 and 5472
+    - https://github.com/3liz/proj4rs/pull/51
 * Add feature for exporting geodesic wasm api
-* Add `ortho` (Orthographic projection) projection.
-* Add `poly` (American Polyconic) projection, used by EPSG:5880, 5530, 29101 and 5472
 
 ### Fixed
 
