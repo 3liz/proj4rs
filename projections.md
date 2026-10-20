@@ -22,6 +22,7 @@
     (cea),
     (poly),
     (ortho),
+    (gnom),
 ]
 ```
 
@@ -40,7 +41,7 @@
 - [-] gauss
 - [+] geocent
 - [+] geos
-- [-] gnom
+- [+] gnom
 - [-] gstmerc
 - [+] krovac
 - [+] laea
