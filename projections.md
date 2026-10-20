@@ -26,6 +26,7 @@
     (omerc),
     (tpers, nsper),
     (cass),
+    (eqdc),
 ]
 ```
 
@@ -37,7 +38,7 @@
 - [+] cass
 - [+] cea
 - [+] eqc
-- [-] eqdc
+- [+] eqdc
 - [-] eqearth
 - [-] equi
 - [+] etmerc
