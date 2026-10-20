@@ -71,3 +71,35 @@ args = ["python"]
 command = "pytest"
 args = [ "-v", "python/tests"]
 dependencies = ["python.build-dev", "python.lint", "python.typing"]
+
+
+[tasks."php.test"]
+cwd = "php"
+command = "php"
+args = ["tests/test_all.php"]
+env = { PROJ4RS_LIB = "${CARGO_MAKE_WORKING_DIRECTORY}/../target/release/libproj4rs_c.so" }
+dependencies = ["build-release"]
+
+
+# Build a PHP package with the bundled C library
+# Output: target/php/proj4rs-php-<version>-<target>.tar.gz
+[tasks."php.package"]
+script_runner = "bash"
+script = '''
+set -e
+case "${CARGO_MAKE_RUST_TARGET_OS}" in
+    macos) LIBNAME=libproj4rs_c.dylib ;;
+    windows) LIBNAME=proj4rs_c.dll ;;
+    *) LIBNAME=libproj4rs_c.so ;;
+esac
+PKGNAME=proj4rs-php-${CARGO_MAKE_CRATE_VERSION}-${CARGO_MAKE_RUST_TARGET_TRIPLE}
+OUTDIR=${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/php
+STAGING=${OUTDIR}/${PKGNAME}
+rm -rf "${STAGING}"
+mkdir -p "${STAGING}/lib"
+cp -r php/src php/composer.json php/README.md php/proj4rs.h "${STAGING}/"
+cp "${CARGO_MAKE_CRATE_TARGET_DIRECTORY}/release/${LIBNAME}" "${STAGING}/lib/"
+tar -czf "${OUTDIR}/${PKGNAME}.tar.gz" -C "${OUTDIR}" "${PKGNAME}"
+echo "Created ${OUTDIR}/${PKGNAME}.tar.gz"
+'''
+dependencies = ["build-release"]

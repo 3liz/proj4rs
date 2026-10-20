@@ -1,0 +1,23 @@
+{
+    "name": "3liz/proj4rs",
+    "description": "PHP FFI bindings for proj4rs",
+    "type": "library",
+    "keywords": ["gis", "proj", "projection", "geography", "geospatial"],
+    "homepage": "https://github.com/3liz/proj4rs/",
+    "license": ["MIT", "Apache-2.0"],
+    "authors": [
+        {
+            "name": "David Marteau",
+            "email": "dmarteau@3liz.com"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "ext-ffi": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "Proj4rs\\": "src/"
+        }
+    }
+}

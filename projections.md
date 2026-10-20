@@ -57,7 +57,7 @@
 - [+] poly
 - [-] qsc
 - [-] robin
-- [-] sinu
+- [+] sinu
 - [+] somerc
 - [+] stere
 - [+] sterea
