@@ -27,6 +27,7 @@
     (tpers, nsper),
     (cass),
     (eqdc),
+    (robin),
 ]
 ```
 
@@ -59,7 +60,7 @@
 - [+] ortho
 - [+] poly
 - [-] qsc
-- [-] robin
+- [+] robin
 - [+] sinu
 - [+] somerc
 - [+] stere
