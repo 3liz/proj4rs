@@ -1,0 +1,30 @@
+stages:
+  - build
+  - package
+
+build:
+  image: ${REGISTRY_URL}/factory-ci-runner:rust-noble
+  tags:
+  - factory-plain
+  stage: build
+  script:
+  - make -C proj4rs --no-print-directory build package
+  - echo "PACKAGE=`ls -1 proj4rs/proj4rs-*.tgz`" > build.env
+  - cat build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+    paths:
+    - proj4rs/proj4rs-*.tgz
+
+package:
+  image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
+  tags:
+  - fabric
+  stage: package
+  rules:
+  - if: $RELEASE_BRANCH == "true"
+  script:
+  - upload_to_packages_server ${PACKAGE} pub/web-modules/proj4rs
+  dependencies:
+  - build

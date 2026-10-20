@@ -4,3 +4,5 @@ Cargo.lock
 .idea/
 
 __pycache__
+
+proj4rs-*.tgz
