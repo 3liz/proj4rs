@@ -23,6 +23,7 @@
     (poly),
     (ortho),
     (gnom),
+    (omerc),
 ]
 ```
 
@@ -51,7 +52,7 @@
 - [+] mill
 - [+] moll
 - [-] nzmg
-- [-] omerc
+- [+] omerc
 - [+] ortho
 - [+] poly
 - [-] qsc
