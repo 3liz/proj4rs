@@ -200,6 +200,7 @@ pub mod lcc;
 pub mod merc;
 pub mod mill;
 pub mod moll;
+pub mod omerc;
 pub mod ortho;
 pub mod poly;
 pub mod sinu;
@@ -248,6 +249,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(ortho),
     declare_proj!(gnom),
     declare_proj!(sinu),
+    declare_proj!(omerc),
 ];
 
 declare_proj_params! {
@@ -273,6 +275,7 @@ declare_proj_params! {
     ortho,
     gnom,
     sinu,
+    omerc,
 }
 
 ///
