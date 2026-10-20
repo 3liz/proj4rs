@@ -208,8 +208,9 @@ pub mod somerc;
 pub mod stere;
 pub mod sterea;
 pub mod tmerc;
+pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 31;
+const NUM_PROJECTIONS: usize = 33;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
@@ -244,6 +245,8 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(gnom),
     declare_proj!(sinu),
     declare_proj!(omerc),
+    declare_proj!(tpers),
+    declare_proj!(tpers, nsper),
 ];
 
 declare_proj_params! {
@@ -270,6 +273,7 @@ declare_proj_params! {
     gnom,
     sinu,
     omerc,
+    tpers,
 }
 
 ///
