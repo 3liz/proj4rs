@@ -24,6 +24,7 @@
     (ortho),
     (gnom),
     (omerc),
+    (tpers, nsper),
 ]
 ```
 
@@ -62,7 +63,7 @@
 - [+] stere
 - [+] sterea
 - [+] tmerc
-- [-] tpers
+- [+] tpers
 - [+] utm
 - [-] vandg
 
