@@ -28,7 +28,7 @@
 //! DEALINGS IN THE SOFTWARE.
 //!
 use crate::errors::{Error, Result};
-use crate::math::{authlat, authset, qsfn};
+use crate::math::Authalic;
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
@@ -53,37 +53,34 @@ fn m() -> f64 {
 
 #[derive(Debug, Clone)]
 pub(crate) struct Projection {
-    e: f64,
-    one_es: f64,
-    qp: f64,
     rqda: f64,
-    apa: Option<(f64, f64, f64)>,
+    /// Ellipsoidal case only
+    auth: Option<Authalic>,
 }
 
 impl Projection {
     pub fn eqearth(p: &mut ProjData, _params: &ParamList) -> Result<Self> {
         let el = &p.ellps;
-        let (qp, rqda, apa) = if el.is_ellipsoid() {
-            let qp = qsfn(1., el.e, el.one_es);
-            // Authalic radius divided by major axis
-            (qp, (0.5 * qp).sqrt(), Some(authset(el.es)))
+        Ok(if el.is_ellipsoid() {
+            let auth = Authalic::new(el);
+            Self {
+                // Authalic radius divided by major axis
+                rqda: (0.5 * auth.qp()).sqrt(),
+                auth: Some(auth),
+            }
         } else {
-            (0., 1., None)
-        };
-        Ok(Self {
-            e: el.e,
-            one_es: el.one_es,
-            qp,
-            rqda,
-            apa,
+            Self {
+                rqda: 1.,
+                auth: None,
+            }
         })
     }
 
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let mut sbeta = phi.sin();
-        if self.apa.is_some() {
+        if let Some(auth) = &self.auth {
             // Sine of the authalic latitude
-            sbeta = (qsfn(sbeta, self.e, self.one_es) / self.qp).clamp(-1., 1.);
+            sbeta = (auth.q(sbeta) / auth.qp()).clamp(-1., 1.);
         }
 
         let psi = (m() * sbeta).asin();
@@ -122,8 +119,8 @@ impl Projection {
         let y6 = y2 * y2 * y2;
         let lam = m() * x * (A1 + 3. * A2 * y2 + y6 * (7. * A3 + 9. * A4 * y2)) / yc.cos();
         let mut phi = (yc.sin() / m()).asin();
-        if let Some(apa) = self.apa {
-            phi = authlat(phi, apa);
+        if let Some(auth) = &self.auth {
+            phi = auth.lat_inverse(phi);
         }
         Ok((lam, phi, z))
     }
@@ -183,7 +180,6 @@ mod tests {
         ];
 
         test_proj_forward(&p, &inputs, 1e-6);
-        // proj4rs authalic latitude series differs from PROJ by < 1e-7 deg
-        test_proj_inverse(&p, &inputs, 1e-7);
+        test_proj_inverse(&p, &inputs, 1e-10);
     }
 }

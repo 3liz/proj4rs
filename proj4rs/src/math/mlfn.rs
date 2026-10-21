@@ -6,84 +6,44 @@
 //! the third flattening n. This gives full double precision accuracy for |f| <= 1/150.
 //!
 //! Port of PROJ `src/mlfn.cpp` (PROJ >= 9.2, <https://github.com/OSGeo/PROJ/pull/3516>).
-//! See C. F. F. Karney, "On auxiliary latitudes", <https://arxiv.org/abs/2212.05818>
 //!
+use super::auxlat::{
+    AuxCoeffs, C_MU_PHI, C_PHI_MU, coeffs_even, convert, rectifying_radius, third_flattening,
+};
 
-const LMAX: usize = 6;
-
-/// Meridional distance coefficients:
-/// [0]: overall multiplier, [1..=LMAX]: phi -> mu, [LMAX+1..=2*LMAX]: mu -> phi
-pub(crate) type Enfn = [f64; 2 * LMAX + 1];
-
-/// Evaluate sum(p[i] * x^i, i, 0, N) via Horner's method.
-#[inline]
-fn polyval(x: f64, p: &[f64]) -> f64 {
-    p.iter().rev().fold(0., |y, c| y * x + c)
-}
-
-/// Evaluate y = sum(c[k] * sin((2*k+2) * zeta), k, 0, K-1)
-#[inline]
-fn clenshaw(szeta: f64, czeta: f64, c: &[f64]) -> f64 {
-    // Approx operation count = (K + 5) mult and (2 * K + 2) add
-    let x = 2. * (czeta - szeta) * (czeta + szeta); // 2 * cos(2*zeta)
-    let (u0, _) = c.iter().rev().fold((0., 0.), |(u0, u1), ck| (x * u0 - u1 + ck, u0));
-    2. * szeta * czeta * u0 // sin(2*zeta) * u0
+/// Meridional distance coefficients
+#[derive(Debug, Clone, Copy)]
+pub(crate) struct Enfn {
+    /// Rectifying radius
+    rr: f64,
+    /// phi -> mu
+    mu_phi: AuxCoeffs,
+    /// mu -> phi
+    phi_mu: AuxCoeffs,
 }
 
 /// Compute the meridional distance coefficients from the
 /// first eccentricity squared.
 pub(crate) fn enfn(es: f64) -> Enfn {
-    // Expansion of (quarter meridian) / ((a+b)/2 * pi/2) as series in n^2;
-    // these coefficients are ( (2*k - 3)!! / (2*k)!! )^2 for k = 0..3
-    const COEFF_RAD: [f64; 4] = [1., 1. / 4., 1. / 64., 1. / 256.];
-
-    // Coefficients to convert phi to mu, Eq. A5 in arXiv:2212.05818
-    // with 0 terms dropped
-    #[rustfmt::skip]
-    const COEFF_MU_PHI: [f64; 12] = [
-        -3. / 2.,    9. / 16.,     -3. / 32.,     15. / 16.,
-        -15. / 32.,  135. / 2048., -35. / 48.,    105. / 256.,
-        315. / 512., -189. / 512., -693. / 1280., 1001. / 2048.,
-    ];
-    // Coefficients to convert mu to phi, Eq. A6 in arXiv:2212.05818
-    // with 0 terms dropped
-    #[rustfmt::skip]
-    const COEFF_PHI_MU: [f64; 12] = [
-        3. / 2.,      -27. / 32.,      269. / 512.,   21. / 16.,
-        -55. / 32.,   6759. / 4096.,   151. / 96.,    -417. / 128.,
-        1097. / 512., -15543. / 2560., 8011. / 2560., 293393. / 61440.,
-    ];
-
-    // Third flattening: n = (1 - b/a) / (1 + b/a) = es / (1 + sqrt(1 - es))^2
-    let n = es / (1. + (1. - es).sqrt()).powi(2);
-    let n2 = n * n;
-
-    let mut en = [0.; 2 * LMAX + 1];
-    en[0] = polyval(n2, &COEFF_RAD[..=LMAX / 2]) / (1. + n);
-
-    let mut d = n;
-    let mut o = 0;
-    for l in 0..LMAX {
-        let m = (LMAX - l - 1) / 2;
-        en[l + 1] = d * polyval(n2, &COEFF_MU_PHI[o..=o + m]);
-        en[l + 1 + LMAX] = d * polyval(n2, &COEFF_PHI_MU[o..=o + m]);
-        d *= n;
-        o += m + 1;
+    let n = third_flattening(es);
+    Enfn {
+        rr: rectifying_radius(n),
+        mu_phi: coeffs_even(n, &C_MU_PHI),
+        phi_mu: coeffs_even(n, &C_PHI_MU),
     }
-    en
 }
 
 /// Meridional distance (in units of the semi-major axis)
 #[inline]
 pub(crate) fn mlfn(phi: f64, sphi: f64, cphi: f64, en: Enfn) -> f64 {
-    en[0] * (phi + clenshaw(sphi, cphi, &en[1..=LMAX]))
+    en.rr * convert(phi, sphi, cphi, &en.mu_phi)
 }
 
 /// Inverse meridional distance: latitude from meridional distance
 #[inline]
 pub(crate) fn inv_mlfn(mu: f64, en: Enfn) -> f64 {
-    let mu = mu / en[0];
-    mu + clenshaw(mu.sin(), mu.cos(), &en[LMAX + 1..])
+    let mu = mu / en.rr;
+    convert(mu, mu.sin(), mu.cos(), &en.phi_mu)
 }
 
 #[cfg(test)]

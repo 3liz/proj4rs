@@ -7,9 +7,8 @@
 //!
 use crate::errors::{Error, Result};
 use crate::math::{
-    authlat, authset,
+    Authalic,
     consts::{EPS_10, FRAC_PI_2, FRAC_PI_4},
-    qsfn,
 };
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
@@ -86,18 +85,15 @@ enum EMode {
 #[derive(Debug, Clone)]
 pub(crate) struct EProj {
     phi0: f64,
-    e: f64,
-    one_es: f64,
     qp: f64,
-    apa: (f64, f64, f64),
+    auth: Authalic,
     mode: EMode,
 }
 
 impl EProj {
     fn new(p: &mut ProjData) -> Self {
-        let (e, one_es) = (p.ellps.e, p.ellps.one_es);
-        let qp = qsfn(1., e, one_es);
-        let apa = authset(p.ellps.es);
+        let auth = Authalic::new(&p.ellps);
+        let qp = auth.qp();
         let phi0 = p.phi0;
 
         use EMode::*;
@@ -116,8 +112,7 @@ impl EProj {
         } else {
             let (sinphi, cosphi) = phi0.sin_cos();
             let rq = (0.5 * qp).sqrt();
-            let sinb1 = qsfn(sinphi, e, one_es) / qp;
-            let cosb1 = (1. - sinb1 * sinb1).sqrt();
+            let (sinb1, cosb1) = auth.lat(phi0, sinphi, cosphi).sin_cos();
             let dd = cosphi / ((1. - p.ellps.es * sinphi * sinphi).sqrt() * rq * cosb1);
             OBLIQ {
                 rq,
@@ -131,17 +126,18 @@ impl EProj {
 
         Self {
             phi0,
-            e,
-            one_es,
             qp,
-            apa,
+            auth,
             mode,
         }
     }
 
     fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let (sinlam, coslam) = lam.sin_cos();
-        let q = qsfn(phi.sin(), self.e, self.one_es);
+        let (sinphi, cosphi) = phi.sin_cos();
+        let xi = self.auth.lat(phi, sinphi, cosphi);
+        let (sinb, cosb) = xi.sin_cos();
+        let q = sinb * self.qp;
 
         use EMode::*;
 
@@ -153,8 +149,6 @@ impl EProj {
                 ymf,
                 ..
             } => {
-                let sinb = q / self.qp;
-                let cosb = (1. - sinb * sinb).sqrt();
                 let mut b = 1. + sinb1 * sinb + cosb1 * cosb * coslam;
                 if b.abs() < EPS_10 {
                     return Err(Error::ToleranceConditionError);
@@ -166,8 +160,6 @@ impl EProj {
                 )
             }
             EQUIT { xmf, ymf, .. } => {
-                let sinb = q / self.qp;
-                let cosb = (1. - sinb * sinb).sqrt();
                 let mut b = 1. + cosb * coslam;
                 if b.abs() < EPS_10 {
                     return Err(Error::ToleranceConditionError);
@@ -180,7 +172,7 @@ impl EProj {
                     return Err(Error::ToleranceConditionError);
                 }
                 let q = self.qp - q;
-                if q >= 0. {
+                if q >= 1e-15 {
                     let b = q.sqrt();
                     (b * sinlam, -b * coslam)
                 } else {
@@ -192,7 +184,7 @@ impl EProj {
                     return Err(Error::ToleranceConditionError);
                 }
                 let q = self.qp + q;
-                if q >= 0. {
+                if q >= 1e-15 {
                     let b = q.sqrt();
                     (b * sinlam, b * coslam)
                 } else {
@@ -249,7 +241,7 @@ impl EProj {
                 }
             }
         };
-        Ok((xx.atan2(yy), authlat(ab.asin(), self.apa), z))
+        Ok((xx.atan2(yy), self.auth.lat_inverse(ab.asin()), z))
     }
 }
 
@@ -415,8 +407,10 @@ mod tests {
             ),
         ];
 
-        test_proj_forward(&p, &inputs, EPS_10);
-        test_proj_inverse(&p, &inputs, 1.0e-8);
+        // Reference values from PROJ 9.4.0: PROJ >= 9.7 computes q with atanh
+        // and the authalic latitude with series in n, which differs by up to ~5e-8 m
+        test_proj_forward(&p, &inputs, 1.0e-7);
+        test_proj_inverse(&p, &inputs, EPS_10);
     }
 
     #[test]
@@ -449,9 +443,9 @@ mod tests {
             ),
         ];
 
-        test_proj_forward(&p, &inputs, 1.0e-10);
-        // Authalic latitude series limits inverse precision to ~1e-8 degrees
-        test_proj_inverse(&p, &inputs, 1.0e-7);
+        // PROJ >= 9.7 differs by up to ~5e-8 m
+        test_proj_forward(&p, &inputs, 1.0e-7);
+        test_proj_inverse(&p, &inputs, EPS_10);
     }
 
     #[test]
@@ -508,7 +502,9 @@ mod tests {
             (4732659.007426266, 2677630.7269610995, 0.),
         )];
 
-        test_proj_forward(&p, &inputs, EPS_10);
-        test_proj_inverse(&p, &inputs, 1.0e-7);
+        // Reference values from PROJ 9.4.0: PROJ >= 9.7 computes q with atanh
+        // and the authalic latitude with series in n, which differs by up to ~5e-8 m
+        test_proj_forward(&p, &inputs, 1.0e-7);
+        test_proj_inverse(&p, &inputs, EPS_10);
     }
 }

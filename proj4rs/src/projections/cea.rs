@@ -10,7 +10,7 @@
 
 use crate::errors::{Error, Result};
 use crate::math::consts::{EPS_10, FRAC_PI_2};
-use crate::math::{authlat, authset, qsfn};
+use crate::math::Authalic;
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
@@ -23,10 +23,7 @@ pub(crate) enum Projection {
     },
     Ell {
         k0: f64,
-        e: f64,
-        one_es: f64,
-        qp: f64,
-        apa: (f64, f64, f64),
+        auth: Authalic,
     },
 }
 
@@ -50,10 +47,7 @@ impl Projection {
             k0 /= (1. - p.ellps.es * sint * sint).sqrt();
             Self::Ell {
                 k0,
-                e: p.ellps.e,
-                one_es: p.ellps.one_es,
-                qp: qsfn(1., p.ellps.e, p.ellps.one_es),
-                apa: authset(p.ellps.es),
+                auth: Authalic::new(&p.ellps),
             }
         } else {
             Self::Sph { k0 }
@@ -62,18 +56,18 @@ impl Projection {
 
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         match self {
-            Self::Ell { k0, e, one_es, .. } => {
-                Ok((k0 * lam, 0.5 * qsfn(phi.sin(), *e, *one_es) / k0, z))
-            }
+            Self::Ell { k0, auth } => Ok((k0 * lam, 0.5 * auth.q(phi.sin()) / k0, z)),
             Self::Sph { k0 } => Ok((k0 * lam, phi.sin() / k0, z)),
         }
     }
 
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         match self {
-            Self::Ell { k0, qp, apa, .. } => {
-                Ok((x / k0, authlat((2. * y * k0 / qp).asin(), *apa), z))
-            }
+            Self::Ell { k0, auth } => Ok((
+                x / k0,
+                auth.lat_inverse((2. * y * k0 / auth.qp()).asin()),
+                z,
+            )),
             Self::Sph { k0 } => {
                 let y = y * k0;
                 let t = y.abs();

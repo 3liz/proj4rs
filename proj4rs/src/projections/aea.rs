@@ -9,8 +9,9 @@
 //
 use crate::errors::{Error, Result};
 use crate::math::{
+    Authalic,
     consts::{EPS_7, EPS_10, FRAC_PI_2},
-    msfn, qsfn,
+    msfn,
 };
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
@@ -18,43 +19,10 @@ use crate::proj::ProjData;
 // Projection stub
 super::projection! { aea, leac }
 
-const PHI_NITER: usize = 15;
-
-// determine latitude angle phi1
-#[inline]
-fn phi1_inv(qs: f64, e: f64, one_es: f64) -> Result<f64> {
-    let mut phi = (0.5 * qs).asin();
-    if e < EPS_7 {
-        Ok(phi)
-    } else {
-        let mut i = PHI_NITER;
-        let (mut sinphi, mut cosphi, mut con, mut com, mut dphi);
-        while i > 0 {
-            (sinphi, cosphi) = phi.sin_cos();
-            con = e * sinphi;
-            com = 1. - con * con;
-            dphi = 0.5 * com * com / cosphi
-                * (qs / one_es - sinphi / com + 0.5 / e * ((1. - con) / (1. + con)).ln());
-            phi += dphi;
-
-            if dphi.abs() <= EPS_10 {
-                break;
-            }
-
-            i -= 1;
-        }
-        if i == 0 {
-            Err(Error::ToleranceConditionError)
-        } else {
-            Ok(phi)
-        }
-    }
-}
-
-#[derive(Debug, Default, Clone)]
+#[derive(Debug, Clone)]
 pub(crate) struct Projection {
-    e: f64,
-    one_es: f64,
+    /// Ellipsoidal case only
+    auth: Option<Authalic>,
     ec: f64,
     n: f64,
     n2: f64,
@@ -75,8 +43,9 @@ impl Projection {
         let secant = (phi1 - phi2).abs() >= EPS_10;
 
         if el.is_ellipsoid() {
+            let auth = Authalic::new(el);
             let m1 = msfn(sinphi, cosphi, el.es);
-            let ml1 = qsfn(sinphi, el.e, el.one_es);
+            let ml1 = auth.q(sinphi);
             if ml1.is_infinite() {
                 return Err(Error::ToleranceConditionError);
             }
@@ -85,7 +54,7 @@ impl Projection {
                 let (sinphi2, cosphi2) = phi2.sin_cos();
 
                 let m2 = msfn(sinphi2, cosphi2, el.es);
-                let ml2 = qsfn(sinphi2, el.e, el.one_es);
+                let ml2 = auth.q(sinphi2);
                 if ml2.is_infinite() || ml1 == ml2 {
                     return Err(Error::ToleranceConditionError);
                 }
@@ -96,11 +65,10 @@ impl Projection {
             let c = m1 * m1 + n * ml1;
             let dd = 1. / n;
             let n2 = n + n;
-            let rho0 = dd * (c - n * qsfn(p.phi0.sin(), el.e, el.one_es)).sqrt();
+            let rho0 = dd * (c - n * auth.q(p.phi0.sin())).sqrt();
 
             Ok(Self {
-                e: el.e,
-                one_es: el.one_es,
+                auth: Some(auth),
                 ec,
                 n,
                 n2,
@@ -117,8 +85,7 @@ impl Projection {
             let c = cosphi * cosphi + n2 * sinphi;
             let rho0 = dd * (c - n2 * p.phi0.sin()).sqrt();
             Ok(Self {
-                e: el.e,
-                one_es: el.one_es,
+                auth: None,
                 ec: 1.,
                 n,
                 n2,
@@ -129,18 +96,12 @@ impl Projection {
         }
     }
 
-    #[inline]
-    fn is_ellipse(&self) -> bool {
-        self.e != 0.
-    }
-
     #[inline(always)]
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let rho = self.c
-            - if self.is_ellipse() {
-                self.n * qsfn(phi.sin(), self.e, self.one_es)
-            } else {
-                self.n2 * phi.sin()
+            - match &self.auth {
+                Some(auth) => self.n * auth.q(phi.sin()),
+                None => self.n2 * phi.sin(),
             };
 
         if rho < 0. {
@@ -163,10 +124,17 @@ impl Projection {
                 yy = -yy;
             }
             let mut phi = rho / self.dd;
-            if self.is_ellipse() {
+            if let Some(auth) = &self.auth {
                 phi = (self.c - phi * phi) / self.n;
                 phi = if (self.ec - phi.abs()).abs() > EPS_7 {
-                    phi1_inv(phi, self.e, self.one_es)?
+                    if phi.abs() > 2. {
+                        return Err(Error::ToleranceConditionError);
+                    }
+                    let phi = auth.lat_inverse((phi / auth.qp()).asin());
+                    if !phi.is_finite() {
+                        return Err(Error::ToleranceConditionError);
+                    }
+                    phi
                 } else if phi < 0. {
                     -FRAC_PI_2
                 } else {
@@ -245,7 +213,9 @@ mod tests {
             ),
         ];
 
-        test_proj_forward(&p, &inputs, EPS_10);
+        // Reference values from PROJ 9.4.0: PROJ >= 9.7 computes q with atanh
+        // and the authalic latitude with series in n, which differs by up to ~5e-8 m
+        test_proj_forward(&p, &inputs, 1e-7);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
 
@@ -285,7 +255,9 @@ mod tests {
             ),
         ];
 
-        test_proj_forward(&p, &inputs, EPS_10);
+        // Reference values from PROJ 9.4.0: PROJ >= 9.7 computes q with atanh
+        // and the authalic latitude with series in n, which differs by up to ~5e-8 m
+        test_proj_forward(&p, &inputs, 1e-7);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
 

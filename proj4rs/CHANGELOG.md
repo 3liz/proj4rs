@@ -9,16 +9,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Changed
 
+
 * Use pure rust geodesic implementation for building WASM aeqd in JS context
     - Deprecate 'aeqd' features 
 * Use 6th-order series in the third flattening for meridional distance
     - Port of PROJ 9.2 `mlfn` (https://github.com/OSGeo/PROJ/pull/3516)
     - Full double precision; matches PROJ >= 9.2 for `poly`, `sinu`, `eqdc`, `cass`,
       `aeqd` and `tmerc +approx`
+* Use series in the third flattening for authalic latitude conversions
+    - Port of PROJ 9.7 `latitudes.cpp` (https://github.com/OSGeo/PROJ/pull/4441,
+      https://github.com/OSGeo/PROJ/pull/4446)
+    - Use `atanh` for computing q (`qsfn`)
+    - Matches PROJ >= 9.7 for `aea`, `leac`, `cea`, `laea` and `eqearth`: inverse
+      projections are now accurate to double precision (was ~1e-8 deg), forward
+      projections differ from PROJ < 9.7 by up to ~5e-8 m
+
 
 ### Added
 
-* Added `cass` Cassinig, `robin` Robinson`, `eqdc` Equidistant conic 
+* Added `cass` Cassini, `robin` Robinson, `eqdc` Equidistant conic 
   and `eqearth` Equal earth projections
     - https://github.com/3liz/proj4rs/pull/59
 * Add `tpers/nsper` Tilted/Near-sided perspective projections
@@ -37,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 * Add feature for exporting geodesic wasm api
 
 ### Fixed
+
 
 * Workaround https://github.com/image-rs/image-tiff/issues/403
     - Enable loading `PROJ-data/ca_nrc/ca_nrc_ntv2_0.tif`
