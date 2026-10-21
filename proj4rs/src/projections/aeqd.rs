@@ -141,7 +141,6 @@ impl AeqdProj {
                 Ok(Self::PEllps(AeqdPE {
                     phi0,
                     mode,
-                    es: p.ellps.es,
                     Mp: mlfn(FRAC_PI_2, 1., 0., en),
                     en,
                 }))
@@ -151,7 +150,6 @@ impl AeqdProj {
                 Ok(Self::PEllps(AeqdPE {
                     phi0,
                     mode,
-                    es: p.ellps.es,
                     Mp: mlfn(-FRAC_PI_2, -1., 0., en),
                     en,
                 }))
@@ -238,7 +236,6 @@ impl AeqdPS {
 struct AeqdPE {
     phi0: f64,
     mode: Mode,
-    es: f64,
     Mp: f64,
     en: Enfn,
 }
@@ -261,13 +258,13 @@ impl AeqdPE {
         } else if self.mode == N_POLE {
             (
                 x.atan2(-y), // lam
-                inv_mlfn(self.Mp - s12, self.es, self.en)?,
+                inv_mlfn(self.Mp - s12, self.en),
                 z,
             )
         } else {
             (
                 x.atan2(y), // lam
-                inv_mlfn(self.Mp + s12, self.es, self.en)?,
+                inv_mlfn(self.Mp + s12, self.en),
                 z,
             )
         })
@@ -467,7 +464,7 @@ impl GuamProj {
         for _ in 0..3 {
             t = self.e * phi.sin();
             t = (1. - t * t).sqrt();
-            phi = inv_mlfn(self.M1 + y - x2 * phi.tan() * t, self.es, self.en)?;
+            phi = inv_mlfn(self.M1 + y - x2 * phi.tan() * t, self.en);
         }
         Ok((x * t / phi.cos(), phi, z))
     }

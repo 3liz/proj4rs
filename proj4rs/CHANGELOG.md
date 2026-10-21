@@ -11,6 +11,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 * Use pure rust geodesic implementation for building WASM aeqd in JS context
     - Deprecate 'aeqd' features 
+* Use 6th-order series in the third flattening for meridional distance
+    - Port of PROJ 9.2 `mlfn` (https://github.com/OSGeo/PROJ/pull/3516)
+    - Full double precision; matches PROJ >= 9.2 for `poly`, `sinu`, `eqdc`, `cass`,
+      `aeqd` and `tmerc +approx`
 
 ### Added
 

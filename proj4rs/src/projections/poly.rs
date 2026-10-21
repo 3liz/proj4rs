@@ -220,10 +220,8 @@ mod tests {
             ((10.0, 0.0, 0.), (1113194.907932736, 0.000000000, 0.)),
         ];
 
-        // At 47.73° the 8th-degree meridional distance series (`mlfn`, "accurate to < 1e-5 m")
-        // differs from PROJ 9 by about 1.1 µm, hence the tolerance.
-        test_proj_forward(&p, &inputs, 1e-5);
-        test_proj_inverse(&p, &inputs, 1e-5);
+        test_proj_forward(&p, &inputs, 1e-8);
+        test_proj_inverse(&p, &inputs, 1e-9);
     }
 
     #[test]

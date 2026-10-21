@@ -77,7 +77,7 @@ impl Projection {
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let (lam, phi) = match self {
             Self::Ell { es, en } => {
-                let phi = inv_mlfn(y, *es, *en)?;
+                let phi = inv_mlfn(y, *en);
                 let s = phi.abs();
                 if s < FRAC_PI_2 {
                     let s = phi.sin();
@@ -143,10 +143,8 @@ mod tests {
             ((10.0, 0.0, 0.), (1113194.907932736, 0.000000000, 0.)),
         ];
 
-        // As for `poly`: the 8th-degree meridional distance series differs from PROJ 9 by about
-        // a micrometre at mid latitudes.
-        test_proj_forward(&p, &inputs, 1e-5);
-        test_proj_inverse(&p, &inputs, 1e-5);
+        test_proj_forward(&p, &inputs, 1e-8);
+        test_proj_inverse(&p, &inputs, 1e-9);
     }
 
     #[test]
@@ -176,8 +174,8 @@ mod tests {
             ((15.0, 0.0, 0.), (0.000000000, 0.000000000, 0.)),
         ];
 
-        test_proj_forward(&p, &inputs, 1e-5);
-        test_proj_inverse(&p, &inputs, 1e-5);
+        test_proj_forward(&p, &inputs, 1e-8);
+        test_proj_inverse(&p, &inputs, 1e-9);
     }
 
     #[test]
@@ -201,8 +199,8 @@ mod tests {
             ((-54.0, 0.0, 0.), (5000000.0, 10000000.0, 0.)),
         ];
 
-        test_proj_forward(&p, &inputs, 1e-5);
-        test_proj_inverse(&p, &inputs, 1e-5);
+        test_proj_forward(&p, &inputs, 1e-8);
+        test_proj_inverse(&p, &inputs, 1e-9);
     }
 
     #[test]

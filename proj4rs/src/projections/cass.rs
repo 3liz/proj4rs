@@ -145,7 +145,7 @@ impl Projection {
 
     fn e_inverse(&self, x: f64, y: f64) -> Result<(f64, f64)> {
         let es = self.es;
-        let phi1 = inv_mlfn(self.m0 + y, es, self.en)?;
+        let phi1 = inv_mlfn(self.m0 + y, self.en);
         let tanphi1 = phi1.tan();
         let T1 = tanphi1 * tanphi1;
         let sinphi1 = phi1.sin();
@@ -249,8 +249,7 @@ mod tests {
             ),
         ];
 
-        // proj4rs meridian distance series differs from PROJ by < 1e-4 m
-        test_proj_forward(&p, &inputs, 1e-4);
+        test_proj_forward(&p, &inputs, 1e-8);
         test_proj_inverse(&p, &inputs, 1e-9);
     }
 
@@ -270,7 +269,7 @@ mod tests {
             ((-179.8, -17., 0.), (142930.300404808, -15899.851477167, 0.)),
         ];
 
-        test_proj_forward(&p, &inputs, 1e-4);
+        test_proj_forward(&p, &inputs, 1e-8);
         test_proj_inverse(&p, &inputs, 1e-9);
     }
 }

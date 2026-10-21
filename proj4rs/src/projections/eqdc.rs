@@ -44,7 +44,6 @@ pub(crate) struct Projection {
     n: f64,
     rho0: f64,
     c: f64,
-    es: f64,
     en: Enfn,
     ellips: bool,
 }
@@ -107,7 +106,6 @@ impl Projection {
             n,
             rho0,
             c,
-            es,
             en,
             ellips,
         })
@@ -135,7 +133,7 @@ impl Projection {
             }
             let mut phi = self.c - rho;
             if self.ellips {
-                phi = inv_mlfn(phi, self.es, self.en)?;
+                phi = inv_mlfn(phi, self.en);
             }
             Ok((x.atan2(y) / self.n, phi, z))
         } else {
@@ -205,8 +203,7 @@ mod tests {
             ((-70., 55., 0.), (1588170.056599415, 1896314.962503969, 0.)),
         ];
 
-        // proj4rs meridian distance series differs from PROJ by < 1e-5 m
-        test_proj_forward(&p, &inputs, 1e-5);
+        test_proj_forward(&p, &inputs, 1e-8);
         test_proj_inverse(&p, &inputs, 1e-9);
     }
 
@@ -220,7 +217,7 @@ mod tests {
             ((30., 60., 0.), (1122746.182793978, 6805084.847435765, 0.)),
         ];
 
-        test_proj_forward(&p, &inputs, 1e-4);
+        test_proj_forward(&p, &inputs, 1e-8);
         test_proj_inverse(&p, &inputs, 1e-9);
     }
 

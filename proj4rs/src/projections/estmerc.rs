@@ -128,7 +128,7 @@ impl Ell {
     }
 
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
-        let phi = inv_mlfn(self.ml0 + y / self.k0, self.es, self.en)?;
+        let phi = inv_mlfn(self.ml0 + y / self.k0, self.en);
         if phi.abs() >= FRAC_PI_2 {
             Ok((0., if y < 0. { -FRAC_PI_2 } else { FRAC_PI_2 }, z))
         } else {

@@ -9,20 +9,7 @@ more than 10^-4.
 
 ## Differences with PROJ
 
-### 1. Meridian distance
-
-- **proj4rs** (src/math/mlfn.rs) still uses the formula PROJ had before 9.2. It is Snyder's equation 3-21 as 
-  a series in e² up to e⁸. The inverse (`inv_mlfn`) runs a Newton iteration on that series until the step 
-  is below 1e-11 rad.
-- **PROJ 9.2.0** replaced it (PR #3516 (https://github.com/OSGeo/PROJ/pull/3516), Karney). 
-  The new formula is a 6th-order series in the third flattening n, and the inverse is a direct series with 
-  no iteration. Series in n converge much faster than series in e², so PROJ now reaches full double precision 
-  for |f| ≤ 1/150.
-- **PROJ 9.7.0** moved mlfn.cpp onto the new auxiliary-latitude code (#4446 (https://github.com/OSGeo/PROJ/pull/4446)). 
-  This changed nothing visible at 1e-9 m.
-
-
-### 2. Authalic latitude (eqearth, and also aea, cea, laea)
+### 1. Authalic latitude (eqearth, and also aea, cea, laea)
 
 - **proj4rs and PROJ ≤ 9.6:** the forward direction uses qsfn, a closed form with a log term. 
   The inverse (authset/authlat) is a 3-term series in e² from Adams (1921), truncated at e⁶.
