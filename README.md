@@ -6,32 +6,39 @@
 
 
 
-
-
 ---
 
-Rust library for transforming geographic point coordinates
-from one coordinate system to another.
+# Rust library for transforming geographic point coordinates from one coordinate system to another.
+
 This is a pure Rust implementation
 of the [PROJ.4 project](https://proj.org/en/9.2/faq.html#what-happened-to-proj-4).
 
 The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the demo on [docs.3liz.org](https://docs.3liz.org/proj4rs/).
 
+The original goal of Proj4rs was to provide a standalone, lightweight, pragmatic implementation of transformations
+from CRS to CRS that can be used in Rust and WASM environment.  
+
+C, Python and PHP bindings are provided in order to get reliable and consistent results 
+across various contexts (client side JS/server side ....).
+
 # Features and Limitations
 
-- The aim of Proj4rs is to provide the same functionality as the
-[proj4js library](https://github.com/proj4js/proj4js).
-- This port implements the PROJ.4 API,
-which means there's no 3D/4D/orthometric transformation ATM. The transformations pipeline
-use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
-- The goal of Proj4rs is not to be a replacement of PROJ,
-but instead being a lightweight pragmatic implementation of transformations
-from CRS to CRS that could be used in Rust and WASM environments.
-- This crate does not provide support for WKT. Instead,
-there is a dedicated crate for transforming WKT strings to proj string.
-- It aims to be WASM compatible for the `wasm32-unknown-unknown` target.
-- No installation of external C libraries such as `libproj` or `sqlite3` is needed.
-- See [PROJECTIONS.md](PROJECTIONS.md) for the list of implemented projections.
+Proj4rs is limited to CRS to CRS 2D transformations for an "everyday" use in context where the full
+feature set of PROJ is not required or not appropriate. But in all cases, PROJ **is** the source of truth for all 
+projections results, and we require proj4rs to stick to this.
+
+Projections are a transcript in Rust of the PROJ projections implementation. The required/expected accuracy
+with PROJ 9.8 results is up to 1e-6 m (but in practice it is almost at double precision accuracy).
+
+Have a look at the comparison [projection gallery](https://mdsumner.github.io/proj4rs/).
+
+This port implements the PROJ.4 API, which means there's no 3D/4D/orthometric transformation ATM. 
+The transformations pipeline use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
+
+
+### Available Projections 
+
+See [PROJECTIONS.md](PROJECTIONS.md) for the list of implemented projections.
 
 ## Extra features:
 
@@ -80,7 +87,10 @@ println!("{} {}",point_3d.0, point_3d.1); // 126.98069676435814, 37.583085346787
 
 ## WKT support
 
-If you need full support for WKT, please rely on `proj` which provides
+Support for WKT is not provided. Instead, there is a dedicated crate for transforming WKT 
+strings to proj string.
+
+If you need full support for WKT, please rely on `PROJ` which provides
 a great implementation of the standards.
 
 If you want WKT support in WASM, please have a look at:
