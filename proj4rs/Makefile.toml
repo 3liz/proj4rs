@@ -33,14 +33,13 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
-    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
 ]
 
 # NOTE: this increase substantially the size of the wasm 
-[tasks.wasm-all]
+[tasks."wasm.all"]
 description = "Build wasm module (web target)"
 command = "wasm-pack"
 args = [
@@ -48,7 +47,6 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
-    "--no-default-features",
     "--features=tiff",
     "--features=logging",
     "--features=proj4js-compat",
@@ -57,7 +55,7 @@ args = [
 
 
 
-[tasks.wasm_debug]
+[tasks."wasm.debug"]
 description = "Build wasm module with logging feature (web target)"
 command = "wasm-pack"
 args = [
@@ -65,13 +63,12 @@ args = [
     "--out-dir=../js/pkg",
     "--dev",
     "--target=web",
-    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
 ]
 
-[tasks.wasm_strict]
+[tasks."wasm.strict"]
 description = "Build wasm module in strict-mode (web target)"
 command = "wasm-pack"
 args = [
@@ -79,13 +76,14 @@ args = [
     "--out-dir=../js/pkg",
     "--release",
     "--target=web",
-    "--no-default-features",
+    "--features=logging",
     "--features=wasm-strict",
     "--features=proj4js-compat",
+    "--features=with-wasm-entrypoint",
 ]
 
 
-[tasks.wasm_bundle]
+[tasks."wasm.bundle"]
 description = "Build wasm package as bundle"
 command = "wasm-pack"
 args = [
@@ -93,13 +91,12 @@ args = [
     "--out-dir=../js/pkg-bundle",
     "--release",
     "--target=bundler",
-    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
 ]
 
-[tasks.wasm_node]
+[tasks."wasm.node"]
 description = "Build wasm package as nodejs node"
 command = "wasm-pack"
 args = [
@@ -107,9 +104,30 @@ args = [
     "--out-dir=../js/pkg-node",
     "--release",
     "--target=nodejs",
-    "--no-default-features",
     "--features=logging",
     "--features=proj4js-compat",
     "--features=with-wasm-entrypoint",
 ]
 
+[tasks."npm.build"]
+script = '''
+#!/usr/bin/env bash
+cp ../README.md ../js/proj4.js ../js/pkg-bundle
+python3  << 'EOF'
+import json
+js = json.load(open("../js/pkg-bundle/package.json"))
+js["files"].extend(("proj4rs_bg.wasm.d.ts", "proj4.js"))
+json.dump(js, open("../js/pkg-bundle/package.json", "w"), indent=4)
+EOF
+'''
+dependencies = [
+    "wasm.bundle"
+]
+
+[tasks."npm.publish"]
+command = "wasm-pack"
+args = [
+    "publish",
+    "--pkg-dir=../js/pkg-bundle",
+    "--target=bundler",
+]
