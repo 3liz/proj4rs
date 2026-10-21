@@ -1,16 +1,18 @@
 [package]
 name = "proj4rs-clib"
-version = "0.1.1"
+version.workspace = true
 edition = "2024"
-keywords = ["gis", "proj", "projection", "geography", "geospatial"]
-authors = ["David Marteau <dmarteau@3liz.com>"]
-license = "MIT OR Apache-2.0"
-homepage = "https://github.com/3liz/proj4rs/"
-repository = "https://github.com/3liz/proj4rs/"
 description = "C bindings for proj4rs"
 exclude=[
     "Makefile.toml",
 ]
+keywords.workspace = true
+authors.workspace = true
+license.workspace = true
+homepage.workspace = true
+repository.workspace = true
+categories.workspace = true
+
 
 [lib]
 name = "proj4rs_c"

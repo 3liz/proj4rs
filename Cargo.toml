@@ -1,3 +1,4 @@
+
 [workspace]
 members = [ 
     "proj4rs-geodesic",
@@ -23,6 +24,7 @@ license = "MIT OR Apache-2.0"
 homepage = "https://github.com/3liz/proj4rs/"
 repository = "https://github.com/3liz/proj4rs/"
 categories = ["science::geo"]
+version = "0.3.0"
 
 [workspace.dependencies]
 proj4rs = { path = "proj4rs" }
