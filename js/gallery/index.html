@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8" />
+    <title>proj4rs projection gallery</title>
+    <style>
+      body { font: 13px sans-serif; margin: 16px; background: #fafafa; color: #222; }
+      #grid { display: flex; flex-wrap: wrap; gap: 12px; }
+      .panel { margin: 0; width: 320px; background: #fff; border: 1px solid #ddd; }
+      .panel figcaption { padding: 6px; font-size: 11px; line-height: 1.4; }
+      .panel code { font-size: 10px; word-break: break-all; color: #555; }
+      .identical, .matches { color: #2a7d2a; }
+      .differs, .unexpected-match { color: #d62728; font-weight: bold; }
+      .known { color: #b06d00; font-weight: bold; }
+    </style>
+  </head>
+  <body>
+    <h1>proj4rs projection gallery</h1>
+    <p>
+      Coastline and graticule projected by proj4rs (wasm). Red rings: graticule
+      intersections projected by PROJ. Verdicts: identical (bit for bit),
+      matches (forward within 1 mm, inverse within 1e-7 deg), known (a documented
+      difference, see the note), differs (new difference). <span id="meta"></span>
+    </p>
+    <div id="grid"></div>
+    <script type="module" src="./gallery.js"></script>
+  </body>
+</html>
