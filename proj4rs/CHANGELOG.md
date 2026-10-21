@@ -14,6 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Added `cass` Cassinig, `robin` Robinson`, `eqdc` Equidistant conic 
+  and `eqearth` Equal earth projections
+    - https://github.com/3liz/proj4rs/pull/59
+* Add `tpers/nsper` Tilted/Near-sided perspective projections
+    - https://github.com/3liz/proj4rs/pull/58
 * Add `sinu` Sinusoidal projection
     - used by MODIS land products and ESRI:54008, 53008 and 102011
     - https://github.com/3liz/proj4rs/pull/57

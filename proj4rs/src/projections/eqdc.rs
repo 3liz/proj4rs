@@ -205,8 +205,8 @@ mod tests {
             ((-70., 55., 0.), (1588170.056599415, 1896314.962503969, 0.)),
         ];
 
-        // proj4rs meridian distance series differs from PROJ by < 1e-4 m
-        test_proj_forward(&p, &inputs, 1e-4);
+        // proj4rs meridian distance series differs from PROJ by < 1e-5 m
+        test_proj_forward(&p, &inputs, 1e-5);
         test_proj_inverse(&p, &inputs, 1e-9);
     }
 

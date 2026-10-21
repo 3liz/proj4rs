@@ -22,14 +22,20 @@ The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the de
 - The aim of Proj4rs is to provide the same functionality as the
 [proj4js library](https://github.com/proj4js/proj4js).
 - This port implements the PROJ.4 API,
-which means there's no 3D/4D/orthometric transformation ATM.
+which means there's no 3D/4D/orthometric transformation ATM. The transformations pipeline
+use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
 - The goal of Proj4rs is not to be a replacement of PROJ,
-but instead being a lightweight implementation of transformations
+but instead being a lightweight pragmatic implementation of transformations
 from CRS to CRS that could be used in Rust and WASM environments.
 - This crate does not provide support for WKT. Instead,
 there is a dedicated crate for transforming WKT strings to proj string.
 - It aims to be WASM compatible for the `wasm32-unknown-unknown` target.
 - No installation of external C libraries such as `libproj` or `sqlite3` is needed.
+- See [PROJECTIONS.md](PROJECTIONS.md) for the list of implemented projections.
+
+## Extra features:
+
+* Geodesic api from `proj4rs-geodesic` crate.
 
 ## Basic usage in Rust
 
