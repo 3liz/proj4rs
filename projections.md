@@ -25,6 +25,10 @@
     (gnom),
     (omerc),
     (tpers, nsper),
+    (cass),
+    (eqdc),
+    (robin),
+    (eqearth),
 ]
 ```
 
@@ -33,11 +37,11 @@
 - [+] aea
 - [+] aeqd
 - [-] bonne
-- [-] cass
+- [+] cass
 - [+] cea
 - [+] eqc
-- [-] eqdc
-- [-] eqearth
+- [+] eqdc
+- [+] eqearth
 - [-] equi
 - [+] etmerc
 - [-] gauss
@@ -57,7 +61,7 @@
 - [+] ortho
 - [+] poly
 - [-] qsc
-- [-] robin
+- [+] robin
 - [+] sinu
 - [+] somerc
 - [+] stere
