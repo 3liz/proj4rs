@@ -2,20 +2,37 @@ stages:
   - build
   - package
 
-build:
+build-web:
   image: ${REGISTRY_URL}/factory-ci-runner:rust-noble
   tags:
   - factory-plain
   stage: build
   script:
   - make -C proj4rs --no-print-directory build package
-  - echo "PACKAGE=`ls -1 proj4rs/proj4rs-*.tgz`" > build.env
+  - echo "PACKAGE_WEB=`ls -1 proj4rs/proj4rs-*.tgz`" > build.env
   - cat build.env
   artifacts:
     reports:
       dotenv: build.env
     paths:
     - proj4rs/proj4rs-*.tgz
+
+
+build-python:
+  image: ${REGISTRY_URL}/factory-ci-runner:rust-noble
+  tags:
+  - factory-plain
+  stage: build
+  script:
+  - cargo make --cwd proj4rs-clib python.build
+  - echo "PACKAGE_PYTHON=`ls -1 target/wheels/proj4rs-*.whl`" > build.env
+  - cat build.env
+  artifacts:
+    reports:
+      dotenv: build.env
+    paths:
+    - target/wheels/proj4rs-*.whl
+
 
 package:
   image: ${REGISTRY_URL}/factory-ci-runner:fabric-ci
@@ -25,6 +42,8 @@ package:
   rules:
   - if: $RELEASE_BRANCH == "true"
   script:
-  - upload_to_packages_server ${PACKAGE} pub/web-modules/proj4rs
+  - upload_to_packages_server ${PACKAGE_WEB} pub/web-modules/proj4rs/
+  - upload_to_packages_server ${PACKAGE_PYTHON} pub/whl/proj4rs/
   dependencies:
-  - build
+  - build-web
+  - build-python

@@ -37,7 +37,6 @@ dependencies = ["build-release", "cbindgen"]
 [tasks.release]
 dependencies = ["deb"]
 
-
 [tasks."python.lint"]
 command = "ruff"
 args = [
@@ -50,6 +49,11 @@ args = [
 [tasks."python.build-dev"]
 command = "maturin"
 args = ["develop"]
+
+
+[tasks."python.build"]
+command = "maturin"
+args = ["build", "--release", "--strip"]
 
 
 [tasks."python.lint-fix"]
