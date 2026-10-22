@@ -21,7 +21,7 @@ from CRS to CRS that can be used in Rust and WASM environment.
 C, Python and PHP bindings are provided in order to get reliable and consistent results 
 across various contexts (client side JS/server side ....).
 
-# Features and Limitations
+## Features and Limitations
 
 Proj4rs is limited to CRS to CRS 2D transformations for an "everyday" use in context where the full
 feature set of PROJ is not required or not appropriate. But in all cases, PROJ **is** the source of truth for all 
@@ -32,9 +32,12 @@ with PROJ 9.8 results is up to 1e-6 m (but in practice it is almost at double pr
 
 Have a look at the comparison [projection gallery](https://mdsumner.github.io/proj4rs/).
 
-This port implements the PROJ.4 API, which means there's no 3D/4D/orthometric transformation ATM. 
+This port implements the PROJ.4 transformation, which means there's no 3D/4D/orthometric transformation ATM. 
 The transformations pipeline use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
 
+### Grid supports
+
+Proj4rs support NTV2 and GeoTiff grids.
 
 ### Available Projections 
 

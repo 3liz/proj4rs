@@ -11,7 +11,7 @@ pub mod formats;
 
 pub(crate) mod grid;
 
-pub use catlg::{Catalog, GridRef, catalog};
+pub use catlg::{Catalog, GridRef, catalog, GridBuilder};
 
 #[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
 pub mod files;

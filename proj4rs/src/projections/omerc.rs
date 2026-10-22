@@ -2,9 +2,11 @@
 //! Oblique Mercator
 //!
 //! ref: <https://proj.org/en/stable/operations/projections/omerc.html>
-//!
+//! 
+//! ```
 //! omerc: "Oblique Mercator" "\n\tCyl, Sph&Ell no_rot\n\t"
 //!     "alpha= [gamma=] [no_off] lonc= or\n\t lon_1= lat_1= lon_2= lat_2=";
+//! ```
 //!
 //! Ported from PROJ `src/projections/omerc.cpp`.
 //!

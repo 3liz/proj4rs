@@ -1,21 +1,33 @@
 //!
 //! Coordinate transformation library
 //!
-//! Based on Proj4 implementation
-//!
 //! References:
 //! * <http://docs.opengeospatial.org/as/18-005r5/18-005r5.html>
 //! * <https://proj.org/development/reference/cpp/cpp_general.html>
 //!
-//! The aim of Proj4rs is to provide at short term the same functionality as the original
-//! proj4 library.
+//! This is a pure Rust implementation
+//! of the [PROJ.4 project](https://proj.org/en/9.2/faq.html#what-happened-to-proj-4).
+//!  The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the demo on [docs.3liz.org](https://docs.3liz.org/proj4rs/).
 //!
-//! The long term project is to integrate feature from the proj library in its latest
-//! version.
+//! The original goal of Proj4rs was to provide a standalone, lightweight, pragmatic implementation of transformations
+//! from CRS to CRS that can be used in Rust and WASM environment.  
 //!
-//! The goal of proj4rs is not to be a remplacement of proj, but instead being a light
-//! weight implementation of transformations from crs to crs that could be used
-//! in WASM environment
+//! C, Python and PHP bindings are provided in order to get reliable and consistent results 
+//! across various contexts (client side JS/server side ....).
+//! 
+//! ## Features and Limitations
+//!
+//! Proj4rs is limited to CRS to CRS 2D transformations for an "everyday" use in context where the full
+//! feature set of PROJ is not required or not appropriate. But in all cases, PROJ **is** the source of truth for all 
+//! projections results, and we require proj4rs to stick to this.
+//! 
+//! Projections are a transcript in Rust of the PROJ projections implementation. The required/expected accuracy
+//! with PROJ 9.8 results is up to 1e-6 m (but in practice it is almost at double precision accuracy).
+//! 
+//! Have a look at the comparison [projection gallery](https://mdsumner.github.io/proj4rs/).
+//! 
+//! This port implements the PROJ.4 transformation, which means there's no 3D/4D/orthometric transformation ATM. 
+//! The transformations pipeline use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
 //!
 //! ## Usage
 //!
