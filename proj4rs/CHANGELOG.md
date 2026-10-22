@@ -47,6 +47,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Fixed
 
+* tmerc spherical: fix inverse latitude sign sign with `lat_0` and forward at the equator
+    - https://github.com/3liz/proj4rs/pull/61
 * Workaround https://github.com/image-rs/image-tiff/issues/403
     - Enable loading `PROJ-data/ca_nrc/ca_nrc_ntv2_0.tif`
     - Use patched image-tiff branch
