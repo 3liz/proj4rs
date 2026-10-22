@@ -114,4 +114,39 @@ mod tests {
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
     }
+
+    #[test]
+    fn proj_estmerc_sph_lat_0() {
+        // Inverse must keep the sign of latitude north and south of lat_0.
+        // Same results as PROJ 9.10 'proj=tmerc +R=6400000 +k=0.9 +lat_0=40'
+        let p = Proj::from_proj_string("+proj=tmerc +R=6400000 +k=0.9 +lat_0=40").unwrap();
+
+        let inputs = [
+            ((0., -30., 0.), (0., -7037167.544041136, 0.)),
+            ((1., -30., 0.), (87064.57950909417, -7037547.459045169, 0.)),
+            ((-1., -30., 0.), (-87064.5795090945, -7037547.459045169, 0.)),
+            ((0., 30., 0.), (0., -1005309.6491487346, 0.)),
+            ((1., 41., 0.), (75872.21826840419, 100965.37175440723, 0.)),
+        ];
+
+        test_proj_forward(&p, &inputs, 1e-6);
+        test_proj_inverse(&p, &inputs, 1e-10);
+    }
+
+    #[test]
+    fn proj_estmerc_sph_lat_eq_lat_0() {
+        // Stable at lat = lat_0.
+        // Same results as PROJ 9.10 'proj=tmerc +R=1737400'
+        let p = Proj::from_proj_string("+proj=tmerc +R=1737400").unwrap();
+
+        let inputs = [
+            ((0., 0., 0.), (0., 0., 0.)),
+            ((-4., 0., 0.), (-121392.05014197393, 0., 0.)),
+            ((-3.9999999, 0., 0.), (-121392.04710223449, 0., 0.)),
+            ((-4.0000001, 0., 0.), (-121392.05318171362, 0., 0.)),
+        ];
+
+        test_proj_forward(&p, &inputs, 1e-6);
+        test_proj_inverse(&p, &inputs, 1e-10);
+    }
 }

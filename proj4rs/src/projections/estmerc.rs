@@ -183,17 +183,22 @@ impl Sph {
         }
 
         let x = self.ml0 * ((1. + b) / (1. - b)).ln();
-        let mut y = cosphi * lam.cos() / (1. - b * b).sqrt();
-
-        b = y.abs();
-        if b >= 1. {
-            if (b - 1.) > EPS_10 {
-                return Err(Error::ToleranceConditionError);
-            } else {
-                y = 0.;
-            }
+        let mut y;
+        if cosphi == 1. {
+            y = 0.;
         } else {
-            y = y.acos();
+            y = cosphi * lam.cos() / (1. - b * b).sqrt();
+
+            b = y.abs();
+            if b >= 1. {
+                if (b - 1.) > EPS_10 {
+                    return Err(Error::ToleranceConditionError);
+                } else {
+                    y = 0.;
+                }
+            } else {
+                y = y.acos();
+            }
         }
 
         if phi < 0. {
@@ -208,13 +213,10 @@ impl Sph {
         let mut h = (x / self.esp).exp();
         let g = 0.5 * (h - 1. / h);
 
-        h = (self.phi0 + y / self.esp).cos();
-        let mut phi = ((1. - h * h) / (1. + g * g)).sqrt().asin();
-
+        let d = self.phi0 + y / self.esp;
+        h = d.cos();
         // Make sure that phi is on the correct hemisphere when false northing is used
-        if y < 0. && -phi + self.phi0 < 0.0 {
-            phi = -phi
-        }
+        let phi = ((1. - h * h) / (1. + g * g)).sqrt().asin().copysign(d);
 
         Ok((if g != 0.0 || h != 0.0 { g.atan2(h) } else { 0. }, phi, z))
     }
