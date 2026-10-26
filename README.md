@@ -110,6 +110,21 @@ Support for:
 * Ntv2 multi grids
 * GDAL generated GeoTIFF multi grids
 
+> [!WARNING]
+> The current release of the [`tiff`](https://crates.io/crates/tiff) crate (0.11)
+> has an unfixed bug when decoding tiled TIFF with `PlanarConfiguration=2`
+> (see [image-tiff#403](https://github.com/image-rs/image-tiff/issues/403)).
+>
+> Until a fixed version is released, GeoTIFF grid support (`tiff` feature) should
+> rely on the patched branch. This workspace already does so with a `[patch.crates-io]`
+> section in the root `Cargo.toml`; downstream crates should add the same to their
+> own root manifest:
+>
+> ```toml
+> [patch.crates-io]
+> tiff = { git = "https://github.com/dmarteau/image-tiff.git", branch = "stable-fix" }
+> ```
+
 ## JavaScript API
 
 When compiled for WASM, the library exposes JavaScript API
