@@ -27,6 +27,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Add `col_urban` Colombia Urban projection
+    - Port of PROJ `col_urban.cpp`, tested against PROJ `builtins.gie`
+    - used by the 32 EPSG systems for Colombian cities, such as EPSG:6247
 * Added `cass` Cassini, `robin` Robinson, `eqdc` Equidistant conic 
   and `eqearth` Equal earth projections
     - https://github.com/3liz/proj4rs/pull/59
