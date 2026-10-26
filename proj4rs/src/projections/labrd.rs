@@ -1,9 +1,9 @@
-//!
 //! Laborde
 //!
 //! ref: <https://proj.org/operations/projections/labrd.html>
 //!
-//! labrd: "Laborde" "\n\tCyl, Sph\n\tSpecial for Madagascar\n\tlat_0=";
+//! Cylindrical, ellipsoidal, for Madagascar. Needs a non-zero `lat_0` and takes an
+//! optional azimuth `azi`.
 //!
 use crate::errors::{Error, Result};
 use crate::math::consts::FRAC_PI_4;
