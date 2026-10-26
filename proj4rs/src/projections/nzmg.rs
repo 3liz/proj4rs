@@ -1,9 +1,9 @@
-//!
 //! New Zealand Map Grid
 //!
 //! ref: <https://proj.org/operations/projections/nzmg.html>
 //!
-//! nzmg: "New Zealand Map Grid" "\n\tfixed Earth";
+//! Fixed to the International 1924 major axis and an origin at 41°S 173°E, so it
+//! ignores `lat_0`, `lon_0`, `x_0` and `y_0`.
 //!
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
