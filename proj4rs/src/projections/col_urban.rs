@@ -1,9 +1,9 @@
-//!
 //! Colombia Urban
 //!
 //! ref: <https://proj.org/operations/projections/col_urban.html>
 //!
-//! col_urban: "Colombia Urban" "\n\tMisc\n\th_0=";
+//! Miscellaneous, ellipsoidal, for Colombian cities. Takes `h_0`, the height of the
+//! projection plane, which defaults to 0.
 //!
 //! Notations and formulas taken from IOGP Publication 373-7-2 -
 //! Geomatics Guidance Note number 7, part 2 - March 2020
