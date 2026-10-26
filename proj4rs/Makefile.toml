@@ -131,3 +131,26 @@ args = [
     "--pkg-dir=../js/pkg-bundle",
     "--target=bundler",
 ]
+
+[tasks.manifest]
+description = "Create build manifest"
+script = """
+#!/usr/bin/env bash
+buildid=`date +"%Y%m%d%H%M"`
+echo "commit=${CARGO_MAKE_GIT_HEAD_LAST_COMMIT_HASH_PREFIX}" > ../js/pkg/manifest
+echo "buildid=$buildid" >> ../js/pkg/manifest
+"""
+
+
+[tasks."wasm.package"]
+description = "Package wasm web module"
+env = { "PROJ4RS_PACKAGE" = "${CARGO_MAKE_CRATE_FS_NAME}-${CARGO_MAKE_CRATE_VERSION}.tgz" }
+dependencies = [ "manifest" ]
+script = '''
+#!/usr/bin/env bash
+sed "s|./pkg/proj4rs.js|./proj4rs.js|" ../js/proj4.js  > ../js/pkg/proj4.js
+tar -czvf ${PROJ4RS_PACKAGE}  --transform=s/pkg/${CARGO_MAKE_CRATE_FS_NAME}/ -C ../js  pkg
+'''
+
+[tasks."wasm.build.package"]
+dependencies = [ "wasm", "wasm.package"]

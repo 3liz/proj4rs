@@ -8,7 +8,7 @@ build-web:
   - factory-plain
   stage: build
   script:
-  - make -C proj4rs --no-print-directory build package
+  - cargo make --cwd proj4rs wasm.build.package
   - echo "PACKAGE_WEB=`ls -1 proj4rs/proj4rs-*.tgz`" > build.env
   - cat build.env
   artifacts:
