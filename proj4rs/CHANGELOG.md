@@ -27,6 +27,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Add `labrd` Laborde projection
+    - Port of PROJ `labrd.cpp`, tested against PROJ `builtins.gie`
+    - used by EPSG:8441 for Madagascar
 * Added `cass` Cassini, `robin` Robinson, `eqdc` Equidistant conic 
   and `eqearth` Equal earth projections
     - https://github.com/3liz/proj4rs/pull/59
