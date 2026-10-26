@@ -1,25 +1,18 @@
 //! New Zealand Map Grid
 //!
 //! ref: <https://proj.org/operations/projections/nzmg.html>
-//!
-//! Fixed to the International 1924 major axis and an origin at 41°S 173°E, so it
-//! ignores `lat_0`, `lon_0`, `x_0` and `y_0`.
-//!
 use crate::errors::{Error, Result};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
-// Projection stub
 super::projection! { nzmg }
 
 const EPSLN: f64 = 1e-10;
-// The literals of proj nzmg.cpp
 #[allow(clippy::excessive_precision)]
 const SEC5_TO_RAD: f64 = 0.4848136811095359935899141023;
 #[allow(clippy::excessive_precision)]
 const RAD_TO_SEC5: f64 = 2.062648062470963551564733573;
 
-// Complex coefficients (re, im) of the conformal polynomial
 const BF: [(f64, f64); 6] = [
     (0.7557853228, 0.0),
     (0.249204646, 0.003371507),
@@ -66,18 +59,12 @@ fn mul(z: Complex, a: Complex) -> Complex {
     (z.0 * a.0 - z.1 * a.1, z.0 * a.1 + z.1 * a.0)
 }
 
-/// Evaluate the complex polynomial `z * (c[0] + z * (c[1] + ...))`
-///
-/// See proj `pj_zpoly1`
 fn zpoly1(z: Complex, c: &[Complex]) -> Complex {
     let n = c.len() - 1;
     let a = c[..n].iter().rev().fold(c[n], |a, &ci| mul_add(ci, z, a));
     mul(z, a)
 }
 
-/// Evaluate the complex polynomial of `zpoly1` and its derivative
-///
-/// See proj `pj_zpolyd1`
 fn zpolyd1(z: Complex, c: &[Complex]) -> (Complex, Complex) {
     let n = c.len() - 1;
     let mut a = c[n];
@@ -98,7 +85,6 @@ pub(crate) struct Projection {
 
 impl Projection {
     pub fn nzmg(p: &mut ProjData, _: &ParamList) -> Result<Self> {
-        // Force to International major axis
         p.ellps.a = 6378388.0;
         p.ellps.ra = 1. / p.ellps.a;
         p.lam0 = 173f64.to_radians();
@@ -145,16 +131,11 @@ impl Projection {
     }
 }
 
-//============
-// Tests
-//============
-
 #[cfg(test)]
 mod tests {
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
 
-    // Test values from proj builtins.gie
     #[test]
     fn proj_nzmg() {
         let p = Proj::from_proj_string("+proj=nzmg +ellps=GRS80").unwrap();
