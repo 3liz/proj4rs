@@ -203,6 +203,7 @@ pub mod lcc;
 pub mod merc;
 pub mod mill;
 pub mod moll;
+pub mod nzmg;
 pub mod omerc;
 pub mod ortho;
 pub mod poly;
@@ -214,7 +215,7 @@ pub mod sterea;
 pub mod tmerc;
 pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 37;
+const NUM_PROJECTIONS: usize = 38;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
@@ -255,6 +256,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(eqdc),
     declare_proj!(robin),
     declare_proj!(eqearth),
+    declare_proj!(nzmg),
 ];
 
 declare_proj_params! {
@@ -286,6 +288,7 @@ declare_proj_params! {
     eqdc,
     robin,
     eqearth,
+    nzmg,
 }
 
 ///
