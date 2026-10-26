@@ -1,30 +1,22 @@
 //! Colombia Urban
 //!
 //! ref: <https://proj.org/operations/projections/col_urban.html>
-//!
-//! Miscellaneous, ellipsoidal, for Colombian cities. Takes `h_0`, the height of the
-//! projection plane, which defaults to 0.
-//!
-//! Notations and formulas taken from IOGP Publication 373-7-2 -
-//! Geomatics Guidance Note number 7, part 2 - March 2020
-//!
 use crate::errors::Result;
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
-// Projection stub
 super::projection! { col_urban }
 
 #[derive(Debug, Clone)]
 pub(crate) struct Projection {
     es: f64,
     phi0: f64,
-    h0: f64,   // height of projection origin, divided by semi-major axis (a)
-    rho0: f64, // adimensional value, contrary to Guidance note 7.2
+    h0: f64,
+    rho0: f64,
     a: f64,
-    b: f64, // adimensional value, contrary to Guidance note 7.2
+    b: f64,
     c: f64,
-    d: f64, // adimensional value, contrary to Guidance note 7.2
+    d: f64,
 }
 
 impl Projection {
@@ -78,16 +70,11 @@ impl Projection {
     }
 }
 
-//============
-// Tests
-//============
-
 #[cfg(test)]
 mod tests {
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
 
-    // Test values from proj builtins.gie
     #[test]
     fn proj_col_urban() {
         let p = Proj::from_proj_string(concat!(
