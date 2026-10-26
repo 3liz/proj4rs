@@ -1,16 +1,11 @@
 //! Laborde
 //!
 //! ref: <https://proj.org/operations/projections/labrd.html>
-//!
-//! Cylindrical, ellipsoidal, for Madagascar. Needs a non-zero `lat_0` and takes an
-//! optional azimuth `azi`.
-//!
 use crate::errors::{Error, Result};
 use crate::math::consts::FRAC_PI_4;
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
-// Projection stub
 super::projection! { labrd }
 
 const EPS: f64 = 1.0e-10;
@@ -160,16 +155,11 @@ impl Projection {
     }
 }
 
-//============
-// Tests
-//============
-
 #[cfg(test)]
 mod tests {
     use crate::proj::Proj;
     use crate::tests::utils::{test_proj_forward, test_proj_inverse};
 
-    // Test values from proj builtins.gie
     #[test]
     fn proj_labrd() {
         let p = Proj::from_proj_string("+proj=labrd +ellps=GRS80 +lon_0=0.5 +lat_0=2").unwrap();
