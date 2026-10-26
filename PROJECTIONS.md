@@ -28,6 +28,7 @@ implementation of their parent projection.
 | `moll` | Mollweide (pseudocylindrical, spherical) | [moll](https://proj.org/en/stable/operations/projections/moll.html) |
 | `wag4` | Wagner IV (pseudocylindrical, variant of `moll`) | [wag4](https://proj.org/en/stable/operations/projections/wag4.html) |
 | `wag5` | Wagner V (pseudocylindrical, variant of `moll`) | [wag5](https://proj.org/en/stable/operations/projections/wag5.html) |
+| `nzmg` | New Zealand Map Grid (fixed Earth) | [nzmg](https://proj.org/en/stable/operations/projections/nzmg.html) |
 | `omerc` | Oblique Mercator (cylindrical, sph & ell) | [omerc](https://proj.org/en/stable/operations/projections/omerc.html) |
 | `ortho` | Orthographic (azimuthal, sph & ell) | [ortho](https://proj.org/en/stable/operations/projections/ortho.html) |
 | `poly` | American Polyconic (sph & ell) | [poly](https://proj.org/en/stable/operations/projections/poly.html) |
