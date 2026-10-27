@@ -20,6 +20,7 @@ implementation of their parent projection.
 | `geos` | Geostationary Satellite View | [geos](https://proj.org/en/stable/operations/projections/geos.html) |
 | `gnom` | Gnomonic (azimuthal, sph & ell) | [gnom](https://proj.org/en/stable/operations/projections/gnom.html) |
 | `krovak` | Krovak (oblique conformal conic, Czech/Slovak systems) | [krovak](https://proj.org/en/stable/operations/projections/krovak.html) |
+| `labrd` | Laborde (cylindrical, ellipsoidal, for Madagascar) | [labrd](https://proj.org/en/stable/operations/projections/labrd.html) |
 | `laea` | Lambert Azimuthal Equal Area (azimuthal, sph & ell) | [laea](https://proj.org/en/stable/operations/projections/laea.html) |
 | `lcc` | Lambert Conformal Conic (conic, sph & ell) | [lcc](https://proj.org/en/stable/operations/projections/lcc.html) |
 | `merc` | Mercator (cylindrical, sph & ell) | [merc](https://proj.org/en/stable/operations/projections/merc.html) |
