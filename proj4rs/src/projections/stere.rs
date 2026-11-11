@@ -281,56 +281,36 @@ impl Projection {
 
         let (sinc, cosc) = (2. * (rh / self.akm1).atan()).sin_cos();
         let (lam, phi) = match self.mode {
-            EQUIT => (
-                // lam
-                if cosc != 0. || x != 0. {
-                    (x * sinc).atan2(cosc * rh)
+            EQUIT | OBLIQ => {
+                if rh == 0. {
+                    (0., self.phi0)
                 } else {
-                    0.
-                },
-                // phi
-                if rh.abs() <= EPS_10 {
-                    0.
-                } else {
-                    (y * sinc / rh).asin()
-                },
-            ),
-            OBLIQ => {
-                let phi = if rh.abs() <= EPS_10 {
-                    self.phi0
-                } else {
-                    (cosc * self.sinx1 + y * sinc * self.cosx1 / rh).asin()
-                };
-                let c = cosc - self.sinx1 * phi.sin();
-                (
-                    // lam
-                    if c != 0. || x != 0. {
-                        (x * sinc * self.cosx1).atan2(c * rh)
+                    // rh * sin(phi), rh * cos(phi) * cos(lam) and rh * cos(phi) * sin(lam):
+                    // atan2() keeps the latitude accurate near the poles, where asin()
+                    // of sin(phi) did not
+                    let (s0, c0) = if self.mode == EQUIT {
+                        (0., 1.)
                     } else {
-                        0.
-                    },
-                    phi,
-                )
+                        (self.sinx1, self.cosx1)
+                    };
+                    let n = rh * cosc * s0 + y * sinc * c0;
+                    let d = rh * cosc * c0 - y * sinc * s0;
+                    let e = x * sinc;
+                    (e.atan2(d), n.atan2(e.hypot(d)))
+                }
             }
+            // asin(+/-cos(c)), but accurate close to the pole
             N_POLE => (
                 // lam
                 if x == 0. && y == 0. { 0. } else { x.atan2(-y) },
                 // phi
-                if rh.abs() <= EPS_10 {
-                    self.phi0
-                } else {
-                    cosc.asin()
-                },
+                FRAC_PI_2 - 2. * (rh / self.akm1).atan(),
             ),
             S_POLE => (
                 // lam
                 if x == 0. && y == 0. { 0. } else { x.atan2(y) },
                 // phi
-                if rh.abs() <= EPS_10 {
-                    self.phi0
-                } else {
-                    (-cosc).asin()
-                },
+                2. * (rh / self.akm1).atan() - FRAC_PI_2,
             ),
         };
 

@@ -217,7 +217,7 @@ impl Projection {
         }
         let cosc = (1. - sinc * sinc).sqrt();
 
-        if rh.abs() <= EPS_10 {
+        if rh == 0. {
             return Ok((0., self.phi0));
         }
 
@@ -228,22 +228,18 @@ impl Projection {
             }
             Mode::S_POLE => -sinc.acos(),
             Mode::EQUIT | Mode::OBLIQ => {
-                let phi = if self.mode == Mode::EQUIT {
-                    let phi = y * sinc / rh;
-                    x *= sinc;
-                    y = cosc * rh;
-                    phi
+                // rh * sin(phi), rh * cos(phi) * cos(lam) and rh * cos(phi) * sin(lam):
+                // atan2() keeps the latitude accurate near the poles, where asin() of
+                // sin(phi) did not
+                let (s0, c0) = if self.mode == Mode::EQUIT {
+                    (0., 1.)
                 } else {
-                    let phi = cosc * self.sinph0 + y * sinc * self.cosph0 / rh;
-                    y = (cosc - self.sinph0 * phi) * rh;
-                    x *= sinc * self.cosph0;
-                    phi
+                    (self.sinph0, self.cosph0)
                 };
-                if phi.abs() >= 1. {
-                    FRAC_PI_2.copysign(phi)
-                } else {
-                    phi.asin()
-                }
+                let n = rh * cosc * s0 + y * sinc * c0;
+                y = rh * cosc * c0 - y * sinc * s0;
+                x *= sinc;
+                n.atan2(x.hypot(y))
             }
         };
 

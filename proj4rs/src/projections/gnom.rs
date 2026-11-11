@@ -149,30 +149,24 @@ impl Projection {
         let sinz = phi.sin();
         let cosz = (1. - sinz * sinz).sqrt();
 
-        if rh.abs() <= EPS_10 {
+        if rh == 0. {
             return Ok((0., self.phi0, z));
         }
 
         match self.mode {
-            Mode::OBLIQ => {
-                phi = cosz * self.sinph0 + y * sinz * self.cosph0 / rh;
-                phi = if phi.abs() >= 1. {
-                    FRAC_PI_2.copysign(phi)
+            Mode::OBLIQ | Mode::EQUIT => {
+                // rh * sin(phi), rh * cos(phi) * cos(lam) and rh * cos(phi) * sin(lam):
+                // atan2() keeps the latitude accurate near the poles, where asin() of
+                // sin(phi) did not
+                let (s0, c0) = if self.mode == Mode::EQUIT {
+                    (0., 1.)
                 } else {
-                    phi.asin()
+                    (self.sinph0, self.cosph0)
                 };
-                y = (cosz - self.sinph0 * phi.sin()) * rh;
-                x *= sinz * self.cosph0;
-            }
-            Mode::EQUIT => {
-                phi = y * sinz / rh;
-                phi = if phi.abs() >= 1. {
-                    FRAC_PI_2.copysign(phi)
-                } else {
-                    phi.asin()
-                };
-                y = cosz * rh;
+                let n = rh * cosz * s0 + y * sinz * c0;
+                y = rh * cosz * c0 - y * sinz * s0;
                 x *= sinz;
+                phi = n.atan2(x.hypot(y));
             }
             Mode::S_POLE => phi -= FRAC_PI_2,
             Mode::N_POLE => {

@@ -342,29 +342,26 @@ impl SProj {
 
         phi = 2. * phi.asin();
         match self.mode {
-            EQUIT => {
+            EQUIT | OBLIQ { .. } => {
                 let (sinz, cosz) = phi.sin_cos();
-                phi = if rh <= EPS_10 {
-                    0.
-                } else {
-                    (y * sinz / rh).asin()
+                let (s0, c0) = match self.mode {
+                    OBLIQ { sinb1, cosb1 } => (sinb1, cosb1),
+                    _ => (0., 1.),
                 };
-                let yy = cosz * rh;
-                lam = if yy == 0. { 0. } else { (x * sinz).atan2(yy) };
-            }
-            OBLIQ { sinb1, cosb1 } => {
-                let (sinz, cosz) = phi.sin_cos();
-                phi = if rh <= EPS_10 {
-                    self.phi0
+                if rh == 0. {
+                    phi = self.phi0;
+                    lam = 0.;
                 } else {
-                    (cosz * sinb1 + y * sinz * cosb1 / rh).asin()
-                };
-                let yy = (cosz - phi.sin() * sinb1) * rh;
-                lam = if yy == 0. {
-                    0.
-                } else {
-                    (x * sinz * cosb1).atan2(yy)
-                };
+                    // rh * sin(phi), rh * cos(phi) * cos(lam) and rh * cos(phi) * sin(lam):
+                    // atan2() keeps the latitude accurate near the poles, where asin() of
+                    // sin(phi) did not. No special case for cos(lam) == 0: the longitude
+                    // is +/-90 there, not 0.
+                    let n = rh * cosz * s0 + y * sinz * c0;
+                    let yy = rh * cosz * c0 - y * sinz * s0;
+                    let xx = x * sinz;
+                    phi = n.atan2(xx.hypot(yy));
+                    lam = xx.atan2(yy);
+                }
             }
             N_POLE => {
                 phi = FRAC_PI_2 - phi;
