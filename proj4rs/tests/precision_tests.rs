@@ -108,3 +108,62 @@ fn gnom_inverse_far_from_the_centre() {
     }
     assert!(failures.is_empty(), "{}", failures.join("\n"));
 }
+
+/// moll: points on the map outline (longitude +/-180) must survive a round trip. The inverse
+/// rejected longitudes that rounded to slightly more than pi there. How x rounds on the outline
+/// depends on the platform's sin/cos, so x is also moved 1 and 2 ulps outwards.
+#[test]
+fn moll_outline_round_trip() {
+    let ll = Proj::from_proj_string("+proj=latlong +R=6371000").unwrap();
+    let pj = Proj::from_proj_string("+proj=moll +R=6371000 +x_0=0 +y_0=0 +lon_0=0").unwrap();
+    // next double away from zero (the bits of an f64 grow with its magnitude, for either sign)
+    let outwards = |v: f64| f64::from_bits(v.to_bits() + 1);
+    let mut failures = Vec::new();
+    for lon in [-180_f64, 180.] {
+        for lat in [
+            -89.9999999_f64,
+            -75.,
+            -45.,
+            0.,
+            30.,
+            45.,
+            61.4,
+            75.,
+            89.99,
+            89.9999999,
+        ] {
+            let mut p = (lon.to_radians(), lat.to_radians(), 0.);
+            transform(&ll, &pj, &mut p).unwrap();
+            let y = p.1;
+            for x in [p.0, outwards(p.0), outwards(outwards(p.0))] {
+                let mut q = (x, y, 0.);
+                if let Err(e) = transform(&pj, &ll, &mut q) {
+                    failures.push(format!(
+                        "({lon}, {lat}): inverse of ({x}, {y}) failed: {e:?}"
+                    ));
+                    continue;
+                }
+                let d = distance(q.0, q.1, lon.to_radians(), lat.to_radians());
+                if d.is_nan() || d >= 1e-6 {
+                    failures.push(format!(
+                        "({lon}, {lat}): inverse of ({x}, {y}) gave ({}, {}), {d:e} m off",
+                        q.0.to_degrees(),
+                        q.1.to_degrees()
+                    ));
+                }
+            }
+            // 0.1 % outside the outline is still outside the projection
+            #[cfg(not(feature = "proj4js-compat"))]
+            {
+                let xo = p.0 * 1.001;
+                let mut q = (xo, y, 0.);
+                if transform(&pj, &ll, &mut q).is_ok() {
+                    failures.push(format!(
+                        "({lon}, {lat}): x = {xo} outside the outline was accepted"
+                    ));
+                }
+            }
+        }
+    }
+    assert!(failures.is_empty(), "{}", failures.join("\n"));
+}

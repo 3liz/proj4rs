@@ -154,25 +154,33 @@ impl Projection {
         Some((lam, (FRAC_PI_2 - chi).copysign(y)))
     }
 
+    /// On the map outline the longitude can round to slightly more than pi: accept it
+    /// within the given relative tolerance and clamp, so that points on the outline itself
+    /// are not rejected
+    #[cfg(not(feature = "proj4js-compat"))]
+    #[inline(always)]
+    fn check_lam(lam: f64, tol: f64) -> Result<f64> {
+        if lam.abs() <= PI * (1. + tol) {
+            Ok(lam.clamp(-PI, PI))
+        } else {
+            Err(Error::CoordinateOutOfRange)
+        }
+    }
+
     #[cfg(not(feature = "proj4js-compat"))]
     #[inline(always)]
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         if let Some((lam, phi)) = self.polar_inverse(x, y) {
-            return if lam.abs() < PI {
-                Ok((lam, phi, z))
-            } else {
-                Err(Error::CoordinateOutOfRange)
-            };
+            // Close to the poles lam comes from c_y - |y|, whose rounding grows like
+            // c_y / (c_y - |y|): the longitude is that ill-conditioned by the input itself
+            let tol = 4. * f64::EPSILON * (1. + self.c_y / (self.c_y - y.abs()));
+            return Ok((Self::check_lam(lam, tol)?, phi, z));
         }
         let mut phi = aasin(y / self.c_y)?;
-        let lam = x / (self.c_x * phi.cos());
-        if lam.abs() < PI {
-            phi += phi;
-            phi = aasin((phi + phi.sin()) / self.c_p)?;
-            Ok((lam, phi, z))
-        } else {
-            Err(Error::CoordinateOutOfRange)
-        }
+        let lam = Self::check_lam(x / (self.c_x * phi.cos()), 4. * f64::EPSILON)?;
+        phi += phi;
+        phi = aasin((phi + phi.sin()) / self.c_p)?;
+        Ok((lam, phi, z))
     }
 
     /// This is an infaillible version of Mollwey
