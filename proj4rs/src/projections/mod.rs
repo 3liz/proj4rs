@@ -197,6 +197,7 @@ pub mod geocent;
 pub mod geos;
 pub mod gnom;
 pub mod krovak;
+pub mod labrd;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
@@ -257,6 +258,7 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(robin),
     declare_proj!(eqearth),
     declare_proj!(nzmg),
+    declare_proj!(labrd),
 ];
 
 declare_proj_params! {
@@ -289,6 +291,7 @@ declare_proj_params! {
     robin,
     eqearth,
     nzmg,
+    labrd,
 }
 
 ///

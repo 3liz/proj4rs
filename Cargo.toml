@@ -30,6 +30,10 @@ version = "0.3.0"
 proj4rs = { path = "proj4rs" }
 proj4rs-geodesic = { version = "0.2", path = "proj4rs-geodesic" }
 
+# Get around https://github.com/image-rs/image-tiff/issues/403
+[patch.crates-io]
+tiff = { git = "https://github.com/dmarteau/image-tiff.git", branch = "stable-fix" }
+
 [profile.release]
 lto = true
 codegen-units = 1
