@@ -27,6 +27,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Added
 
+* Add `nzmg` New Zealand Map Grid projection
+    - Port of PROJ `nzmg.cpp`, tested against PROJ `builtins.gie`
+    - used by EPSG:27200
 * Add `labrd` Laborde projection
     - Port of PROJ `labrd.cpp`, tested against PROJ `builtins.gie`
     - used by EPSG:8441 for Madagascar
