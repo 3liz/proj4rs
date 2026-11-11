@@ -10,15 +10,25 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Fixed
 
 * Precision of the spherical projections close to the poles, the equator and the
-  projection centres, port of the fixes submitted to PROJ as https://github.com/OSGeo/PROJ/pull/4944
-    - `stere`, `ortho`, `aeqd`, `laea`, `gnom`, `tpers` inverse: latitude from `atan2()`
-      instead of `asin()` near 1 (up to 3.7 cm at the Moon's radius); no shortcut within
-      1e-10 of the centre; `laea` and `aeqd` no longer return longitude 0 instead of +/-90
-    - `aeqd` forward near the centre (from current PROJ)
-    - `tmerc` spherical forward and inverse near the equator (2.8 cm)
-    - `moll` near the poles: forward gave up after 10 iterations and snapped to the pole
-      (254 km off at 89.3 degrees, Moon's radius); inverse used `asin()` near 1
-    - `eqearth`: `MAX_Y` was 1.3e-14 too small (0.2 m at the pole); no NaN at the poles
+  projection centres, port of the fixes submitted to PROJ as https://github.com/OSGeo/PROJ/pull/4944.
+  Numbers are from `tests/precision_tests.rs`, on a sphere of radius 6371000 m:
+    - `stere`, `ortho`, `aeqd`, `laea`, `tpers` inverse (polar and oblique): the latitude came
+      from `asin()` of a value close to 1 and was 90 degrees at 1e-7 degrees from the pole
+      (1.1 cm off); it now comes from `atan2()`
+    - `gnom` inverse, equatorial and oblique: the same, and close to 90 degrees from the centre
+      `cos(z)` from `sqrt(1 - sin(z)^2)` lost its digits (up to 1.6 cm off)
+    - `laea` inverse, equatorial: within 1e-10 * R of the centre the latitude was 0 (0.22 mm off)
+    - `laea` and `aeqd` inverse: longitude 0 instead of +/-90 where the cos(lam) term is
+      exactly 0 (9815 km off at (90, -10) with `+lat_0=45`)
+    - `aeqd` forward: `acos()` of a value close to 1 near the centre, replaced by `atan2()`
+      (as in current PROJ)
+    - `tmerc` spherical forward and inverse: `acos()` and `asin()` near 1 close to the equator
+      (1.1 cm off at 1e-7 degrees)
+    - `moll` forward near the poles: the Newton iteration gave up after 10 steps and snapped to
+      the pole (33 km off at 89.99 degrees); inverse: `asin()` near 1 (4.8 mm off)
+    - `moll` inverse: points on the map outline (longitude +/-180) were rejected when the
+      longitude rounded to slightly more than pi
+    - `eqearth` inverse: `MAX_Y` was 1.3e-14 too small (0.74 m off at the pole)
 
 ### Changed
 

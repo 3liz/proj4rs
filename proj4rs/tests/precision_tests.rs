@@ -10,33 +10,35 @@ const R: f64 = 6371000.;
 
 #[rustfmt::skip]
 const CASES: &[(&str, f64, f64, f64, f64)] = &[
-    // stere sphere, polar: latitude from asin() lost precision near the pole
+    // stere sphere, polar: the inverse took the latitude from asin() near 1 (main: 90, 1.1 cm off)
     ("+proj=stere +lat_0=90 +R=6371000 +k_0=0.994 +x_0=0 +y_0=0 +lon_0=0", 30.0, 89.9999999, 0.005526387526143001, -0.009571983977594557),
-    // ortho sphere, oblique: latitude from asin() lost precision near the pole
+    // ortho sphere, oblique: the inverse took the latitude from asin() near 1 (main: 1.1 cm off)
     ("+proj=ortho +lat_0=45 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 10.0, 89.9999999, 0.0019308795231307598, 4504977.295196278),
-    // aeqd sphere, oblique: latitude from asin() lost precision near the pole
+    // aeqd sphere, oblique: the inverse took the latitude from asin() near 1 (main: 1.1 cm off)
     ("+proj=aeqd +lat_0=-30 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", -120.0, -89.9999999, -0.011644304801302343, -6671695.6042332705),
-    // laea sphere, oblique: latitude from asin() lost precision near the pole
+    // laea sphere, oblique: the inverse took the latitude from asin() near 1 (main: 1.1 cm off)
     ("+proj=laea +lat_0=45 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 60.0, 89.9999999, 0.01042317987605592, 4876152.290059438),
-    // laea sphere, equatorial: points within 1e-10 * R of the centre came back on the equator
+    // laea sphere, equatorial: within 1e-10 * R of the centre the inverse returned latitude 0
+    // (main: 0.22 mm off)
     ("+proj=laea +lat_0=0 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 1e-09, -2e-09, 0.00011119492664455874, -0.00022238985328911748),
-    // gnom sphere, polar: latitude from asin() lost precision near the pole
+    // gnom sphere, polar: regression test for the polar branch (not changed; exact on main too)
     ("+proj=gnom +lat_0=-90 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 45.0, -89.9999999, 0.007862668199598521, 0.007862668199598521),
-    // gnom: the centre itself came back with an undefined latitude
+    // gnom: the centre itself (regression test; main returned lat_0 for rh <= EPS_10 too)
     ("+proj=gnom +lat_0=90 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 0.0, 90.0, 0.0, 0.0),
-    // tpers: latitude from asin() lost precision near the pole
+    // tpers: the inverse took the latitude from asin() near 1 (main: 1.1 cm off)
     ("+proj=tpers +lat_0=45 +R=6371000 +h=3000000 +x_0=0 +y_0=0 +lon_0=0", 100.0, 89.9999999, 0.0067512397377098715, 2777408.316916929),
-    // tpers: the centre itself came back with latitude 0 instead of lat_0
+    // tpers: the centre itself (regression test; main returned lat_0 too)
     ("+proj=tpers +lat_0=45 +R=6371000 +h=3000000 +x_0=0 +y_0=0 +lon_0=0", 0.0, 45.0, 0.0, 0.0),
-    // moll: near the poles the Newton iteration stopped early and the inverse clamped sin(theta)
+    // moll: near the poles the forward iteration stopped early (main: 591 m off) and the inverse
+    // clamped sin(theta) (main: 4.8 mm off)
     ("+proj=moll +R=6371000 +x_0=0 +y_0=0 +lon_0=0", -179.0, -89.99999, -591.078391808469, -9009954.60097763),
-    // moll: near the poles the Newton iteration stopped early and the inverse clamped sin(theta)
+    // moll: near the poles the forward iteration stopped early (main: 33 km off)
     ("+proj=moll +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 100.0, 89.99, 33021.10324921167, 9009905.592261195),
-    // tmerc sphere: close to the equator acos() lost half the digits
+    // tmerc sphere: close to the equator acos() lost half the digits (main: 1.1 cm off, both ways)
     ("+proj=tmerc +R=6371000 +k=0.999 +x_0=0 +y_0=0 +lon_0=0 +lat_0=0", 2.0, 1e-07, 222212.5945705513, 0.011115144217327467),
-    // laea sphere, oblique: the inverse gave longitude 0 instead of 90
+    // laea sphere, oblique: the inverse gave longitude 0 instead of 90 (main: 9815 km off)
     ("+proj=laea +lat_0=45 +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 90.0, -10.0, 9473745.882611485, -1181205.6198054145),
-    // eqearth: the inverse gave NaN at the poles
+    // eqearth: MAX_Y was too small, so the inverse at the pole was 0.74 m off on main
     ("+proj=eqearth +R=6371000 +x_0=0 +y_0=0 +lon_0=0", 30.0, 90.0, 1702743.8797029483, 8392918.138591882),
 ];
 
