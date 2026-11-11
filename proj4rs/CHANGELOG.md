@@ -7,6 +7,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ## Unreleased
 
+### Fixed
+
+* Precision of the spherical projections close to the poles, the equator and the
+  projection centres, port of the fixes submitted to PROJ as https://github.com/OSGeo/PROJ/pull/4944
+    - `stere`, `ortho`, `aeqd`, `laea`, `gnom`, `tpers` inverse: latitude from `atan2()`
+      instead of `asin()` near 1 (up to 3.7 cm at the Moon's radius); no shortcut within
+      1e-10 of the centre; `laea` and `aeqd` no longer return longitude 0 instead of +/-90
+    - `aeqd` forward near the centre (from current PROJ)
+    - `tmerc` spherical forward and inverse near the equator (2.8 cm)
+    - `moll` near the poles: forward gave up after 10 iterations and snapped to the pole
+      (254 km off at 89.3 degrees, Moon's radius); inverse used `asin()` near 1
+    - `eqearth`: `MAX_Y` was 1.3e-14 too small (0.2 m at the pole); no NaN at the poles
+
 ### Changed
 
 
