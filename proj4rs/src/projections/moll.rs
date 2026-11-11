@@ -25,6 +25,46 @@ pub(crate) struct Projection {
     c_x: f64,
     c_y: f64,
     c_p: f64,
+    /// p = pi/2: the poles need the special handling in forward() and inverse()
+    mollweide: bool,
+}
+
+/// s - sin(s), accurate also for small |s|, where the subtraction would lose most of the
+/// digits
+fn s_minus_sin_s(s: f64) -> f64 {
+    if s.abs() < 0.25 {
+        let s2 = s * s;
+        s * s2
+            * (1. / 6.
+                - s2 * (1. / 120.
+                    - s2 * (1. / 5040.
+                        - s2 * (1. / 362880. - s2 * (1. / 39916800. - s2 / 6227020800.)))))
+    } else {
+        s - s.sin()
+    }
+}
+
+/// Mollweide close to the poles. With theta = (pi - s) / 2 and chi the colatitude,
+/// 2 * theta + sin(2 * theta) = pi * sin(phi) becomes s - sin(s) = 2 * pi * sin(chi / 2)^2,
+/// which can be solved accurately where the Newton iteration on theta converges only
+/// linearly. Returns s.
+fn mollweide_polar_s(chi: f64) -> f64 {
+    let sh = (0.5 * chi).sin();
+    let w = 2. * PI * sh * sh;
+    let mut s = (6. * w).cbrt(); // <= the root, as s - sin(s) <= s^3 / 6
+    for _ in 0..20 {
+        let sh2 = (0.5 * s).sin();
+        let d = 2. * sh2 * sh2; // 1 - cos(s)
+        if d == 0. {
+            break;
+        }
+        let ds = (s_minus_sin_s(s) - w) / d;
+        s -= ds;
+        if ds.abs() <= 1e-12 * s {
+            break;
+        }
+    }
+    s
 }
 
 impl Projection {
@@ -44,6 +84,7 @@ impl Projection {
             c_x: 0.90977,
             c_y: 1.65014,
             c_p: 3.00896,
+            mollweide: false,
         })
     }
 
@@ -60,13 +101,25 @@ impl Projection {
             c_x: 2. * r / PI,
             c_y: r / sp,
             c_p,
+            mollweide: pp == FRAC_PI_2,
         })
     }
 
     #[inline(always)]
     pub fn forward(&self, lam: f64, mut phi: f64, z: f64) -> Result<(f64, f64, f64)> {
-        const NITER: isize = 10;
+        // 30 iterations, as in PROJ (10 were not enough for wag4 near the poles)
+        const NITER: isize = 30;
         const TOL: f64 = 1e-7;
+
+        if self.mollweide && phi.abs() > FRAC_PI_2 - 0.5 {
+            let s = mollweide_polar_s(FRAC_PI_2 - phi.abs());
+            // cos(theta) = sin(s / 2), sin(theta) = cos(s / 2)
+            return Ok((
+                self.c_x * lam * (0.5 * s).sin(),
+                (self.c_y * (0.5 * s).cos()).copysign(phi),
+                z,
+            ));
+        }
 
         let k = self.c_p * phi.sin();
         let mut i = NITER;
@@ -86,9 +139,31 @@ impl Projection {
         Ok((self.c_x * lam * phi.cos(), self.c_y * phi.sin(), z))
     }
 
+    /// Close to the poles: cos(s / 2) = |y| / c_y, with s as in mollweide_polar_s(), and the
+    /// colatitude chi from 2 * sin(chi / 2)^2 = (s - sin(s)) / pi, instead of asin() of a
+    /// value close to 1. Returns None away from the poles.
+    #[inline(always)]
+    fn polar_inverse(&self, x: f64, y: f64) -> Option<(f64, f64)> {
+        if !self.mollweide || y.abs() <= 0.5 * self.c_y || y.abs() > self.c_y {
+            return None;
+        }
+        let half_s = 2. * (0.5 * (self.c_y - y.abs()) / self.c_y).sqrt().asin();
+        let den = self.c_x * half_s.sin();
+        let lam = if den == 0. { 0. } else { x / den }; // at the pole x is 0
+        let chi = 2. * (s_minus_sin_s(2. * half_s) / (2. * PI)).sqrt().asin();
+        Some((lam, (FRAC_PI_2 - chi).copysign(y)))
+    }
+
     #[cfg(not(feature = "proj4js-compat"))]
     #[inline(always)]
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+        if let Some((lam, phi)) = self.polar_inverse(x, y) {
+            return if lam.abs() < PI {
+                Ok((lam, phi, z))
+            } else {
+                Err(Error::CoordinateOutOfRange)
+            };
+        }
         let mut phi = aasin(y / self.c_y)?;
         let lam = x / (self.c_x * phi.cos());
         if lam.abs() < PI {
@@ -105,6 +180,9 @@ impl Projection {
     #[cfg(feature = "proj4js-compat")]
     #[inline(always)]
     pub fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
+        if let Some((lam, phi)) = self.polar_inverse(x, y) {
+            return Ok((lam.clamp(-PI, PI), phi, z));
+        }
         let mut phi = aasin(y / self.c_y)?;
         let mut lam = x / (self.c_x * phi.cos());
         if lam.abs() > PI {
