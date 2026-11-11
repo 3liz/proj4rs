@@ -216,7 +216,7 @@ pub mod sterea;
 pub mod tmerc;
 pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 38;
+const NUM_PROJECTIONS: usize = 39;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
