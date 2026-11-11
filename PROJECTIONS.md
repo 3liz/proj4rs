@@ -21,6 +21,7 @@ implementation of their parent projection.
 | `geos` | Geostationary Satellite View | [geos](https://proj.org/en/stable/operations/projections/geos.html) |
 | `gnom` | Gnomonic (azimuthal, sph & ell) | [gnom](https://proj.org/en/stable/operations/projections/gnom.html) |
 | `krovak` | Krovak (oblique conformal conic, Czech/Slovak systems) | [krovak](https://proj.org/en/stable/operations/projections/krovak.html) |
+| `labrd` | Laborde (cylindrical, ellipsoidal, for Madagascar) | [labrd](https://proj.org/en/stable/operations/projections/labrd.html) |
 | `laea` | Lambert Azimuthal Equal Area (azimuthal, sph & ell) | [laea](https://proj.org/en/stable/operations/projections/laea.html) |
 | `lcc` | Lambert Conformal Conic (conic, sph & ell) | [lcc](https://proj.org/en/stable/operations/projections/lcc.html) |
 | `merc` | Mercator (cylindrical, sph & ell) | [merc](https://proj.org/en/stable/operations/projections/merc.html) |
@@ -29,6 +30,7 @@ implementation of their parent projection.
 | `moll` | Mollweide (pseudocylindrical, spherical) | [moll](https://proj.org/en/stable/operations/projections/moll.html) |
 | `wag4` | Wagner IV (pseudocylindrical, variant of `moll`) | [wag4](https://proj.org/en/stable/operations/projections/wag4.html) |
 | `wag5` | Wagner V (pseudocylindrical, variant of `moll`) | [wag5](https://proj.org/en/stable/operations/projections/wag5.html) |
+| `nzmg` | New Zealand Map Grid (fixed Earth) | [nzmg](https://proj.org/en/stable/operations/projections/nzmg.html) |
 | `omerc` | Oblique Mercator (cylindrical, sph & ell) | [omerc](https://proj.org/en/stable/operations/projections/omerc.html) |
 | `ortho` | Orthographic (azimuthal, sph & ell) | [ortho](https://proj.org/en/stable/operations/projections/ortho.html) |
 | `poly` | American Polyconic (sph & ell) | [poly](https://proj.org/en/stable/operations/projections/poly.html) |

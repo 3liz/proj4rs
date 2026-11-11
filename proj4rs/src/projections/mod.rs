@@ -198,12 +198,14 @@ pub mod geocent;
 pub mod geos;
 pub mod gnom;
 pub mod krovak;
+pub mod labrd;
 pub mod laea;
 pub mod latlong;
 pub mod lcc;
 pub mod merc;
 pub mod mill;
 pub mod moll;
+pub mod nzmg;
 pub mod omerc;
 pub mod ortho;
 pub mod poly;
@@ -215,7 +217,7 @@ pub mod sterea;
 pub mod tmerc;
 pub mod tpers;
 
-const NUM_PROJECTIONS: usize = 38;
+const NUM_PROJECTIONS: usize = 40;
 
 #[rustfmt::skip]
 const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
@@ -257,6 +259,8 @@ const PROJECTIONS: [ProjInit; NUM_PROJECTIONS] = [
     declare_proj!(robin),
     declare_proj!(eqearth),
     declare_proj!(col_urban),
+    declare_proj!(nzmg),
+    declare_proj!(labrd),
 ];
 
 declare_proj_params! {
@@ -289,6 +293,8 @@ declare_proj_params! {
     robin,
     eqearth,
     col_urban,
+    nzmg,
+    labrd,
 }
 
 ///
