@@ -146,8 +146,9 @@ impl Projection {
     fn s_inverse(&self, mut x: f64, mut y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let rh = x.hypot(y);
         let mut phi = rh.atan();
-        let sinz = phi.sin();
-        let cosz = (1. - sinz * sinz).sqrt();
+        // cos(z) from sin_cos(), not sqrt(1 - sin(z)^2), which loses the digits close to
+        // 90 degrees from the centre and defeats the atan2() below
+        let (sinz, cosz) = phi.sin_cos();
 
         if rh == 0. {
             return Ok((0., self.phi0, z));
