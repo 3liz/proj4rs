@@ -77,13 +77,22 @@ function test_geodesic() {
     const end = line.position(line.s13);
     close('inverseLine end lat', end.lat2, 1.36, 1e-12);
     close('inverseLine end lon', end.lon2, 103.99, 1e-12);
-    const mid = line.genPosition(Flags.ArcMode, line.a13 * 0.5, Mask.Latitude | Mask.Longitude);
-    const half = g.inverse(40.64, -73.78, mid.lat2, mid.lon2);
+    // Half the arc length is not half the distance on the ellipsoid: check
+    // the distance returned by genPosition against the inverse problem.
+    const mid = line.genPosition(Flags.ArcMode, line.a13 * 0.5, Mask.Latitude | Mask.Longitude | Mask.Distance);
+    let half = g.inverse(40.64, -73.78, mid.lat2, mid.lon2);
+    close('inverseLine arc midpoint distance', half.s12, mid.s12, 1e-6);
+    const dmid = line.position(line.s13 * 0.5);
+    half = g.inverse(40.64, -73.78, dmid.lat2, dmid.lon2);
     close('inverseLine midpoint distance', half.s12, line.s13 * 0.5, 1e-6);
 
-    const dline = g.directLine(40.64, -73.78, 45.0, 10e6, Mask.Latitude | Mask.Longitude);
+    // Positions given as distances require the DistanceIn capability
+    const dline = g.directLine(40.64, -73.78, 45.0, 10e6, Mask.Latitude | Mask.Longitude | Mask.DistanceIn);
     close('directLine s13', dline.s13, 10e6, 1e-6);
     close('directLine end lat', dline.position(dline.s13).lat2, dir.lat2, 1e-12);
+    const aline = g.directLine(40.64, -73.78, 45.0, 10e6, Mask.Latitude | Mask.Longitude);
+    check('directLine without DistanceIn: distance positions are NaN',
+        Number.isNaN(aline.position(aline.s13).lat2));
 
     // Polygon: triangle (0°N,0°E), (0°N,90°E), (90°N,0°E)
     const p = new Polygon(g, false);
