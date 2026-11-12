@@ -126,10 +126,11 @@ dependencies = [
 
 [tasks."npm.publish"]
 command = "wasm-pack"
+cwd = "../js/pkg-bundle"
 args = [
     "publish",
-    "--pkg-dir=../js/pkg-bundle",
-    "--target=bundler",
+    "--access=public",
+
 ]
 
 [tasks.manifest]
