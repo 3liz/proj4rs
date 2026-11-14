@@ -24,6 +24,11 @@ pub(crate) enum Projection {
 
 impl Projection {
     pub fn laea(p: &mut ProjData, _: &ParamList) -> Result<Self> {
+        if p.phi0.abs() > FRAC_PI_2 + EPS_10 {
+            return Err(Error::InvalidParameterValue(
+                "lat_0: |lat_0| should be <= 90°",
+            ));
+        }
         Ok(if p.ellps.is_ellipsoid() {
             Self::El(EProj::new(p))
         } else {
@@ -196,6 +201,16 @@ impl EProj {
         Ok((x, y, z))
     }
 
+    /// Sine and cosine of the angular distance from the centre,
+    /// fail for points outside of the projection domain
+    fn sin_cos_ce(rho: f64, rq: f64) -> Result<(f64, f64)> {
+        let asin_argument = 0.5 * rho / rq;
+        if asin_argument > 1. {
+            return Err(Error::CoordTransOutsideProjectionDomain);
+        }
+        Ok((2. * asin_argument.asin()).sin_cos())
+    }
+
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         use EMode::*;
 
@@ -206,7 +221,7 @@ impl EProj {
                 if rho < EPS_10 {
                     return Ok((0., self.phi0, z));
                 }
-                let (sce, cce) = (2. * (0.5 * rho / rq).asin()).sin_cos();
+                let (sce, cce) = Self::sin_cos_ce(rho, rq)?;
                 (y * sce / rho, x * sce, rho * cce)
             }
             OBLIQ {
@@ -221,7 +236,7 @@ impl EProj {
                 if rho < EPS_10 {
                     return Ok((0., self.phi0, z));
                 }
-                let (sce, cce) = (2. * (0.5 * rho / rq).asin()).sin_cos();
+                let (sce, cce) = Self::sin_cos_ce(rho, rq)?;
                 (
                     cce * sinb1 + y * sce * cosb1 / rho,
                     x * sce,
@@ -503,5 +518,32 @@ mod tests {
         // and the authalic latitude with series in n, which differs by up to ~5e-8 m
         test_proj_forward(&p, &inputs, 1.0e-7);
         test_proj_inverse(&p, &inputs, EPS_10);
+    }
+
+    #[test]
+    fn proj_laea_invalid_lat_0() {
+        // As PROJ: |lat_0| > 90° is rejected
+        for def in [
+            "+proj=laea +ellps=GRS80 +lat_0=91",
+            "+proj=laea +ellps=GRS80 +lat_0=-91",
+            "+proj=laea +R=6400000 +lat_0=91",
+        ] {
+            assert!(Proj::from_proj_string(def).is_err(), "{def}");
+        }
+        assert!(Proj::from_proj_string("+proj=laea +ellps=GRS80 +lat_0=90").is_ok());
+        assert!(Proj::from_proj_string("+proj=laea +ellps=GRS80 +lat_0=-90").is_ok());
+    }
+
+    #[test]
+    fn proj_laea_el_inverse_outside_domain() {
+        // Points outside of the projected disc must fail, not return NaN
+        for def in [
+            "+proj=laea +ellps=GRS80",
+            "+proj=laea +ellps=GRS80 +lat_0=45",
+        ] {
+            let p = Proj::from_proj_string(def).unwrap();
+            assert!(p.projection().inverse(3., 0., 0.).is_err(), "{def}");
+            assert!(p.projection().inverse(0., 3., 0.).is_err(), "{def}");
+        }
     }
 }

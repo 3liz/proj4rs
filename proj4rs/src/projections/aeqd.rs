@@ -633,17 +633,10 @@ mod tests {
                 (-140., 87., 0.),
                 (-215357.382809855917, 256652.934655332210, 0.),
             ),
-            /*
-             * We have a 10-5 discrepancy error with proj 9.4
-             * This this acceptable but make the test fail
-             * with the 1e-6 required accuracy
-             * XXX must check with clenshaw cofficients for
-             * meridional distance computation
             (
                 (-140., -87., 0.),
                 (-12641494.960468998179, 15065547.034900521860, 0.),
             ),
-            */
         ];
 
         test_proj_forward(&p, &inputs, 1e-6);
