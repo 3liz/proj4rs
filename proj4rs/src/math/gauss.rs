@@ -57,8 +57,16 @@ pub(crate) fn gauss_ini(e: f64, phi0: f64) -> Result<(Gauss, f64, f64)> {
 
     let chi = (sphi / c).asin();
     let ratexp = 0.5 * c * e;
-    let k = (0.5 * chi + FRAC_PI_4).tan()
-        / ((0.5 * phi0 + FRAC_PI_4).tan().powf(c) * srat(e * sphi, ratexp));
+    let srat_val = srat(e * sphi, ratexp);
+    if srat_val == 0. {
+        return Err(Error::ToleranceConditionError);
+    }
+    // At the south pole, tan(phi0/2 + pi/4) and tan(chi/2 + pi/4) are both 0
+    let k = if 0.5 * phi0 + FRAC_PI_4 < 1e-10 {
+        1. / srat_val
+    } else {
+        (0.5 * chi + FRAC_PI_4).tan() / ((0.5 * phi0 + FRAC_PI_4).tan().powf(c) * srat_val)
+    };
     Ok((Gauss { c, k, e, ratexp }, chi, rc))
 }
 

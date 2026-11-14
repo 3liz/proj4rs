@@ -5,7 +5,7 @@
 //!
 //! sterea: "Oblique Stereographic Alternative" "\n\tAzimuthal, Sph&Ell"
 //!
-use crate::errors::Result;
+use crate::errors::{Error, Result};
 use crate::math::{Gauss, gauss, gauss_ini, inv_gauss};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
@@ -42,7 +42,11 @@ impl Projection {
         let (lam, phi) = gauss(lam, phi, &self.en);
         let (sinc, cosc) = phi.sin_cos();
         let cosl = lam.cos();
-        let k = self.k0 * self.r2 / (1. + self.sinc0 * sinc + self.cosc0 * cosc * cosl);
+        let denom = 1. + self.sinc0 * sinc + self.cosc0 * cosc * cosl;
+        if denom == 0. {
+            return Err(Error::CoordTransOutsideProjectionDomain);
+        }
+        let k = self.k0 * self.r2 / denom;
         Ok((
             k * cosc * lam.sin(),
             k * (self.cosc0 * sinc - self.sinc0 * cosc * cosl),
@@ -103,5 +107,29 @@ mod tests {
 
         test_proj_forward(&p, &inputs, EPS_10);
         test_proj_inverse(&p, &inputs, EPS_10);
+    }
+
+    #[test]
+    fn proj_sterea_south_pole() {
+        // Was NaN: the Gauss sphere constant is 0/0 at lat_0 = -90
+        let p = Proj::from_proj_string("+proj=sterea +ellps=GRS80 +lat_0=-90").unwrap();
+
+        // Reference values from PROJ 9.4.0
+        let inputs = [
+            ((0., -90., 0.), (0., 0., 0.)),
+            ((0., -89., 0.), (0., 111696.700323083409, 0.)),
+            (
+                (2., -60., 0.),
+                (119581.008919963686, 3424352.059258670080, 0.),
+            ),
+            (
+                (-45., -45., 0.),
+                (-3741415.630752111785, 3741415.630752111785, 0.),
+            ),
+            ((0., 0., 0.), (0., 12713600.098641794175, 0.)),
+        ];
+
+        test_proj_forward(&p, &inputs, 1e-6);
+        test_proj_inverse(&p, &inputs, 1e-6);
     }
 }
