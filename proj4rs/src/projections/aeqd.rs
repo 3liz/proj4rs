@@ -27,7 +27,7 @@ use proj4rs_geodesic::Geodesic;
 
 use crate::errors::{Error, Result};
 use crate::math::{
-    Enfn, aasin,
+    Enfn,
     consts::{EPS_10, FRAC_PI_2, PI},
     enfn, inv_mlfn, mlfn,
 };
@@ -307,40 +307,30 @@ impl AeqdE {
         let cosphi = phi.cos();
         let coslam = lam.cos();
 
-        if self.mode == EQUIT {
-            let mut y = cosphi * coslam;
-            if (y.abs() - 1.).abs() < TOL {
-                if y < 0. {
-                    Err(Error::CoordTransOutsideProjectionDomain)
-                } else {
-                    self.e_forward(lam, phi, z)
-                }
-            } else {
-                y = y.acos();
-                y /= y.sin();
-                Ok((y * cosphi * lam.sin(), y * phi.sin(), z))
-            }
+        // c is the angular distance to (phi, lam). sin(c) from hypot() and c from atan2()
+        // keep the forward accurate near the centre, where acos(cos(c)) lost half the
+        // digits (as in PROJ)
+        let (s0, c0) = if self.mode == EQUIT {
+            (0., 1.)
         } else {
-            // OBLIQ
-            let sinphi = phi.sin();
-            let cosphi_x_coslam = cosphi * coslam;
-            let mut y = self.sinph0 * sinphi + self.cosph0 * cosphi_x_coslam;
-            if (y.abs() - 1.).abs() < TOL {
-                if y < 0. {
-                    Err(Error::CoordTransOutsideProjectionDomain)
-                } else {
-                    self.e_forward(lam, phi, z)
-                }
-            } else {
-                y = y.acos();
-                y /= y.sin();
-                Ok((
-                    y * cosphi * lam.sin(),
-                    y * (self.cosph0 * sinphi - self.sinph0 * cosphi_x_coslam),
-                    z,
-                ))
-            }
+            (self.sinph0, self.cosph0)
+        };
+        let sinphi = phi.sin();
+        let sinlam = lam.sin();
+        let cosc = s0 * sinphi + c0 * cosphi * coslam;
+        let t = c0 * sinphi - s0 * cosphi * coslam;
+        let sinc = (cosphi * sinlam).hypot(t);
+        if cosc < TOL - 1. {
+            // the point opposite the centre
+            return Err(Error::CoordTransOutsideProjectionDomain);
         }
+        // c / sin(c), with limit 1 at the centre
+        let k = if sinc == 0. {
+            1.
+        } else {
+            sinc.atan2(cosc) / sinc
+        };
+        Ok((k * cosphi * sinlam, k * t, z))
     }
 
     fn s_inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
@@ -350,24 +340,23 @@ impl AeqdE {
                 return Err(Error::CoordTransOutsideProjectionDomain);
             }
             c_rh = PI
-        } else if c_rh < EPS_10 {
+        } else if c_rh == 0. {
             return Ok((0., self.phi0, z));
         }
 
         let (sinc, cosc) = c_rh.sin_cos();
-        let (phi, lam, xx, yy);
-        if self.mode == EQUIT {
-            phi = aasin(y * sinc / c_rh)?;
-            xx = x * sinc;
-            yy = cosc * c_rh;
+        // c_rh * sin(phi), c_rh * cos(phi) * cos(lam) and c_rh * cos(phi) * sin(lam):
+        // atan2() keeps the latitude accurate near the poles, where asin() of sin(phi)
+        // did not. No special case for cos(lam) == 0: the longitude is +/-90 there, not 0.
+        let (s0, c0) = if self.mode == EQUIT {
+            (0., 1.)
         } else {
-            // OBLIQ
-            phi = aasin(cosc * self.sinph0 + y * sinc * self.cosph0 / c_rh)?;
-            yy = (cosc - self.sinph0 * phi.sin()) * c_rh;
-            xx = x * sinc * self.cosph0;
-        }
-        lam = if yy == 0. { 0. } else { xx.atan2(yy) };
-        Ok((lam, phi, z))
+            (self.sinph0, self.cosph0)
+        };
+        let n = c_rh * cosc * s0 + y * sinc * c0;
+        let yy = c_rh * cosc * c0 - y * sinc * s0;
+        let xx = x * sinc;
+        Ok((xx.atan2(yy), n.atan2(xx.hypot(yy)), z))
     }
 
     // Ellipsoidal

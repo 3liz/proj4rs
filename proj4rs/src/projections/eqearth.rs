@@ -41,8 +41,10 @@ const A2: f64 = -0.081106;
 const A3: f64 = 0.000893;
 const A4: f64 = 0.003796;
 
-// 90° latitude on a sphere with radius 1
-const MAX_Y: f64 = 1.3173627591574;
+// 90 degrees latitude on a sphere with radius 1. With 13 decimals the value was 1.3e-14 too
+// small, so that y within that distance of the pole was clamped and latitudes from about
+// 89.999993 degrees up to the pole all came back as 89.9999934 degrees (as fixed in PROJ)
+const MAX_Y: f64 = 1.3173627591574134;
 const EPS: f64 = 1e-11;
 const MAX_ITER: usize = 12;
 
@@ -118,7 +120,8 @@ impl Projection {
         let y2 = yc * yc;
         let y6 = y2 * y2 * y2;
         let lam = m() * x * (A1 + 3. * A2 * y2 + y6 * (7. * A3 + 9. * A4 * y2)) / yc.cos();
-        let mut phi = (yc.sin() / m()).asin();
+        // sin(yc) / M may round to slightly more than 1 at the poles
+        let mut phi = (yc.sin() / m()).clamp(-1., 1.).asin();
         if let Some(auth) = &self.auth {
             phi = auth.lat_inverse(phi);
         }

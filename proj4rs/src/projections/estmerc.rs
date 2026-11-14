@@ -177,29 +177,16 @@ impl Sph {
         }
 
         let cosphi = phi.cos();
-        let mut b = cosphi * lam.sin();
+        let b = cosphi * lam.sin();
         if (b.abs() - 1.).abs() <= EPS_10 {
             return Err(Error::ToleranceConditionError);
         }
 
         let x = self.ml0 * ((1. + b) / (1. - b)).ln();
-        let mut y;
-        if cosphi == 1. {
-            y = 0.;
-        } else {
-            y = cosphi * lam.cos() / (1. - b * b).sqrt();
-
-            b = y.abs();
-            if b >= 1. {
-                if (b - 1.) > EPS_10 {
-                    return Err(Error::ToleranceConditionError);
-                } else {
-                    y = 0.;
-                }
-            } else {
-                y = y.acos();
-            }
-        }
+        // Same angle as acos(cosphi * cos(lam) / sqrt(1 - b * b)), since
+        // 1 - b * b = sinphi^2 + (cosphi * cos(lam))^2, but without the loss of
+        // precision of acos() near 1, i.e. close to the equator
+        let mut y = phi.sin().abs().atan2(cosphi * lam.cos());
 
         if phi < 0. {
             y = -y;
@@ -215,8 +202,10 @@ impl Sph {
 
         let d = self.phi0 + y / self.esp;
         h = d.cos();
+        // Same angle as asin(sqrt((1 - h * h) / (1 + g * g))), but without the loss of
+        // precision of 1 - h * h close to the equator.
         // Make sure that phi is on the correct hemisphere when false northing is used
-        let phi = ((1. - h * h) / (1. + g * g)).sqrt().asin().copysign(d);
+        let phi = d.sin().abs().atan2(g.hypot(h)).copysign(d);
 
         Ok((if g != 0.0 || h != 0.0 { g.atan2(h) } else { 0. }, phi, z))
     }
