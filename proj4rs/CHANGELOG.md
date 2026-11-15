@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 ### Fixed
 
 * Precision of the spherical projections close to the poles, the equator and the
-  projection centres, port of the fixes submitted to PROJ as https://github.com/OSGeo/PROJ/pull/4944.
+  projection centres.
   Numbers are from `tests/precision_tests.rs`, on a sphere of radius 6371000 m:
     - `stere`, `ortho`, `aeqd`, `laea`, `tpers` inverse (polar and oblique): the latitude came
       from `asin()` of a value close to 1 and was 90 degrees at 1e-7 degrees from the pole
@@ -46,10 +46,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
     - Matches PROJ >= 9.7 for `aea`, `leac`, `cea`, `laea` and `eqearth`: inverse
       projections are now accurate to double precision (was ~1e-8 deg), forward
       projections differ from PROJ < 9.7 by up to ~5e-8 m
-
+* `laea`: reject `|lat_0| > 90°` and fail instead of returning NaN for points
+  outside of the projection domain in the ellipsoidal inverse, as PROJ does
+* `sterea`: fix NaN with `+lat_0=-90` (Gauss sphere constant at the south pole),
+  fail when the forward denominator is 0, as PROJ does
+* `eqc`: ellipsoidal formulation (EPSG method 1028), as in PROJ >= 9.8 and proj4js
+    - Port of https://github.com/OSGeo/PROJ/pull/4656
+    - **Breaking**: `eqc` on an ellipsoid (e.g. `+ellps=WGS84`, EPSG:4087) now uses
+      the meridian arc for y and the radius of the parallel `lat_ts` for x
+      (results differ by up to ~25 km in y)
+    - Controlled by the new `epsg-method-1028` feature, enabled by default (and by
+      `proj4js-compat`). Disable default features to keep the previous behaviour
+      (spherical formula on a sphere of radius `a`, as PROJ < 9.8)
 
 ### Added
 
+* Run PROJ `builtins.gie` test suite for implemented projections
+    - Minimal `gie` runner in `src/tests/gie.rs`, test file in `fixtures/gie`
+    - Known divergences from PROJ are listed in `KNOWN_FAILURES`
+* Add support for `+R_C` spherification parameter
+    - Uses `lat_0`, unlike PROJ master which always uses 0: https://github.com/OSGeo/PROJ/issues/4947
 * Add `nzmg` New Zealand Map Grid projection
     - Port of PROJ `nzmg.cpp`, tested against PROJ `builtins.gie`
     - used by EPSG:27200

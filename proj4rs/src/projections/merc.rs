@@ -60,6 +60,8 @@ impl Projection {
     }
 
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
+        // NOTE: PROJ does No pole check: close to the poles y is very large
+        // but finite (tan(pi/2) is ~1.6e16 in double precision).
         if (phi.abs() - FRAC_PI_2).abs() <= EPS_10 {
             return Err(Error::ToleranceConditionError);
         }
