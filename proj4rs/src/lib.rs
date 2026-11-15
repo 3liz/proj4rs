@@ -79,6 +79,13 @@
 //!   mostly from js app (at least with OpenLayer).
 //! * **crs-definitions**: Support for initializing projections from EPSG codes with the
 //!   [crs_definitions](https://docs.rs/crs-definitions/latest/crs_definitions/) crate.
+//! * **epsg-method-1028** (default): Ellipsoidal Equidistant Cylindrical (`eqc`), EPSG method
+//!   1028, as in PROJ >= 9.8 and proj4js. On an ellipsoid, y is the meridian arc from `lat_0`
+//!   and x uses the radius of the parallel `lat_ts`.
+//!   When disabled (`default-features = false`), `eqc` always uses the spherical formula
+//!   (EPSG method 1029) on a sphere of radius `a`, as PROJ < 9.8 does: results on an
+//!   ellipsoid differ by up to ~25 km in y.
+//!   This feature is also enabled by **proj4js-compat**.
 //!
 //! ## WKT Support
 //!

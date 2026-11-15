@@ -46,14 +46,16 @@ rand = "0.10"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = []
+default = ["epsg-method-1028"]
 geodesic-wasm-api = ["proj4rs-geodesic/wasm-geodesic-api"]
 binaries = []
 geo-types = ["dep:geo-types"]
 logging = ["log"]
 local_tests = []
 wasm-strict = []
-proj4js-compat = []
+proj4js-compat = ["epsg-method-1028"]
+# Ellipsoidal Equidistant Cylindrical (eqc) as in PROJ >= 9.8
+epsg-method-1028 = []
 with-wasm-entrypoint = []
 tiff = ["dep:tiff"]
 # no-op feature for keeping compatibility with 

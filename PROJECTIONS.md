@@ -13,7 +13,7 @@ implementation of their parent projection.
 | `cass` | Cassini (cylindrical, sph & ell) | [cass](https://proj.org/en/stable/operations/projections/cass.html) |
 | `cea` | Equal Area Cylindrical (cylindrical, sph & ell) | [cea](https://proj.org/en/stable/operations/projections/cea.html) |
 | `col_urban` | Colombia Urban (ellipsoidal, for Colombian cities) | [col_urban](https://proj.org/en/stable/operations/projections/col_urban.html) |
-| `eqc` | Equidistant Cylindrical (Plate Carrée) | [eqc](https://proj.org/en/stable/operations/projections/eqc.html) |
+| `eqc` | Equidistant Cylindrical / Plate Carrée (cylindrical, sph, ell; sph only without the default `epsg-method-1028` feature) | [eqc](https://proj.org/en/stable/operations/projections/eqc.html) |
 | `eqdc` | Equidistant Conic (conic, sph & ell) | [eqdc](https://proj.org/en/stable/operations/projections/eqdc.html) |
 | `eqearth` | Equal Earth (pseudocylindrical, sph & ell) | [eqearth](https://proj.org/en/stable/operations/projections/eqearth.html) |
 | `etmerc` | Extended Transverse Mercator (Poder/Engsager "exact" algorithm) | [tmerc](https://proj.org/en/stable/operations/projections/tmerc.html) |
