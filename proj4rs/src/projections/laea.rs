@@ -142,7 +142,6 @@ impl EProj {
         let (sinphi, cosphi) = phi.sin_cos();
         let xi = self.auth.lat(phi, sinphi, cosphi);
         let (sinb, cosb) = xi.sin_cos();
-        let q = sinb * self.qp;
 
         use EMode::*;
 
@@ -176,25 +175,16 @@ impl EProj {
                 if (FRAC_PI_2 + phi).abs() < EPS_10 {
                     return Err(Error::ToleranceConditionError);
                 }
-                let q = self.qp - q;
-                if q >= 1e-15 {
-                    let b = q.sqrt();
-                    (b * sinlam, -b * coslam)
-                } else {
-                    (0., 0.)
-                }
+                // sqrt(qp - qp * sin(xi)) without the cancellation close to the pole
+                let b = (2. * self.qp).sqrt() * (FRAC_PI_4 - 0.5 * xi).sin();
+                (b * sinlam, -b * coslam)
             }
             S_POLE => {
                 if (phi - FRAC_PI_2).abs() < EPS_10 {
                     return Err(Error::ToleranceConditionError);
                 }
-                let q = self.qp + q;
-                if q >= 1e-15 {
-                    let b = q.sqrt();
-                    (b * sinlam, b * coslam)
-                } else {
-                    (0., 0.)
-                }
+                let b = (2. * self.qp).sqrt() * (FRAC_PI_4 + 0.5 * xi).sin();
+                (b * sinlam, b * coslam)
             }
         };
 
@@ -214,15 +204,18 @@ impl EProj {
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         use EMode::*;
 
-        let (ab, xx, yy) = match self.mode {
+        let (beta, xx, yy) = match self.mode {
             EQUIT { dd, rq, .. } => {
                 let (x, y) = (x / dd, y * dd);
                 let rho = x.hypot(y);
-                if rho < EPS_10 {
+                if rho == 0. {
                     return Ok((0., self.phi0, z));
                 }
                 let (sce, cce) = Self::sin_cos_ce(rho, rq)?;
-                (y * sce / rho, x * sce, rho * cce)
+                // rho * sin(beta), rho * cos(beta) * (sin(lam), cos(lam)): atan2() keeps
+                // the authalic latitude accurate near the poles, where asin() did not
+                let (xx, yy) = (x * sce, rho * cce);
+                ((y * sce).atan2(xx.hypot(yy)), xx, yy)
             }
             OBLIQ {
                 dd,
@@ -233,30 +226,34 @@ impl EProj {
             } => {
                 let (x, y) = (x / dd, y * dd);
                 let rho = x.hypot(y);
-                if rho < EPS_10 {
+                if rho == 0. {
                     return Ok((0., self.phi0, z));
                 }
                 let (sce, cce) = Self::sin_cos_ce(rho, rq)?;
-                (
-                    cce * sinb1 + y * sce * cosb1 / rho,
-                    x * sce,
-                    rho * cosb1 * cce - y * sinb1 * sce,
-                )
+                let n = rho * cce * sinb1 + y * sce * cosb1;
+                let (xx, yy) = (x * sce, rho * cosb1 * cce - y * sinb1 * sce);
+                (n.atan2(xx.hypot(yy)), xx, yy)
             }
             N_POLE | S_POLE => {
-                let q = x * x + y * y;
-                if q == 0. {
+                let rho = x.hypot(y);
+                if rho == 0. {
                     return Ok((0., self.phi0, z));
                 }
-                let ab = 1. - q / self.qp;
+                let t = rho / (2. * self.qp).sqrt();
+                if t > 1. {
+                    return Err(Error::CoordTransOutsideProjectionDomain);
+                }
+                // rho = sqrt(2 qp) * sin((pi/2 - beta) / 2): well conditioned near the
+                // pole, where asin(1 - rho^2 / qp) lost half the digits
+                let beta = FRAC_PI_2 - 2. * t.asin();
                 if matches!(self.mode, N_POLE) {
-                    (ab, x, -y)
+                    (beta, x, -y)
                 } else {
-                    (-ab, x, y)
+                    (-beta, x, y)
                 }
             }
         };
-        Ok((xx.atan2(yy), self.auth.lat_inverse(ab.asin()), z))
+        Ok((xx.atan2(yy), self.auth.lat_inverse(beta), z))
     }
 }
 

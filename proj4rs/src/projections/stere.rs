@@ -182,19 +182,23 @@ impl Projection {
 
         let (xx, yy) = match self.mode {
             OBLIQ | EQUIT => {
-                let (sinphi, cosphi) = (2. * (rho * self.cosx1).atan2(self.akm1)).sin_cos();
+                // sin and cos of the angular distance c from the centre (on the
+                // conformal sphere)
+                let (sinc, cosc) = (2. * (rho * self.cosx1).atan2(self.akm1)).sin_cos();
+                let xx = x * sinc;
+                let yy = rho * self.cosx1 * cosc - y * self.sinx1 * sinc;
+                // Conformal latitude: rho * sin(chi) and rho * cos(chi) * (sin(lam), cos(lam)).
+                // atan2() keeps it accurate near the poles, where asin() of sin(chi) did not;
+                // the iteration below keeps tp, so this error went straight into phi
                 phi_l = if rho == 0.0 {
-                    (cosphi * self.sinx1).asin()
+                    (cosc * self.sinx1).asin()
                 } else {
-                    (cosphi * self.sinx1 + (y * sinphi * self.cosx1 / rho)).asin()
+                    (rho * cosc * self.sinx1 + y * sinc * self.cosx1).atan2(xx.hypot(yy))
                 };
                 tp = (0.5 * (FRAC_PI_2 + phi_l)).tan();
                 halfpi = FRAC_PI_2;
                 halfe = 0.5 * self.e;
-                (
-                    x * sinphi,
-                    rho * self.cosx1 * cosphi - y * self.sinx1 * sinphi,
-                )
+                (xx, yy)
             }
             _ => {
                 tp = -rho / self.akm1;

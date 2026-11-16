@@ -29,6 +29,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
     - `moll` inverse: points on the map outline (longitude +/-180) were rejected when the
       longitude rounded to slightly more than pi
     - `eqearth` inverse: `MAX_Y` was 1.3e-14 too small (0.74 m off at the pole)
+* Precision of the ellipsoidal `laea` and `stere` close to the poles and the projection centres
+  (same results as PROJ 9.8.1 before the fix). Numbers are from `tests/precision_tests.rs`, on GRS80:
+    - `laea` forward, polar aspect: `sqrt(qp - q)` cancelled close to the pole and the point
+      snapped to the origin up to about 0.2 m from it (11 cm off at 1e-6 degrees); now
+      `sqrt(2 qp) * sin(pi/4 - xi/2)` from the authalic latitude
+    - `laea` inverse, all aspects: the authalic latitude came from `asin()` of a value close to 1
+      (up to 8.3 cm off at 1e-7 degrees from the pole); it now comes from `atan2()`, and from
+      `pi/2 - 2 asin(rho / sqrt(2 qp))` in the polar aspects
+    - `laea` inverse, equatorial and oblique: within 1e-10 * a of the centre the centre was
+      returned (0.25 mm off)
+    - `stere` inverse, equatorial and oblique: the conformal latitude that seeds the iteration
+      came from `asin()` close to 1, and its error was kept through the iteration (up to 8.3 cm
+      off at 1e-7 degrees from the pole); it now comes from `atan2()`
 
 ### Changed
 
