@@ -66,7 +66,7 @@ impl Projection {
             Ok(Sph(Sph {
                 phi0: p.phi0,
                 esp: p.k0,
-                ml0: 0.5 * p.k0,
+                ml0: p.k0,
             }))
         }
     }
@@ -182,31 +182,29 @@ impl Sph {
             return Err(Error::ToleranceConditionError);
         }
 
-        let x = self.ml0 * ((1. + b) / (1. - b)).ln();
+        // ml0 * atanh(b), written as in the exact ellipsoidal forward to stay
+        // accurate when |b| is close to 1
+        let x = self.ml0 * (lam.sin() / phi.tan().hypot(lam.cos())).asinh();
         // Same angle as acos(cosphi * cos(lam) / sqrt(1 - b * b)), since
         // 1 - b * b = sinphi^2 + (cosphi * cos(lam))^2, but without the loss of
-        // precision of acos() near 1, i.e. close to the equator
-        let mut y = phi.sin().abs().atan2(cosphi * lam.cos());
-
-        if phi < 0. {
-            y = -y;
-        }
-        y = self.esp * (y - self.phi0);
+        // precision of acos() near +/-1, i.e. close to the equator
+        let y = self.esp * (phi.sin().atan2(cosphi * lam.cos()) - self.phi0);
 
         Ok((x, y, z))
     }
 
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
-        let mut h = (x / self.esp).exp();
-        let g = 0.5 * (h - 1. / h);
-
+        let g = (x / self.esp).sinh();
+        if g.is_infinite() {
+            return Err(Error::CoordTransOutsideProjectionDomain);
+        }
+        // D, as in equation 8-8 of USGS "Map Projections - A Working Manual"
         let d = self.phi0 + y / self.esp;
-        h = d.cos();
-        // Same angle as asin(sqrt((1 - h * h) / (1 + g * g))), but without the loss of
-        // precision of 1 - h * h close to the equator.
-        // Make sure that phi is on the correct hemisphere when false northing is used
-        let phi = d.sin().abs().atan2(g.hypot(h)).copysign(d);
+        let cosd = d.cos();
+        // Same angle as asin(sqrt((1 - cosd^2) / (1 + g^2))), but without the
+        // loss of precision of 1 - cosd^2 near the equator
+        let phi = d.sin().atan2(g.hypot(cosd));
 
-        Ok((if g != 0.0 || h != 0.0 { g.atan2(h) } else { 0. }, phi, z))
+        Ok((g.atan2(cosd), phi, z))
     }
 }
