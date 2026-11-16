@@ -9,8 +9,8 @@
 //!
 
 use crate::errors::{Error, Result};
-use crate::math::consts::{EPS_10, FRAC_PI_2};
 use crate::math::Authalic;
+use crate::math::consts::{EPS_10, FRAC_PI_2};
 use crate::parameters::ParamList;
 use crate::proj::ProjData;
 
@@ -18,13 +18,8 @@ super::projection! { cea }
 
 #[derive(Debug, Clone)]
 pub(crate) enum Projection {
-    Sph {
-        k0: f64,
-    },
-    Ell {
-        k0: f64,
-        auth: Authalic,
-    },
+    Sph { k0: f64 },
+    Ell { k0: f64, auth: Authalic },
 }
 
 impl Projection {

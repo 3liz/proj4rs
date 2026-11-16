@@ -85,7 +85,10 @@ mod tests {
 
         println!("{:#?}", p.projection());
 
-        let inputs = [((-74.25, 4.8, 0.), (80859.03296027493, 122543.17429250661, 0.))];
+        let inputs = [(
+            (-74.25, 4.8, 0.),
+            (80859.03296027493, 122543.17429250661, 0.),
+        )];
         test_proj_forward(&p, &inputs, 1e-6);
         test_proj_inverse(&p, &inputs, 1e-6);
     }

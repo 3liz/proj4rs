@@ -13,7 +13,7 @@ use crate::log::error;
 /// Should return an error if no Nadgrid can be found or
 /// an error occurred when loading/building the nadgrid.
 ///
-/// User of the library may implement and register their own 
+/// User of the library may implement and register their own
 /// custom builder  and register it with [`catalog::set_builder`].
 pub type GridBuilder = fn(&Catalog, &str) -> Result<(), Error>;
 
@@ -201,7 +201,7 @@ pub mod catalog {
     /// Collect all grids and subgrids from the catalog.
     ///
     /// If the grid does not already exists in the catalog, the method
-    /// will call the registered builder. 
+    /// will call the registered builder.
     pub fn find_grids(name: &str, grids: &mut Vec<GridRef>) -> bool {
         let cat = CATALOG.lock().unwrap();
         match cat.find(name) {

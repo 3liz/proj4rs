@@ -12,21 +12,21 @@
 //! The original goal of Proj4rs was to provide a standalone, lightweight, pragmatic implementation of transformations
 //! from CRS to CRS that can be used in Rust and WASM environment.  
 //!
-//! C, Python and PHP bindings are provided in order to get reliable and consistent results 
+//! C, Python and PHP bindings are provided in order to get reliable and consistent results
 //! across various contexts (client side JS/server side ....).
-//! 
+//!
 //! ## Features and Limitations
 //!
 //! Proj4rs is limited to CRS to CRS 2D transformations for an "everyday" use in context where the full
-//! feature set of PROJ is not required or not appropriate. But in all cases, PROJ **is** the source of truth for all 
+//! feature set of PROJ is not required or not appropriate. But in all cases, PROJ **is** the source of truth for all
 //! projections results, and we require proj4rs to stick to this.
-//! 
+//!
 //! Projections are a transcript in Rust of the PROJ projections implementation. The required/expected accuracy
 //! with PROJ 9.8 results is up to 1e-6 m (but in practice it is almost at double precision accuracy).
-//! 
+//!
 //! Have a look at the comparison [projection gallery](https://mdsumner.github.io/proj4rs/).
-//! 
-//! This port implements the PROJ.4 transformation, which means there's no 3D/4D/orthometric transformation ATM. 
+//!
+//! This port implements the PROJ.4 transformation, which means there's no 3D/4D/orthometric transformation ATM.
 //! The transformations pipeline use the same WGS84 pivot datum as implemented in PROJ 4.x/5.x.
 //!
 //! ## Usage

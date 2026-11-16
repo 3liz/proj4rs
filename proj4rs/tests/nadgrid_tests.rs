@@ -416,5 +416,4 @@ mod local_tests {
         assert_eq!(grids.len(), 114);
         assert_eq!(grids.iter().filter(|g| g.is_root()).count(), 4);
     }
-
 }
