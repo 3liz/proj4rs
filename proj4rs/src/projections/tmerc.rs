@@ -101,6 +101,7 @@ mod tests {
 
         // Sames results as Proj9 'proj -d 11 +proj=tmerc +R=6400000  +approx', except y: PROJ 9 took it
         // from acos() near 1, 1.1e-8 m off; 111769.14504058581 is the exact value (50 digits)
+        // (PROJ returns 111769.14504059685 so we match PROJ value up to 1.e-7
 
         let inputs = [
             ((2., 1., 0.), (223413.46640632232, 111769.14504058581, 0.)),
