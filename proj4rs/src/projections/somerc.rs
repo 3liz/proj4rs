@@ -22,7 +22,6 @@ pub(crate) struct Projection {
     rone_es: f64,
     k: f64,
     c: f64,
-    hlf_e: f64,
     k_r: f64,
     cosp0: f64,
     sinp0: f64,
@@ -32,7 +31,6 @@ pub(crate) struct Projection {
 impl Projection {
     pub fn somerc(p: &mut ProjData, _: &ParamList) -> Result<Self> {
         let el = &p.ellps;
-        let hlf_e = 0.5 * el.e;
 
         let (sinphi, cosphi) = p.phi0.sin_cos();
 
@@ -43,14 +41,13 @@ impl Projection {
         let cosp0 = phip0.cos();
         let sp = sinphi * el.e;
         let k = (FRAC_PI_4 + 0.5 * phip0).tan().ln()
-            - c * ((FRAC_PI_4 + 0.5 * p.phi0).tan().ln() - hlf_e * ((1. + sp) / (1. - sp)).ln());
+            - c * ((FRAC_PI_4 + 0.5 * p.phi0).tan().ln() - el.e * sp.atanh());
         let k_r = p.k0 * el.one_es.sqrt() / (1. - sp * sp);
         Ok(Self {
             e: el.e,
             rone_es: el.rone_es,
             k,
             c,
-            hlf_e,
             k_r,
             cosp0,
             sinp0,
@@ -61,10 +58,7 @@ impl Projection {
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let sp = self.e * phi.sin();
         let phip = 2.
-            * ((self.c
-                * ((FRAC_PI_4 + 0.5 * phi).tan().ln()
-                    - self.hlf_e * ((1. + sp) / (1. - sp)).ln())
-                + self.k)
+            * ((self.c * ((FRAC_PI_4 + 0.5 * phi).tan().ln() - self.e * sp.atanh()) + self.k)
                 .exp())
             .atan()
             - FRAC_PI_2;
@@ -95,8 +89,7 @@ impl Projection {
         let mut i = NITER;
         while i > 0 {
             let esp = self.e * phip.sin();
-            let delp = (con + (FRAC_PI_4 + 0.5 * phip).tan().ln()
-                - self.hlf_e * ((1. + esp) / (1. - esp)).ln())
+            let delp = (con + (FRAC_PI_4 + 0.5 * phip).tan().ln() - self.e * esp.atanh())
                 * (1. - esp * esp)
                 * phip.cos()
                 * self.rone_es;

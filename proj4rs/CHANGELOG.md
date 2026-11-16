@@ -53,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
   does (it returned `LatOrLongExceedLimit`). The spherical formulas (OSGeo/PROJ#4945) hold for any
   longitude; the limit is kept for the ellipsoidal `+approx` series, where the results are
   meaningless there
+* `somerc` and `labrd`: use `atanh(e sin(phi))` instead of `0.5 * ln((1 + t) / (1 - t))`
 * Use pure rust geodesic implementation for building WASM aeqd in JS context
     - Deprecate 'aeqd' features 
 * Use 6th-order series in the third flattening for meridional distance

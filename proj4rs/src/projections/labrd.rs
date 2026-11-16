@@ -45,8 +45,7 @@ impl Projection {
         let p0s = ((r / n).sqrt() * p.phi0.tan()).atan();
         let a = sinp / p0s.sin();
         let t = el.e * sinp;
-        let c = 0.5 * el.e * a * ((1. + t) / (1. - t)).ln()
-            - a * (FRAC_PI_4 + 0.5 * p.phi0).tan().ln()
+        let c = el.e * a * t.atanh() - a * (FRAC_PI_4 + 0.5 * p.phi0).tan().ln()
             + (FRAC_PI_4 + 0.5 * p0s).tan().ln();
         let t = az + az;
         let cb = 1. / (12. * k_rg * k_rg);
@@ -73,7 +72,7 @@ impl Projection {
     pub fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
         let v1 = self.a * (FRAC_PI_4 + 0.5 * phi).tan().ln();
         let t = self.e * phi.sin();
-        let v2 = 0.5 * self.e * self.a * ((1. + t) / (1. - t)).ln();
+        let v2 = self.e * self.a * t.atanh();
         let ps = 2. * ((v1 - v2 + self.c).exp().atan() - FRAC_PI_4);
         let i1 = ps - self.p0s;
         let (sinps, cosps) = ps.sin_cos();
@@ -116,7 +115,7 @@ impl Projection {
         for _ in 0..20 {
             let v1 = self.a * (FRAC_PI_4 + 0.5 * pe).tan().ln();
             let tpe = self.e * pe.sin();
-            let v2 = 0.5 * self.e * self.a * ((1. + tpe) / (1. - tpe)).ln();
+            let v2 = self.e * self.a * tpe.atanh();
             let t = ps - 2. * ((v1 - v2 + self.c).exp().atan() - FRAC_PI_4);
             pe += t;
             if t.abs() < EPS {
