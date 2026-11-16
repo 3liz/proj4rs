@@ -170,14 +170,12 @@ impl Ell {
 // ---------------
 impl Sph {
     fn forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
-        // Fail if our longitude is more than 90 degrees from the
-        // central meridian since the results are essentially garbage.
-        if !(-FRAC_PI_2..=FRAC_PI_2).contains(&lam) {
-            return Err(Error::LatOrLongExceedLimit);
-        }
-
+        // Unlike the ellipsoidal series, the spherical formulas hold for any longitude
+        // (as in PROJ): beyond 90 degrees from the central meridian the northing goes
+        // towards +/-pi at the equator, and the inverse gives the longitude back.
         let cosphi = phi.cos();
         let b = cosphi * lam.sin();
+        // The easting is infinite at +/-90 degrees from the central meridian on the equator
         if (b.abs() - 1.).abs() <= EPS_10 {
             return Err(Error::ToleranceConditionError);
         }

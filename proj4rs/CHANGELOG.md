@@ -49,7 +49,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Changed
 
-
+* `tmerc` on a sphere accepts longitudes more than 90 degrees from the central meridian, as PROJ
+  does (it returned `LatOrLongExceedLimit`). The spherical formulas (OSGeo/PROJ#4945) hold for any
+  longitude; the limit is kept for the ellipsoidal `+approx` series, where the results are
+  meaningless there
 * Use pure rust geodesic implementation for building WASM aeqd in JS context
     - Deprecate 'aeqd' features 
 * Use 6th-order series in the third flattening for meridional distance
