@@ -209,7 +209,7 @@ impl AeqdPS {
 
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let mut c_rh = x.hypot(y);
-        if c_rh < EPS_10 {
+        if c_rh == 0. {
             return Ok((0., self.phi0, z));
         }
 
@@ -253,7 +253,7 @@ impl AeqdPE {
 
     fn inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let s12 = x.hypot(y);
-        Ok(if s12 < EPS_10 {
+        Ok(if s12 == 0. {
             (0., self.phi0, z)
         } else if self.mode == N_POLE {
             (
@@ -362,7 +362,7 @@ impl AeqdE {
     // Ellipsoidal
 
     fn e_forward(&self, lam: f64, phi: f64, z: f64) -> Result<(f64, f64, f64)> {
-        Ok(if lam.abs() < EPS_10 && (phi - self.phi0).abs() < EPS_10 {
+        Ok(if lam == 0. && phi == self.phi0 {
             (0., 0., z)
         } else {
             let (s12, mut azi1, _) = self.g.inverse(
@@ -378,7 +378,7 @@ impl AeqdE {
 
     fn e_inverse(&self, x: f64, y: f64, z: f64) -> Result<(f64, f64, f64)> {
         let s12 = x.hypot(y);
-        Ok(if s12 < EPS_10 {
+        Ok(if s12 == 0. {
             (0., self.phi0, z)
         } else {
             let (phi, lam, _) = self.g.direct(

@@ -42,6 +42,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
     - `stere` inverse, equatorial and oblique: the conformal latitude that seeds the iteration
       came from `asin()` close to 1, and its error was kept through the iteration (up to 8.3 cm
       off at 1e-7 degrees from the pole); it now comes from `atan2()`
+* `aeqd` close to the projection centre (same results as PROJ 9.8.1 before the fix): the inverses
+  (polar sphere, polar ellipsoid, geodesic) returned the centre, and the geodesic forward returned
+  (0, 0), within 1e-10 (times the radius) of it, up to 0.22 mm off. The shortcuts now apply at the
+  centre only
 
 ### Changed
 
