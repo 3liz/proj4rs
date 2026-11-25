@@ -46,27 +46,30 @@ rand = "0.10"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["epsg-method-1028"]
+default = ["epsg-method-1028", "wasm-js"]
 geodesic-wasm-api = ["proj4rs-geodesic/wasm-geodesic-api"]
 binaries = []
 geo-types = ["dep:geo-types"]
 logging = ["log"]
 local_tests = []
-wasm-strict = []
+wasm-strict = ["wasm-js"]
 proj4js-compat = ["epsg-method-1028"]
 # Ellipsoidal Equidistant Cylindrical (eqc) as in PROJ >= 9.8
 epsg-method-1028 = []
-with-wasm-entrypoint = []
+with-wasm-entrypoint = ["wasm-js"]
+# JavaScript bindings on wasm32-unknown-unknown (wasm-bindgen).
+# Without it, a wasm32 build is pure Rust: no wasm-bindgen imports or exports.
+wasm-js = ["dep:wasm-bindgen", "dep:js-sys", "dep:web-sys", "dep:console_log"]
 tiff = ["dep:tiff"]
 # no-op feature for keeping compatibility with 
 # downstream --features option
 aeqd = [] 
 
 [target.wasm32-unknown-unknown.dependencies]
-wasm-bindgen = "0.2"
-js-sys = "0.3"
-web-sys = { version = "0.3", features = ["console"] }
-console_log = "1.0"
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
+web-sys = { version = "0.3", features = ["console"], optional = true }
+console_log = { version = "1.0", optional = true }
 
 [[bin]]
 name = "nadinfos"

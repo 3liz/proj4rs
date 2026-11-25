@@ -1,11 +1,11 @@
 //!
 //! Parser for numbers
 //!
-//! If we are in wasm mode, then fallback to the Js functions
+//! With the `wasm-js` feature on wasm32-unknown-unknown, fallback to the Js functions
 //! this is a 20Ko gain for the .wasm binary.
 //!
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(feature = "wasm-js", target_arch = "wasm32", target_os = "unknown"))]
 mod wasm {
     //! Use js lib
 
@@ -57,8 +57,8 @@ mod wasm {
     }
 }
 
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+#[cfg(all(feature = "wasm-js", target_arch = "wasm32", target_os = "unknown"))]
 pub use wasm::FromStr;
 
-#[cfg(not(all(target_arch = "wasm32", target_os = "unknown")))]
+#[cfg(not(all(feature = "wasm-js", target_arch = "wasm32", target_os = "unknown")))]
 pub use std::str::FromStr;

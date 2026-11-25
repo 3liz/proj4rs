@@ -25,6 +25,19 @@ args = ["doc", "--all-features", "--no-deps"]
 # WASM
 #
 
+[tasks."wasm.check-pure"]
+description = "Check that a wasm32 build without default features has no JS bindings"
+script = '''
+#!/usr/bin/env bash
+set -e
+cargo check --target wasm32-unknown-unknown --no-default-features
+cargo check --target wasm32-unknown-unknown --no-default-features --features wasm-js
+if cargo tree -p proj4rs --target wasm32-unknown-unknown --no-default-features -e normal -i wasm-bindgen 2>/dev/null; then
+    echo "error: wasm-bindgen is a dependency without the 'wasm-js' feature" >&2
+    exit 1
+fi
+'''
+
 [tasks.wasm]
 description = "Build wasm module (web target)"
 command = "wasm-pack"

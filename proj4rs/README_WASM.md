@@ -8,7 +8,7 @@ The documentation is available on [docs.rs](https://docs.rs/proj4rs/) and the de
 Install [wasm-pack](https://wasm-bindgen.github.io/wasm-pack/installer/)
 
 ```bash
-wasm-pack build --target web --no-default-features
+wasm-pack build --target web --no-default-features --features wasm-js
 ```
 
 Or if you have installed [cargo-make](https://sagiegurari.github.io/cargo-make/), use the following

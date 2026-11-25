@@ -49,6 +49,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 
 ### Changed
 
+* New default feature `wasm-js` for the JavaScript API on `wasm32-unknown-unknown`
+  (wasm-bindgen exports and the `parseFloat`/`parseInt` fallback). With
+  `default-features = false`, a wasm32 build only has the Rust API: no wasm-bindgen
+  imports or exports. Add `features = ["wasm-js"]` to keep the JavaScript API without
+  the other default features
 * `tmerc` on a sphere accepts longitudes more than 90 degrees from the central meridian, as PROJ
   does (it returned `LatOrLongExceedLimit`). The spherical formulas (OSGeo/PROJ#4945) hold for any
   longitude; the limit is kept for the ellipsoidal `+approx` series, where the results are

@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/), and this
 * Added 
 
 * Expose WASM api
+    - `wasm-bindgen` is only a dependency with the `wasm-geodesic-api` feature
 
 * Changed
 

@@ -73,6 +73,11 @@
 //! * **logging**: support for logging with [log](https://docs.rs/log/latest/log/) crate.
 //!   If activated for WASM, it will use the [console-log](https://docs.rs/console_log/latest/console_log/)
 //!   adaptor.
+//! * **wasm-js** (default): JavaScript API (with [wasm-bindgen](https://docs.rs/wasm-bindgen/))
+//!   when compiled for `wasm32-unknown-unknown`, and number parsing with JavaScript's
+//!   `parseFloat` and `parseInt` (smaller binary).
+//!   Disable default features for a pure Rust WASM module that only uses the Rust API:
+//!   it then has no wasm-bindgen imports or exports. No effect on other targets.
 //! * **wasm-strict**: used with WASM; Transformation operation will return exception as soon as we
 //!   have invalid coordinates or that the reprojection failed.
 //!   The default is to use a relaxed-mode that return NaN in case of projection failure: this is expected
@@ -145,8 +150,8 @@ pub mod units;
 // Reexport
 pub use proj::Proj;
 
-// Include wasm entry point for wasm32-unknown-unknown
-#[cfg(all(target_arch = "wasm32", target_os = "unknown"))]
+// Include the JavaScript API for wasm32-unknown-unknown
+#[cfg(all(feature = "wasm-js", target_arch = "wasm32", target_os = "unknown"))]
 mod wasm;
 
 #[cfg(test)]
